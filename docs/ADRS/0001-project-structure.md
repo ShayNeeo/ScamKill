@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-07-14
-- Deciders: SilverTrust Engineering Team
+- Deciders: QuadDraKe Engineering Team
 - Context: 7-WP TypeScript/Expo app for elderly Vietnamese scam protection. Need maintainable architecture for 50+ year lifespan.
 - Decision: Adopt modular directory structure with strict WP boundaries. All public interfaces use Zod schemas + TypeScript types. Contracts live in `src/api/`. Implementation in subdirectories.
 - Consequences:

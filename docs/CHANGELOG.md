@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Versioned API contract enforcement
 
 ### Changed
+- Rebranded to ScamKill by QuadDraKe: package `scamkill`, app ID `vn.quaddrake.scamkill`, API base `scamkill-pwa.9ez.workers.dev`, certificate prefix `SCAMKILL-`
+- Removed legacy program and brand naming from licences, scripts, docs and locales
+- Removed obsolete docs: `BACKEND_ARCHITECTURE.md`, `CONTEXT.md`, `FRONTEND_GUIDE.md`, `future-dev.md`, legacy test-case CSV
 - `src/api/contract.ts`: Added VERSION constant, Zod schemas alongside TypeScript types
 - `src/api/input/schema.ts`: New — Zod schemas for input types
 - `src/api/preprocess/schema.ts`: New — Zod schemas for preprocess types
@@ -42,5 +45,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit tests for all WPs
 - Contributing guide, security policy
 
-[Unreleased]: https://github.com/TLio2407/unesco_hackathon_app/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/TLio2407/unesco_hackathon_app/releases/tag/v1.0.0
+[Unreleased]: https://github.com/ShayNeeo/ScamKill/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/ShayNeeo/ScamKill/releases/tag/v1.0.0

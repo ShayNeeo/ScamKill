@@ -1,133 +1,38 @@
-# An Tâm Số / SilverTrust MIL — Technical Design (WP1)
+# DESIGN.md — ScamKill Visual World & Design System
 
-> Authoritative design contract for the Expo Go frontend build. Backend is built separately by the user.
-> Decisions: Q1=B, Q2=A, Q3=C, Q4=C, Q5=B (see context-brief.md).
+## 1. Visual World: "Ấm Áp Gia Đình / Warm Daylight Paper & Jade Shield"
+ScamKill rejects both clinical cold SaaS dashboards and panic-inducing neon cybersecurity tropes. When an older adult receives a threatening call claiming to be the police or a crying child in an accident, the interface must lower their heart rate, eliminate screen glare, and make the safe action unmistakable.
 
-## 1. Company Architecture layers (applied)
-- **Strategy Layer (Aufsichtsrat/Vorstand):** product report + context-brief.md. Source of truth.
-- **Operations Layer (Abteilungen):**
-  - DEPT-A Architecture & API contract (this doc, WP2)
-  - DEPT-B Decision Companion feature (WP3)
-  - DEPT-C i18n + accessibility (WP4)
-  - DEPT-D Placeholder modules (WP5)
-  - DEPT-E CI/CD + release (WP6)
-- **Support Layer:** docs, implementation-notes, Works Council (privacy/accessibility clearance).
-- **Works Council (Betriebsrat):** reviews privacy (no retention, redaction) + accessibility scope before release. Can veto.
+### Color System (3 Senior-Accessible Modes)
+1. **`warm_day` (Sáng ấm áp — Default):**
+   - Ground: Warm Rice Paper `#FAF6EE` (elevated surface `#FFFDF9`, subtle card border `#E5DEC9`) — eliminates harsh `#FFFFFF` glare for cataract and presbyopic eyes.
+   - Primary Authority (Jade Shield): `#0B5D56` (pressed `#084741`, soft tint `#E3F2EF`).
+   - High-Risk Vermilion: `#B91C1C` (tint `#FDF2F2`, border `#F8B4B4`).
+   - Caution Amber: `#B45309` (tint `#FFFBEB`, border `#FCD34D`).
+   - Epistemic Unverified Slate: `#334155` (tint `#F1F5F9`, border `#CBD5E1`).
+   - Primary Ink: `#18181B`, Secondary Ink: `#3F3F46` (tinted warm charcoal, never washed-out gray; contrast ratio $\ge 7.2:1$).
+2. **`calm_night` (Tối dịu mắt):**
+   - Ground: Deep Warm Slate `#111615` (surface `#1A2220`, border `#2C3A37`), Jade Accent `#2DD4BF`, Primary Ink `#F5F2EB`.
+3. **`high_contrast_senior` (Tương phản cao Vàng–Đen cho mắt lão thị):**
+   - Ground: Pure Obsidian `#090A0B` (surface `#121417`, 2px solid border `#FACC15`), Primary Action `#FACC15` (ink `#090A0B`), High-Risk `#FF4D4D`, Primary Ink `#FFFFFF`.
 
-## 2. Folder structure (extends existing expo-router tabs)
-```
-src/
-  api/
-    contract.ts     # shared types (backend-agnostic)
-    client.ts       # typed client: analyze(); mock when no API_BASE_URL
-    mock.ts         # offline mock with >=3 VN scenarios
-  lib/
-    redact.ts       # redact CCCD/phone/account for Trusted Circle summary (unit-tested)
-  i18n/
-    index.ts        # expo-localization + i18n-js setup
-    keys.ts         # TYPED string-key catalog
-  locales/
-    vi.json
-    en.json
-  app/
-    (tabs)/
-      index.tsx        # home / entry
-      companion.tsx    # WP3 Decision Companion
-      alert.tsx        # WP5 placeholder
-      community.tsx    # WP5 placeholder
-      learning.tsx     # WP5 placeholder
-      circle.tsx       # WP5 placeholder (redacted share preview)
-    _layout.tsx
-  components/
-    RiskBadge.tsx
-    RedFlagList.tsx
-    VerificationSteps.tsx
-    InputBar.tsx
-  theme/
-    tokens.ts          # large font, high contrast
-  constants/theme.ts    # (existing)
-tests/
-  unit/                 # vitest
-  component/            # RNTL
-maestro/
-  companion.yaml        # E2E flow
-.github/workflows/
-  ci.yml                # PR gate
-  release.yml           # tag -> EAS Update
-eas.json
-```
+## 2. Typography & Live Senior Font Scaler
+- **Display & Headings:** `Be Vietnam Pro` (700/800) — crafted specifically for Vietnamese diacritics (`ấ, ệ, ử, ỗ`) so stacked marks never collide at tight line-heights.
+- **Body & Instructions:** `Lexend` (400/500/600) — empirically designed to reduce visual crowding and improve reading speed for low-vision and older readers.
+- **Phone Numbers, Safe-Words & Timers:** `JetBrains Mono` / tabular numerals (`font-variant-numeric: tabular-nums`) so digits in caller IDs (`0918 765 432`) and countdowns (`00:59`) never jitter.
+- **Live Header Font-Size Scaler (`useSeniorPreferences`):**
+  - `Чуẩn (1.0x — 18px base)`
+  - `Chữ To (1.18x — 21px base)`
+  - `Rất To (1.35x — 24px base)`
+  Persisted in `AsyncStorage` / `localStorage` and controllable in 1 tap from the top header on every screen.
 
-## 3. API contract (src/api/contract.ts)
-```ts
-export type RiskLevel = 'safe' | 'caution' | 'high_risk' | 'insufficient_data';
+## 3. Motion Thesis: "Calm Heartbeat, Breathing Pause & Tactile Physics"
+- **Focal Moment 1 — The 60-Second Breathing Shield (`CoolingOffModal`):** Expanding and contracting concentric Jade/Amber halo on a 4-second inhale / 4-second exhale cycle (`cubic-bezier(0.37, 0, 0.63, 1)`), physically pacing the senior's breathing (*"Hít vào thật sâu... Khoan mở ứng dụng ngân hàng"*) while locking impulsive action.
+- **Focal Moment 2 — Incoming Call Acoustic Ripple (`IncomingCallModal`):** Gentle concentric radar rings around the caller badge so the user immediately distinguishes a live incoming call simulation from static cards.
+- **Tactile Button Physics:** Every primary action button ($\ge 58\text{px}$ height) responds with immediate press compression (`scale(0.97)`, `120ms` ease-out) and high-contrast border definition.
+- **Reduced Motion Contract:** Respects `prefers-reduced-motion: reduce` and in-app reduced-motion preferences by replacing spatial scale pulses with calm opacity/color state transitions.
 
-export type AnalysisInput =
-  | { kind: 'text'; text: string }
-  | { kind: 'url'; url: string }
-  | { kind: 'image'; ref: string }; // base64/local ref; OCR is backend
-
-export interface RedFlag {
-  signal:
-    | 'urgency' | 'upfront_payment' | 'authority_impersonation'
-    | 'suspicious_url' | 'too_good_to_be_true' | 'personal_data_request' | 'social_proof';
-  explanation: string; // plain Vietnamese
-}
-
-export interface LessonCard {
-  title: string;
-  points: string[];
-  quiz?: { question: string; answer: string };
-}
-
-export interface AnalyzeOutput {
-  riskLevel: RiskLevel;
-  redFlags: RedFlag[];
-  verificationSteps: string[];
-  nextAction: string; // autonomy-first, calm
-  lessonCard?: LessonCard;
-  disclaimer?: string; // "AI không chắc" / no medical-legal-financial advice
-}
-
-export interface AnalyzeClient {
-  analyze(input: AnalysisInput): Promise<AnalyzeOutput>;
-}
-```
-- Client uses `API_BASE_URL` env when present, else `mockAnalyze`.
-- No sensitive data retained; summaries passed through `redact()` before any share.
-
-## 4. Mock scenarios (src/api/mock.ts)
-Covers report 9.3 signals. Examples:
-1. **Fake authority / bank** ("Tài khoản sắp bị khóa, bấm link xác minh 10 phút") -> high_risk: urgency + authority_impersonation + suspicious_url + personal_data_request.
-2. **Investment too-good-to-be-true** ("Lợi nhuận 30%/tháng, chuyển trước để giữ vị trí") -> high_risk: too_good_to_be_true + upfront_payment + social_proof.
-3. **Benign family message** -> safe / insufficient_data.
-
-## 5. i18n (WP4)
-- `expo-localization` + `i18n-js`. `src/locales/vi.json` (default) + `en.json`.
-- `src/i18n/keys.ts` exposes a typed `t(key)` so missing keys are compile errors.
-- All component copy via `t(...)`; zero raw Vietnamese literals in components.
-
-## 6. Test plan (Q3=C)
-- **Unit (vitest):** mock returns valid contract; client routes to mock without env; `redact()` removes CCCD/phone/account; i18n key resolution.
-- **Component (RNTL):** companion input + output render correctly; RiskBadge shows correct level; VN strings render from catalog.
-- **E2E (Maestro):** `maestro/companion.yaml` — launch -> paste suspicious text -> assert high_risk visible -> tap next action.
-
-## 7. CI/CD (Q3=C, Q4=C)
-- **ci.yml** (on PR): `npm ci` -> `tsc --noEmit` -> `expo lint` -> `vitest run` -> RNTL -> **Maestro** (Android emulator on Linux via `reactivecircus/android-emulator-runner` or Maestro GH action). All required.
-- **Tests offline:** mock only; never call backend.
-- **release.yml** (on `v*` tag): re-run gate -> `eas update --channel go --message "$TAG"` using `EXPO_TOKEN` secret (user-supplied).
-- **No release on plain merge** — only on tag.
-
-## 8. Work packages -> GitHub issues
-| Issue | WP | Owner |
-|------|----|-------|
-| #1 | scaffold (eas.json, CI skeletons, .gitignore) | architect |
-| #2 | WP2 API contract + mock | worker |
-| #3 | WP3 Decision Companion UI | worker |
-| #4 | WP4 i18n + accessibility | worker |
-| #5 | WP5 placeholder modules | worker |
-| #6 | WP6 CI gate + tag release | writer |
-
-## 9. Open risks / assumptions
-- `EXPO_TOKEN` not yet in repo secrets; release.yml authored but EAS run needs it.
-- Real `API_BASE_URL` TBD (backend on ssh root@sgp1.w9.nu:2201). Frontend uses mock until ready.
-- Expo Go constraint: no custom native modules; OCR/risk/LLM are backend.
+## 4. Humanizer & Anti-AI-Slop Rules
+- **Zero Bureaucratic or AI-Translated Jargon:** Never say *"Hệ thống thực hiện quy trình phân tích đa tác tử"* or *"Khởi tạo giao thức xác thực"* to a 70-year-old. Say: *"Bác khoan chuyển tiền nhé. Hãy hỏi mật khẩu gia đình trước."*
+- **Concrete Vietnamese Family Roles:** Address the user respectfully as *Bác / Cô / Chú* or *Mẹ / Bố*, and name relatives concretely (*Con gái Chị Hương*, *Con trai Anh Minh*).
+- **Refuse Category Slop:** No fake glowing cyberpunk grids, no meaningless percentage gauges ("98.4% AI Confidence"), no generic English startup buzzwords in Vietnamese UI, and no leftover references to unrelated hackathons.

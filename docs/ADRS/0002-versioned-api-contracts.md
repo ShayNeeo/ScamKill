@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-07-14
-- Deciders: SilverTrust Engineering Team
+- Deciders: QuadDraKe Engineering Team
 - Context: 7-WP app with cross-module interfaces. Without versioned contracts, breaking changes in one WP silently break others. Long-term maintainability requires explicit contract governance.
 - Decision: All public WP interfaces are versioned using semver. Each contract module exports:
   1. A `VERSION` string constant

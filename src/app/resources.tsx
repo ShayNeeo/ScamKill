@@ -10,14 +10,14 @@ export default function ResourcesScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <ThemedText type="subtitle">MIL Resources</ThemedText>
+          <ThemedText type="subtitle">ScamKill Resources</ThemedText>
           <ThemedText themeColor="textSecondary">
-            Explore educational materials and toolkits for Media and Information Literacy.
+            Simple guides that help families keep older relatives safe from phone scams.
           </ThemedText>
 
           <ThemedView type="backgroundElement" style={styles.card}>
-            <ThemedText type="smallBold">UNESCO MIL Toolkit</ThemedText>
-            <ThemedText type="small">A comprehensive guide for youth leading MIL initiatives.</ThemedText>
+            <ThemedText type="smallBold">ScamKill Family Toolkit</ThemedText>
+            <ThemedText type="small">Step-by-step advice for spotting, slowing down, and checking suspicious calls together.</ThemedText>
           </ThemedView>
 
           <ThemedView type="backgroundElement" style={styles.card}>

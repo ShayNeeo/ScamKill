@@ -22,7 +22,7 @@ function getBaseUrl(): string {
   const win = (globalThis as any).window;
   if (typeof win !== 'undefined' && win.location && win.location.hostname) {
     const hostname = win.location.hostname;
-    if (hostname === 'unesco.w9.nu' || hostname.endsWith('.w9.nu')) {
+    if (hostname === 'scamkill-pwa.9ez.workers.dev' || hostname.endsWith('.9ez.workers.dev')) {
       return win.location.origin;
     }
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -30,7 +30,7 @@ function getBaseUrl(): string {
     }
   }
   // Deployed public AI API endpoint fallback (for Expo Go, Ngrok tunnels, local Metro dev)
-  return 'https://unesco.w9.nu';
+  return 'https://scamkill-pwa.9ez.workers.dev';
 }
 
 

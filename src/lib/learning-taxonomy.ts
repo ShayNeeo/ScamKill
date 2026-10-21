@@ -400,7 +400,7 @@ export function evaluateBadges(completedIds: number[], lang: string = 'vi'): Bad
     },
     {
       id: 'grandmaster',
-      name: isEn ? 'Digital Safety Master' : 'Bậc thầy An tâm Số',
+      name: isEn ? 'Digital Safety Master' : 'Lá chắn Vàng Gia đình',
       description: isEn ? 'Graduated all safety lessons with 100% progress' : 'Tốt nghiệp tất cả bài học và đạt 100% tiến độ',
       icon: 'trophy',
       unlocked: percent === 100,
@@ -415,14 +415,14 @@ export function generateCertificate(
 ): DigitalCertificate {
   const { completed, percent } = calculateProgress(completedIds);
   const stamp = Date.now();
-  const certId = `UNESCO-MIL-${stamp.toString(36).toUpperCase()}-${Math.floor(Math.random() * 1000)}`;
+  const certId = `SCAMKILL-${stamp.toString(36).toUpperCase()}-${Math.floor(Math.random() * 1000)}`;
 
   return {
     certificateId: certId,
-    userName: userName || (lang === 'en' ? 'Senior Safety Scholar' : 'Học viên An tâm Số'),
+    userName: userName || (lang === 'en' ? 'ScamKill Family Guardian' : 'Thành viên Vòng bảo vệ ScamKill'),
     issuedAt: stamp,
     scorePercent: percent,
     totalCompleted: completed,
-    verifiedBy: 'UNESCO MIL Digital Inclusion & Safety Program',
+    verifiedBy: 'ScamKill Family Protection Program — QuadDraKe',
   };
 }

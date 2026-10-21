@@ -5,7 +5,8 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing, ColorBlindnessMode } from '@/constants/theme';
 import { Accessibility } from '@/theme/tokens';
 import { PageContainer } from '@/components/page-container';
-import { useTheme, useColorBlindnessMode } from '@/hooks/use-theme';
+import { useTheme, useColorBlindnessMode, useSeniorFontScale, useSeniorAppearance } from '@/hooks/use-theme';
+import type { SeniorFontScale, SeniorAppearanceOverride } from '@/hooks/use-theme';
 import { useLanguageDialect, DIALECTS, DialectCode } from '@/i18n/regional';
 import { t } from '@/i18n';
 
@@ -13,7 +14,27 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const [cbMode, setCbMode] = useColorBlindnessMode();
   const [dialect, setDialect] = useLanguageDialect();
+  const [fontScale, setFontScale] = useSeniorFontScale();
+  const [appearance, setAppearance] = useSeniorAppearance();
   const isEn = dialect === 'en';
+
+  const scaleOptions: { key: SeniorFontScale; label: string }[] = [
+    { key: 'standard', label: isEn ? 'Standard text (100%)' : 'Chữ chuẩn (100%)' },
+    { key: 'large', label: isEn ? 'Large text (115%)' : 'Chữ to (115%)' },
+    { key: 'extraLarge', label: isEn ? 'Extra large (130%)' : 'Chữ rất to (130%)' },
+  ];
+
+  const appearanceOptions: { key: SeniorAppearanceOverride; label: string }[] = [
+    {
+      key: 'light',
+      label: isEn ? 'Warm light (Rice paper)' : 'Sáng ấm áp (Giấy gạo)',
+    },
+    { key: 'dark', label: isEn ? 'Gentle night' : 'Tối dịu mắt' },
+    {
+      key: 'highContrastSenior',
+      label: isEn ? 'High contrast Yellow-Black' : 'Tương phản cao Vàng-Đen (Mắt lão thị)',
+    },
+  ];
 
   const cbOptions: { key: ColorBlindnessMode; label: string; desc: string }[] = [
     {
@@ -45,6 +66,75 @@ export default function ProfileScreen() {
 
   return (
     <PageContainer>
+      {/* Senior Display & Font Size */}
+      <View style={[styles.seniorCard, { backgroundColor: theme.surfaceCard, borderColor: theme.primaryAction }]}>
+        <View style={styles.seniorTitleRow}>
+          <Ionicons name="text-outline" size={26} color={theme.primaryAction} />
+          <View style={{ flex: 1 }}>
+            <ThemedText style={styles.seniorTitle}>
+              {isEn ? 'Senior Display & Font Size' : 'Cỡ chữ & Giao diện cho Người cao tuổi'}
+            </ThemedText>
+            <ThemedText style={[styles.seniorSubtitle, { color: theme.textSecondary }]}>
+              {isEn
+                ? 'Cỡ chữ & Giao diện cho Người cao tuổi · one tap is enough'
+                : 'Senior Display & Font Size · chạm 1 lần là xong'}
+            </ThemedText>
+          </View>
+        </View>
+
+        <ThemedText style={styles.seniorGroupLabel}>{isEn ? 'Font size' : 'Cỡ chữ'}</ThemedText>
+        <View style={styles.seniorChips}>
+          {scaleOptions.map((opt) => {
+            const active = fontScale === opt.key;
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => setFontScale(opt.key)}
+                style={[
+                  styles.seniorChip,
+                  {
+                    backgroundColor: active ? theme.surfaceElevated : theme.background,
+                    borderColor: active ? theme.primaryAction : theme.cardBorder,
+                  },
+                ]}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={opt.label}>
+                <ThemedText style={[styles.seniorChipLabel, active && { color: theme.primaryAction }]}>
+                  {opt.label}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <ThemedText style={styles.seniorGroupLabel}>{isEn ? 'Appearance' : 'Giao diện'}</ThemedText>
+        <View style={styles.seniorChips}>
+          {appearanceOptions.map((opt) => {
+            const active = appearance === opt.key;
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => setAppearance(opt.key)}
+                style={[
+                  styles.seniorChip,
+                  {
+                    backgroundColor: active ? theme.surfaceElevated : theme.background,
+                    borderColor: active ? theme.primaryAction : theme.cardBorder,
+                  },
+                ]}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={opt.label}>
+                <ThemedText style={[styles.seniorChipLabel, active && { color: theme.primaryAction }]}>
+                  {opt.label}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
       {/* User Info Header */}
       <ThemedView type="backgroundElement" style={styles.profileCard}>
         <Ionicons name="person-circle-outline" size={64} color={theme.primaryAction} />
@@ -143,12 +233,12 @@ export default function ProfileScreen() {
       {/* App Info */}
       <ThemedView type="backgroundElement" style={styles.infoCard}>
         <ThemedText style={styles.infoTitle}>
-          {isEn ? 'SilverTrust — UNESCO Youth Hackathon 2026' : 'An Tâm Số — UNESCO Youth Hackathon 2026'}
+          {isEn ? 'ScamKill — QuadDrake Team (HITC InnoStar 2026)' : 'ScamKill — Đội ngũ QuadDrake (HITC InnoStar 2026)'}
         </ThemedText>
         <ThemedText style={[styles.infoText, { color: theme.textSecondary }]}>
           {isEn
-            ? 'Version 1.0.0 (WP4 Extended Edition) • Media & Information Literacy (MIL) companion app empowering senior digital safety.'
-            : 'Phiên bản 1.0.0 (WP4 Extended Edition) • Ứng dụng đồng hành tin cậy nâng cao năng lực truyền thông & số (MIL) cho người cao tuổi.'}
+            ? 'Version 1.0.0 • A calm companion that helps older family members stay safe from online scams.'
+            : 'Phiên bản 1.0.0 • Người bạn đồng hành giúp người cao tuổi trong nhà bình an trước lừa đảo trực tuyến.'}
         </ThemedText>
       </ThemedView>
     </PageContainer>
@@ -157,6 +247,37 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   title: { fontSize: Accessibility.fontSize.title, marginBottom: Spacing.two },
+  seniorCard: {
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: 2,
+    gap: Spacing.two,
+    marginBottom: Spacing.three,
+  },
+  seniorTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  seniorTitle: { fontSize: Accessibility.fontSize.normal, fontWeight: '800' },
+  seniorSubtitle: { fontSize: Accessibility.fontSize.small, marginTop: 2 },
+  seniorGroupLabel: {
+    fontSize: Accessibility.fontSize.normal,
+    fontWeight: '700',
+    marginTop: Spacing.one,
+  },
+  seniorChips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  seniorChip: {
+    flexGrow: 1,
+    flexBasis: '30%',
+    minHeight: Accessibility.minTouchSize,
+    borderRadius: Spacing.two,
+    borderWidth: 2,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
+    justifyContent: 'center',
+  },
+  seniorChipLabel: {
+    fontSize: Accessibility.fontSize.small,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
   profileCard: {
     padding: Spacing.four,
     borderRadius: Spacing.four,

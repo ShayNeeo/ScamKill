@@ -59,11 +59,9 @@ playwright-report/
 test-results/
 
 # Local Scratch & Unrelated Drafts
-UNESCO_Requirement.pdf
-An_Tam_So_UNESCO_Youth_Hackathon_Report.md
 IDEA CHỐT STARTUP.md
 session-*.md
-extract_pdf.js
+package-lock.json
 temp_extract.js
 package-lock.json
 example

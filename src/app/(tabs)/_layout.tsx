@@ -1,38 +1,95 @@
+import type { ComponentProps } from 'react';
 import { Tabs } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@/hooks/use-theme';
+import {
+  cycleSeniorAppearance,
+  cycleSeniorFontScale,
+  useSeniorAppearance,
+  useSeniorFontScale,
+  useTheme,
+} from '@/hooks/use-theme';
+import type { SeniorAppearanceOverride, SeniorFontScale } from '@/hooks/use-theme';
 import { useLanguageDialect } from '@/i18n/regional';
 import { ThemedText } from '@/components/themed-text';
 import { t } from '@/i18n';
 
-function HeaderLanguageToggle() {
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const FONT_SCALE_META: Record<SeniorFontScale, { vi: string; en: string }> = {
+  standard: { vi: 'Chữ: Chuẩn', en: 'Text: 100%' },
+  large: { vi: 'Chữ: To', en: 'Text: 115%' },
+  extraLarge: { vi: 'Chữ: Rất to', en: 'Text: 130%' },
+};
+
+const APPEARANCE_META: Record<
+  Exclude<SeniorAppearanceOverride, 'system'>,
+  { icon: IconName; vi: string; en: string }
+> = {
+  light: { icon: 'sunny-outline', vi: 'Sáng ấm', en: 'Warm' },
+  dark: { icon: 'moon-outline', vi: 'Tối dịu', en: 'Night' },
+  highContrastSenior: { icon: 'contrast-outline', vi: 'Vàng-Đen', en: 'Hi-Contrast' },
+};
+
+function SeniorQuickControls() {
   const theme = useTheme();
   const [dialect, setDialect] = useLanguageDialect();
+  const [fontScale] = useSeniorFontScale();
+  const [appearance] = useSeniorAppearance();
   const isEn = dialect === 'en';
+  const fontMeta = FONT_SCALE_META[fontScale];
+  const appMeta = APPEARANCE_META[appearance === 'system' ? 'light' : appearance];
+
+  const chipStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+    backgroundColor: theme.surfaceElevated,
+    borderColor: theme.cardBorder,
+    borderWidth: 1.5,
+    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  };
+  const chipText = { fontSize: 11, fontWeight: '800' as const, color: theme.primaryAction };
 
   return (
-    <Pressable
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: theme.surfaceElevated,
-        borderColor: theme.primaryAction,
-        borderWidth: 1.5,
-        borderRadius: 20,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        marginRight: 12,
-        gap: 6,
-      }}
-      onPress={() => setDialect(isEn ? 'vi-north' : 'en')}
-      accessibilityRole="button"
-      accessibilityLabel={isEn ? 'Switch language. Current: English' : 'Đổi ngôn ngữ. Hiện tại: Tiếng Việt'}>
-      <Ionicons name="globe-outline" size={16} color={theme.primaryAction} />
-      <ThemedText style={{ fontSize: 13, fontWeight: '700', color: theme.primaryAction }}>
-        {isEn ? 'EN' : 'VN'}
-      </ThemedText>
-    </Pressable>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginRight: 10 }}>
+      <Pressable
+        style={chipStyle}
+        onPress={cycleSeniorFontScale}
+        accessibilityRole="button"
+        accessibilityLabel={
+          isEn
+            ? `Font size. Current: ${fontMeta.en}. Tap to enlarge text.`
+            : `Cỡ chữ. Hiện tại: ${fontMeta.vi}. Bấm để phóng to chữ.`
+        }>
+        <ThemedText style={chipText}>A+</ThemedText>
+        <ThemedText style={chipText}>{isEn ? fontMeta.en : fontMeta.vi}</ThemedText>
+      </Pressable>
+
+      <Pressable
+        style={chipStyle}
+        onPress={cycleSeniorAppearance}
+        accessibilityRole="button"
+        accessibilityLabel={
+          isEn
+            ? `Display contrast. Current: ${appMeta.en}. Tap to change.`
+            : `Độ tương phản. Hiện tại: ${appMeta.vi}. Bấm để đổi.`
+        }>
+        <Ionicons name={appMeta.icon} size={14} color={theme.primaryAction} />
+        <ThemedText style={chipText}>{isEn ? appMeta.en : appMeta.vi}</ThemedText>
+      </Pressable>
+
+      <Pressable
+        style={chipStyle}
+        onPress={() => setDialect(isEn ? 'vi-north' : 'en')}
+        accessibilityRole="button"
+        accessibilityLabel={isEn ? 'Switch language. Current: English' : 'Đổi ngôn ngữ. Hiện tại: Tiếng Việt'}>
+        <Ionicons name="globe-outline" size={14} color={theme.primaryAction} />
+        <ThemedText style={chipText}>{isEn ? 'EN' : 'VN'}</ThemedText>
+      </Pressable>
+    </View>
   );
 }
 
@@ -60,14 +117,15 @@ export default function TabLayout() {
     <Tabs screenOptions={{
       tabBarActiveTintColor: theme.primaryAction,
       tabBarInactiveTintColor: theme.textSecondary,
-      tabBarLabelStyle: { fontSize: 9, fontWeight: '600', marginBottom: 2 },
+      tabBarLabelStyle: { fontSize: 13, fontWeight: '700', marginBottom: 2 },
       tabBarItemStyle: { paddingHorizontal: 0 },
       tabBarStyle: {
-        height: 62,
-        paddingBottom: 6,
+        height: 68,
+        paddingBottom: 8,
         paddingTop: 6,
         backgroundColor: theme.surfaceCard,
         borderTopColor: theme.cardBorder,
+        borderTopWidth: 1.5,
       },
       headerStyle: {
         backgroundColor: theme.surfaceCard,
@@ -83,7 +141,7 @@ export default function TabLayout() {
       },
       headerTitle: () => <ScamKillHeader />,
       headerTintColor: theme.text,
-      headerRight: () => <HeaderLanguageToggle />,
+      headerRight: () => <SeniorQuickControls />,
     }}>
       <Tabs.Screen
         name="call_shield"

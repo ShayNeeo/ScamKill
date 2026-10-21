@@ -158,7 +158,7 @@ flowchart TB
    - **Agent 4 — RAG Official Advisory Agent (`rag.ts`):** Matches detected signals against 61 curated advisories from Bộ Công an, Cục ATTT, NHNN, and global consumer protection bodies.
    - **Agent 5 — Elder Action & Family Loop Assembler (`assembler.ts`):** Produces max 3 plain-Vietnamese reasons, next action, Cooling-Off timer trigger, Family Safe-Word prompt, and redacted family dispatch payload.
 2. **Development Multi-Agent Fleet (`oh-my-pi` Roles):**
-   - `scout`: Codebase discovery across `UNESCO` and `Grab/Round2`.
+   - `scout`: Codebase discovery and threat-signal inventory.
    - `task` (Parallel Makers): Slice-isolated implementation of Backend/Multi-Bot Hub, Call Shield & Bà Lan Simulator, and Family Safe-Word/Cooling-Off UI.
    - `reviewer` & `security-reviewer` (Independent Checkers): Zero self-evaluation gate auditing code quality, PDPD 2025 consent enforcement, and secret hygiene.
 

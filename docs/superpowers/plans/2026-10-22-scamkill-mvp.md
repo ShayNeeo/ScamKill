@@ -4,7 +4,7 @@
 
 **Goal:** Build the full-stack ScamKill MVP (Expo 57 universal app + TypeScript Express multi-agent/multi-bot backend) implementing all 3 chronological protection layers, the Bà Lan 30M emergency call scenario, and consent-gated SMS/Zalo/Telegram family intervention.
 
-**Architecture:** We reuse `UNESCO/unesco_hackathon_app`'s Expo 57 + Express + Rule/RAG/PII foundation and port `Grab/Round2`'s multi-agent psychological pressure rules, 48-hour Cooling-Off timer, and Telegram Bot dispatcher into a unified TypeScript architecture (`src/api/scamkill/*` + `server.js`). A floating/tab-accessible "Kịch bản Demo" Wizard-of-Oz drawer and live Multi-Bot Family Inbox make all 3 features and all 3 bot channels (SMS, Zalo, Telegram) 100% demonstrable offline and online.
+**Architecture:** We reuse the legacy hackathon app's Expo 57 + Express + Rule/RAG/PII foundation and port `Grab/Round2`'s multi-agent psychological pressure rules, 48-hour Cooling-Off timer, and Telegram Bot dispatcher into a unified TypeScript architecture (`src/api/scamkill/*` + `server.js`). A floating/tab-accessible "Kịch bản Demo" Wizard-of-Oz drawer and live Multi-Bot Family Inbox make all 3 features and all 3 bot channels (SMS, Zalo, Telegram) 100% demonstrable offline and online.
 
 **Tech Stack:** Expo SDK 57, React Native 0.86, Expo Router, TypeScript 6, Express 5, Zod 4, Vitest, Local 9Router / Google AI Studio LLM + Deterministic Scenario Engine.
 

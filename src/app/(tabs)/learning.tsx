@@ -64,7 +64,7 @@ export default function LearningScreen() {
   };
 
   const handleShowCert = () => {
-    const userName = isEn ? 'Senior Companion User' : 'Cô/Chú An Tâm';
+    const userName = isEn ? 'Family elder' : 'Cô/Chú nhà mình';
     const cert = generateCertificate(userName, completedLessons, dialect);
     setCertificate(cert);
     setShowCertificateModal(true);
@@ -269,7 +269,7 @@ export default function LearningScreen() {
                 {isEn ? 'Digital Certificates & Badges' : 'Bằng khen & Huy hiệu Số'}
               </ThemedText>
               <ThemedText style={[styles.certSub, { color: theme.textSecondary }]}>
-                {isEn ? 'UNESCO MIL Digital Inclusion Program' : 'Chương trình UNESCO MIL Digital Inclusion'}
+                {isEn ? 'ScamKill — Family Defense Handbook' : 'ScamKill — Cẩm nang Phòng vệ Gia đình'}
               </ThemedText>
             </View>
 
@@ -305,7 +305,7 @@ export default function LearningScreen() {
             {certificate && (
               <View style={[styles.certificateBox, { backgroundColor: theme.surfaceElevated, borderColor: theme.primaryAction }]}>
                 <ThemedText style={[styles.certSubject, { color: theme.primaryAction }]}>
-                  {isEn ? 'DIGITAL SAFETY SKILLS CERTIFICATE' : 'CHỨNG NHẬN HOÀN THÀNH KỸ NĂNG AN TÂM SỐ'}
+                  {isEn ? 'SCAMKILL FAMILY SHIELD CERTIFICATE' : 'CHỨNG NHẬN LÁ CHẮN GIA ĐÌNH SCAMKILL'}
                 </ThemedText>
                 <ThemedText style={styles.certName}>{certificate.userName}</ThemedText>
                 <ThemedText style={styles.certDesc}>

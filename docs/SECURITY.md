@@ -1,4 +1,4 @@
-# Security Policy — SilverTrust
+# Security Policy — ScamKill
 
 ## Scope
 
@@ -32,7 +32,7 @@ This app processes sensitive data from elderly Vietnamese users:
 If you discover a security vulnerability:
 
 1. **DO NOT** create a public GitHub issue
-2. Email: security@silverttrust.dev (placeholder — use project maintainer contact)
+2. Open a private security advisory at https://github.com/ShayNeeo/ScamKill/security/advisories/new
 3. Include: description, reproduction steps, affected version
 4. We respond within 48 hours, remediate within 7 days
 

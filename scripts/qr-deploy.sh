@@ -18,7 +18,7 @@ if ! command -v qrencode &> /dev/null; then
     fi
 fi
 
-echo "=== QR Codes for An Tâm Số ==="
+echo "=== QR Codes for ScamKill ==="
 echo
 echo "Web App (for users):"
 echo "$WEB_URL"

@@ -1,5 +1,7 @@
 import * as React from 'react';
 import {
+  Animated,
+  Easing,
   Modal,
   Pressable,
   ScrollView,
@@ -8,11 +10,13 @@ import {
   View,
 } from 'react-native';
 import * as Speech from 'expo-speech';
+import { Ionicons } from '@expo/vector-icons';
 
 import {
   checkIncomingCallSync,
   getDefaultFamilySafeWord,
 } from '@/api/scamkill/client';
+import { Fonts } from '@/constants/theme';
 import type {
   CallCheckInput,
   CallCheckOutput,
@@ -85,12 +89,20 @@ function bannerHeadline(output: CallCheckOutput): string {
   if (output.status === 'caution') {
     return output.signals.includes('saved_family_contact')
       ? output.badgeLabel
-      : 'Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, hãy xác minh.';
+      : 'Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, mình khoan đã và kiểm tra lại nhé.';
   }
   if (output.status === 'unverified') {
-    return 'Chưa xác minh — Chưa có đủ dữ liệu báo cáo. Tuyệt đối không chuyển tiền hoặc đọc mã OTP.';
+    return 'Mình chưa kiểm tra được người này. Mình tuyệt đối không chuyển tiền và không đọc mã OTP nhé.';
   }
-  return 'Trong danh bạ / Đã xác thực. Vẫn cẩn thận nếu người này xin chuyển tiền gấp.';
+  return 'Người này có trong danh bạ của mình. Nhưng nếu họ xin chuyển tiền gấp, mình vẫn kiểm tra lại nhé.';
+}
+
+function formatPhoneDisplay(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 11 && digits.startsWith('84')) {
+    return `+84 ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+  }
+  return digits.length === 10 ? `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}` : raw;
 }
 
 function resolveCallOutput(
@@ -116,6 +128,34 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
   const [shareConsent, setShareConsent] = React.useState(false);
   const [speaking, setSpeaking] = React.useState(false);
   const [ringSeconds, setRingSeconds] = React.useState(0);
+
+  const rippleA = React.useRef(new Animated.Value(0)).current;
+  const rippleB = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    if (!visible) return;
+    const ripple = (value: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(value, {
+            toValue: 1,
+            duration: 1800,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(value, { toValue: 0, duration: 1, useNativeDriver: true }),
+        ])
+      );
+    const first = ripple(rippleA, 0);
+    const second = ripple(rippleB, 900);
+    first.start();
+    second.start();
+    return () => {
+      first.stop();
+      second.stop();
+    };
+  }, [visible, rippleA, rippleB]);
 
   const callOutput = React.useMemo(
     () => resolveCallOutput(callInput, scenario),
@@ -179,19 +219,54 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
           contentContainerStyle={styles.scrollBody}
           showsVerticalScrollIndicator={false}>
           <View style={styles.callHeader}>
-            <Text style={styles.callLabel}>📞 CUỘC GỌI ĐẾN · ScamKill</Text>
+            <Text style={styles.callLabel}>📞 Có cuộc gọi đến · ScamKill đang canh chừng</Text>
             <Text style={styles.callSource}>
               {scenario?.id === 'zalo-voice-clone'
-                ? 'Cuộc gọi Zalo (mô phỏng)'
-                : 'Cuộc gọi điện thoại (mô phỏng)'}
+                ? 'Cuộc gọi Zalo (bản mô phỏng để tập luyện)'
+                : 'Cuộc gọi điện thoại (bản mô phỏng để tập luyện)'}
             </Text>
-            <Text style={styles.ringing}>Đang đổ chuông… 00:{String(ringSeconds).padStart(2, '0')}</Text>
-            <Text style={styles.callerNumber}>{callOutput.phoneNumber}</Text>
+
+            <View style={styles.callerBadge}>
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.rippleRing,
+                  {
+                    borderColor: meta.color,
+                    opacity: rippleA.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
+                    transform: [
+                      { scale: rippleA.interpolate({ inputRange: [0, 1], outputRange: [0.9, 2.2] }) },
+                    ],
+                  },
+                ]}
+              />
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.rippleRing,
+                  {
+                    borderColor: meta.color,
+                    opacity: rippleB.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0] }),
+                    transform: [
+                      { scale: rippleB.interpolate({ inputRange: [0, 1], outputRange: [0.9, 2.2] }) },
+                    ],
+                  },
+                ]}
+              />
+              <View style={[styles.callerBadgeCore, { backgroundColor: meta.color }]}>
+                <Ionicons name="call" size={34} color={meta.textColor} />
+              </View>
+            </View>
+
+            <Text style={styles.ringing}>Máy đang đổ chuông… 00:{String(ringSeconds).padStart(2, '0')}</Text>
+            <Text style={styles.callerNumber} numberOfLines={1} adjustsFontSizeToFit>
+              {formatPhoneDisplay(callOutput.phoneNumber)}
+            </Text>
             <Text style={styles.callerHint}>
               {callInput?.callerClaimedName ||
                 scenario?.callInput?.callerClaimedName ||
                 scenario?.title ||
-                'Người gọi chưa xác định'}
+                'Mình chưa rõ người gọi là ai'}
             </Text>
           </View>
 
@@ -235,16 +310,16 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             </Pressable>
             <View style={styles.rndTag}>
               <Text style={styles.rndTagText}>
-                🧪 Thẻ R&D: Cảnh báo giả giọng AI chỉ là tín hiệu tham khảo — không thay thế
-                bước hỏi “Mã gia đình” và gọi lại số đã lưu.
+                🧪 Lưu ý: Cảnh báo giọng AI chỉ để tham khảo. Mình vẫn hỏi “Mã gia đình” và gọi
+                lại số đã lưu nhé.
               </Text>
             </View>
           </View>
 
           <View style={styles.signalCard}>
-            <Text style={styles.sectionLabel}>Tín hiệu ghi nhận</Text>
+            <Text style={styles.sectionLabel}>ScamKill đã ghi nhận</Text>
             <Text style={styles.signalCount}>
-              {callOutput.communityReportCount} báo cáo cộng đồng · {callOutput.signals.length} tín hiệu
+              {callOutput.communityReportCount} báo cáo từ cộng đồng · {callOutput.signals.length} dấu hiệu
             </Text>
             <View style={styles.signalWrap}>
               {callOutput.signals.map((signal) => (
@@ -257,11 +332,11 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
           </View>
 
           <View style={styles.safeWordCard}>
-            <Text style={styles.safeWordLabel}>Mã gia đình của bạn</Text>
+            <Text style={styles.safeWordLabel}>Mã gia đình của mình</Text>
             <Text style={styles.safeWordValue}>“{safeWord}”</Text>
             <Text style={styles.safeWordHint}>
-              Hỏi người gọi: “Mã gia đình là gì?”. Người thật sẽ trả lời đúng; kẻ giả giọng AI
-              thì không biết.
+              Mình hỏi người gọi: “Mã gia đình là gì?”. Người thật sẽ trả lời đúng; kẻ giả giọng
+              AI thì không biết đâu.
             </Text>
           </View>
 
@@ -276,10 +351,10 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             </View>
             <View style={styles.consentBody}>
               <Text style={styles.consentText}>
-                Đồng ý gửi kèm nội dung cuộc gọi cho người thân
+                Cho phép gửi kèm nội dung cuộc gọi cho con cháu
               </Text>
               <Text style={styles.consentSub}>
-                Mặc định TẮT: chỉ gửi loại cảnh báo, thời điểm và số điện thoại.
+                Mặc định TẮT: chỉ gửi loại cảnh báo, thời gian và số điện thoại.
               </Text>
             </View>
           </Pressable>
@@ -291,14 +366,14 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             accessibilityRole="button"
             accessibilityLabel="Kiểm tra và báo người thân ngay"
             style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
-            <Text style={styles.primaryButtonText}>🛡 KIỂM TRA &amp; BÁO NGƯỜI THÂN NGAY</Text>
+            <Text style={styles.primaryButtonText}>🛡 KIỂM TRA &amp; BÁO CON CHÁU NGAY</Text>
           </Pressable>
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel="Cúp máy an toàn"
             style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
-            <Text style={styles.secondaryButtonText}>📵 Cúp máy an toàn</Text>
+            <Text style={styles.secondaryButtonText}>📵 Cúp máy cho an toàn</Text>
           </Pressable>
         </View>
       </View>
@@ -337,11 +412,34 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#475569',
   },
+  callerBadge: {
+    width: 132,
+    height: 132,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 4,
+  },
+  rippleRing: {
+    position: 'absolute',
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 4,
+  },
+  callerBadgeCore: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   callerNumber: {
     fontSize: 34,
     fontWeight: '800',
     color: '#0F172A',
     textAlign: 'center',
+    fontFamily: Fonts.mono,
+    letterSpacing: 3,
   },
   callerHint: {
     fontSize: 18,

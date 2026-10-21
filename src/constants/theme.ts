@@ -9,40 +9,40 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#0F172A', // Deep slate navy for high contrast
-    background: '#FDFBF7', // Soft cream off-white to prevent glare
-    backgroundElement: '#F1EFE9', // Subtle warm container
-    backgroundSelected: '#E2DEC9',
-    textSecondary: '#475569', // Slate-gray with high contrast ratio (7.2:1)
+    text: '#18181B', // Warm deep charcoal ink (contrast > 14:1 on warm paper)
+    background: '#FAF6EE', // Warm rice-paper ground to eliminate cataract glare
+    backgroundElement: '#F1EBDD', // Soft warm sand container
+    backgroundSelected: '#E4DBC6',
+    textSecondary: '#3F3F46', // Tinted warm slate (contrast > 7.5:1)
 
-    primaryAction: '#1D4ED8', // Solid high-contrast royal blue
-    primaryActionText: '#FFFFFF',
-    surfaceCard: '#FFFFFF',
-    surfaceElevated: '#F8F6F0',
-    cardBorder: '#E2E8F0',
+    primaryAction: '#0B5D56', // Deep Vietnamese Jade Shield
+    primaryActionText: '#FAF6EE',
+    surfaceCard: '#FFFDF9',
+    surfaceElevated: '#F5EFE2',
+    cardBorder: '#DFD6C3',
 
     riskSafe: '#15803D',
     riskCaution: '#B45309',
     riskHigh: '#B91C1C',
-    riskInsufficient: '#64748B',
+    riskInsufficient: '#334155',
 
-    riskSafeBg: '#F0FDF4',
+    riskSafeBg: '#ECFDF5',
     riskCautionBg: '#FFFBEB',
     riskHighBg: '#FEF2F2',
     riskInsufficientBg: '#F1F5F9',
   },
   dark: {
-    text: '#F8FAFC', // Crisp soft white to prevent glare/halo effect
-    background: '#18181B', // Deep zinc charcoal background instead of harsh black
-    backgroundElement: '#27272A', // Elevated warm zinc container
-    backgroundSelected: '#3F3F46',
-    textSecondary: '#CBD5E1', // High contrast soft slate silver (11.2:1)
+    text: '#F5F2EB', // Warm ivory ink on calm night slate
+    background: '#111615', // Deep calm jade-slate night ground
+    backgroundElement: '#1A2220',
+    backgroundSelected: '#263330',
+    textSecondary: '#CBD5E1',
 
-    primaryAction: '#60A5FA', // High-contrast sky blue (contrast ratio > 6.5:1 for seniors)
-    primaryActionText: '#0F172A',
-    surfaceCard: '#27272A',
-    surfaceElevated: '#3F3F46',
-    cardBorder: '#3F3F46',
+    primaryAction: '#2DD4BF', // Luminous jade-teal (> 8:1 on dark ground)
+    primaryActionText: '#091210',
+    surfaceCard: '#1A2220',
+    surfaceElevated: '#24302D',
+    cardBorder: '#2C3A37',
 
     riskSafe: '#4ADE80',
     riskCaution: '#FBBF24',
@@ -56,7 +56,13 @@ export const Colors = {
   },
 } as const;
 
-export type ColorBlindnessMode = 'standard' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'highContrast';
+export type ColorBlindnessMode =
+  | 'standard'
+  | 'protanopia'
+  | 'deuteranopia'
+  | 'tritanopia'
+  | 'highContrast'
+  | 'seniorYellowBlack';
 
 export function getColorPalette(theme: 'light' | 'dark', mode: ColorBlindnessMode = 'standard') {
   const base = Colors[theme];
@@ -109,6 +115,30 @@ export function getColorPalette(theme: 'light' | 'dark', mode: ColorBlindnessMod
       riskHigh: '#FF0000',
       riskCaution: '#D97706',
       riskSafe: '#008000',
+    };
+  }
+  if (mode === 'seniorYellowBlack') {
+    // Gold-on-Obsidian mode tailored for severe presbyopia / cataracts
+    return {
+      ...base,
+      background: '#090A0B',
+      backgroundElement: '#14171A',
+      backgroundSelected: '#26292E',
+      text: '#FFFFFF',
+      textSecondary: '#FEF08A',
+      surfaceCard: '#121417',
+      surfaceElevated: '#1C1F24',
+      cardBorder: '#FACC15',
+      primaryAction: '#FACC15',
+      primaryActionText: '#090A0B',
+      riskHigh: '#FF4D4D',
+      riskHighBg: '#3B0A0A',
+      riskCaution: '#FACC15',
+      riskCautionBg: '#332800',
+      riskSafe: '#4ADE80',
+      riskSafeBg: '#082E16',
+      riskInsufficient: '#E2E8F0',
+      riskInsufficientBg: '#1E293B',
     };
   }
 

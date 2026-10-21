@@ -6,7 +6,7 @@ set -eu
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-echo "==> Bootstrapping SilverTrust backend..."
+echo "==> Bootstrapping ScamKill backend..."
 
 # 1. Validate contract schemas
 echo "--- Contracts ---"

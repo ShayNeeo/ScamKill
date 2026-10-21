@@ -5,7 +5,7 @@ set -euo pipefail
 
 SERVER="root@sgp1.w9.nu"
 SSH_PORT=2201
-REMOTE_DIR="/opt/unesco-hackathon"
+REMOTE_DIR="/opt/scamkill"
 
 echo "=== Deploying to $SERVER ==="
 
@@ -29,7 +29,7 @@ scp -P $SSH_PORT .env "$SERVER:$REMOTE_DIR/.env"
 echo "Building and starting containers..."
 ssh -p $SSH_PORT "$SERVER" << 'REMOTE_EOF'
 set -euo pipefail
-cd /opt/unesco-hackathon
+cd /opt/scamkill
 
 # Install Docker if not present
 if ! command -v docker &> /dev/null; then

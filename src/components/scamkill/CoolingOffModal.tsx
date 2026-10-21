@@ -1,5 +1,7 @@
 import * as React from 'react';
 import {
+  Animated,
+  Easing,
   Modal,
   Pressable,
   ScrollView,
@@ -9,6 +11,7 @@ import {
 } from 'react-native';
 
 import { getDefaultFamilySafeWord } from '@/api/scamkill/client';
+import { Fonts } from '@/constants/theme';
 
 export interface CoolingOffModalProps {
   visible: boolean;
@@ -22,18 +25,15 @@ export interface CoolingOffModalProps {
 
 const COOLING_OFF_SECONDS = 60;
 const COOLING_OFF_HOURS = 48;
+const BREATH_PHASE_MS = 4000;
+
+const INHALE_CUE = 'Hít vào thật sâu (4 giây)... Khoan mở ứng dụng ngân hàng';
+const EXHALE_CUE = 'Thở ra chậm rãi (4 giây)... Kẻ gian luôn giục gấp, mình cứ bình tĩnh';
 
 function formatUntil(timestamp: number): string {
   const d = new Date(timestamp);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${pad(d.getHours())}:${pad(d.getMinutes())} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-}
-
-function breathingCue(elapsed: number): string {
-  const phase = elapsed % 20;
-  if (phase < 7) return 'Hít vào chậm qua mũi… (4 giây)';
-  if (phase < 12) return 'Giữ hơi thở… (2 giây)';
-  return 'Thở ra chậm bằng miệng… (6 giây)';
 }
 
 export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element | null {
@@ -53,6 +53,30 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
   const [askedSafeWord, setAskedSafeWord] = React.useState(false);
   const [calledBack, setCalledBack] = React.useState(false);
 
+  const breath = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    if (!visible) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(breath, {
+          toValue: 1,
+          duration: BREATH_PHASE_MS,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(breath, {
+          toValue: 0,
+          duration: BREATH_PHASE_MS,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [visible, breath]);
+
   React.useEffect(() => {
     if (!visible) return;
     setSecondsLeft(COOLING_OFF_SECONDS);
@@ -67,6 +91,8 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
 
   const elapsed = COOLING_OFF_SECONDS - secondsLeft;
   const finished = secondsLeft === 0;
+  const haloScale = breath.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.08] });
+  const haloOpacity = breath.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.7] });
 
   return (
     <Modal
@@ -80,53 +106,66 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
           contentContainerStyle={styles.scrollBody}
           showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Text style={styles.stepTag}>Bước 2: Làm chậm (Khoảng dừng an toàn)</Text>
+            <Text style={styles.stepTag}>Bước 2 · Mình dừng lại một chút nhé</Text>
             <Text style={styles.title}>
-              {title || 'Khoan chuyển tiền! Hãy dừng lại 60 giây…'}
+              {title || 'Mẹ/Bố ơi, mình khoan chuyển tiền — dừng lại 60 giây đã…'}
             </Text>
             {amountOrRiskText ? (
               <Text style={styles.amountText}>{amountOrRiskText}</Text>
             ) : null}
             {callerNumber ? (
-              <Text style={styles.callerText}>Số đang gọi: {callerNumber}</Text>
+              <Text style={styles.callerText}>Số đang gọi tới: {callerNumber}</Text>
             ) : null}
           </View>
 
           <View style={styles.timerCard}>
-            <View style={styles.timerCircle} accessibilityRole="timer">
-              <Text style={styles.timerText}>
-                {String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:
-                {String(secondsLeft % 60).padStart(2, '0')}
-              </Text>
-              <Text style={styles.timerCaption}>giây dừng an toàn</Text>
+            <View style={styles.breathStage}>
+              <Animated.View
+                pointerEvents="none"
+                style={[styles.breathHalo, { opacity: haloOpacity, transform: [{ scale: haloScale }] }]}
+              />
+              <View style={styles.timerCircle} accessibilityRole="timer">
+                <Text style={styles.timerText}>
+                  {String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:
+                  {String(secondsLeft % 60).padStart(2, '0')}
+                </Text>
+                <Text style={styles.timerCaption}>giây mình thở cùng nhau</Text>
+              </View>
             </View>
             <Text style={styles.breathText}>
-              {finished ? 'Đã hết 60 giây. Vẫn phải làm đủ 2 bước xác minh bên dưới.' : breathingCue(elapsed)}
+              {finished
+                ? 'Mình đã thở đủ 60 giây rồi. Giờ mình làm thêm 2 bước kiểm tra nhé — con cháu sẽ yên tâm hơn.'
+                : Math.floor(elapsed / (BREATH_PHASE_MS / 1000)) % 2 === 0
+                  ? INHALE_CUE
+                  : EXHALE_CUE}
             </Text>
             {finished ? (
               <Pressable
-                onPress={() => setSecondsLeft(COOLING_OFF_SECONDS)}
+                onPress={() => {
+                  setSecondsLeft(COOLING_OFF_SECONDS);
+                  breath.setValue(0);
+                }}
                 accessibilityRole="button"
                 accessibilityLabel="Bắt đầu lại 60 giây khoảng dừng an toàn"
                 style={({ pressed }) => [styles.restartButton, pressed && styles.pressed]}>
-                <Text style={styles.restartText}>↻ Bắt đầu lại 60 giây</Text>
+                <Text style={styles.restartText}>↻ Mình thở lại 60 giây nhé</Text>
               </Pressable>
             ) : null}
           </View>
 
           <View style={styles.lockCard}>
-            <Text style={styles.lockTitle}>🔒 Khoá bảo vệ giao dịch nguy cơ cao · 48 giờ</Text>
+            <Text style={styles.lockTitle}>🔒 Mình tạm khoá giao dịch nguy cơ cao · 48 giờ</Text>
             <Text style={styles.lockUntil}>
-              Hiệu lực đến: {lockUntil ? formatUntil(lockUntil) : '—'}
+              Mình ghi nhớ đến: {lockUntil ? formatUntil(lockUntil) : '—'}
             </Text>
             <Text style={styles.lockNote}>
-              Trong bản MVP, đây là trạng thái nhắc nhở và theo dõi trong ứng dụng — không khoá
-              tài khoản ngân hàng thật của bạn.
+              Trong bản thử nghiệm, đây là lời nhắc và theo dõi ngay trong ứng dụng — không khoá
+              tài khoản ngân hàng thật của mình đâu.
             </Text>
           </View>
 
           <View style={styles.checklistCard}>
-            <Text style={styles.checklistTitle}>Xác minh giả giọng người thân — 2 bước</Text>
+            <Text style={styles.checklistTitle}>Mình kiểm tra giọng người thân — 2 bước thôi</Text>
 
             <Pressable
               onPress={() => setAskedSafeWord((v) => !v)}
@@ -138,18 +177,18 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
                 {askedSafeWord ? <Text style={styles.checkTick}>✓</Text> : null}
               </View>
               <View style={styles.checkBody}>
-                <Text style={styles.checkTitle}>(i) Hỏi “Mã gia đình”</Text>
+                <Text style={styles.checkTitle}>(i) Hỏi “Mã gia đình” của mình</Text>
                 <Text style={styles.checkDesc}>
-                  Người thân thật sẽ trả lời đúng cụm từ bí mật. Giọng AI có thể bắt chước, nhưng
-                  không biết cụm từ này.
+                  Người thân thật sẽ trả lời đúng câu bí mật này. Giọng AI bắt chước được, nhưng
+                  không biết câu trả lời.
                 </Text>
               </View>
             </Pressable>
 
             <View style={styles.safeWordBox}>
-              <Text style={styles.safeWordLabel}>Mã gia đình của bạn</Text>
+              <Text style={styles.safeWordLabel}>Mã gia đình của mình</Text>
               <Text style={styles.safeWordValue}>“{safeWord}”</Text>
-              <Text style={styles.safeWordAsk}>Hỏi ngay: “Mã gia đình của mình là gì?”</Text>
+              <Text style={styles.safeWordAsk}>Mình hỏi ngay: “Mã gia đình của mình là gì?”</Text>
             </View>
 
             <Pressable
@@ -163,11 +202,11 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
               </View>
               <View style={styles.checkBody}>
                 <Text style={styles.checkTitle}>
-                  (ii) Cúp máy và gọi lại theo số đã lưu trong danh bạ
+                  (ii) Mình cúp máy và gọi lại số đã lưu trong danh bạ
                 </Text>
                 <Text style={styles.checkDesc}>
-                  Mở danh bạ và gọi đúng số của con/cháu, hoặc gọi video qua Zalo/FaceTime. Không
-                  gọi lại theo số vừa gọi đến.
+                  Mình mở danh bạ, gọi đúng số của con/cháu hoặc gọi video Zalo/FaceTime. Mình
+                  không gọi lại theo số vừa gọi đến nhé.
                 </Text>
               </View>
             </Pressable>
@@ -175,8 +214,8 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
 
           <View style={styles.privacyNote}>
             <Text style={styles.privacyText}>
-              Mặc định cảnh báo chỉ gửi loại cảnh báo, thời điểm và số điện thoại liên quan. Nội
-              dung cuộc gọi chỉ được gửi khi bạn đã đồng ý chia sẻ.
+              Mặc định ứng dụng chỉ gửi loại cảnh báo, thời gian và số điện thoại liên quan. Nội
+              dung cuộc gọi chỉ được gửi khi mình đã đồng ý chia sẻ.
             </Text>
           </View>
         </ScrollView>
@@ -188,7 +227,7 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
             accessibilityLabel="Gửi cảnh báo SMS, Zalo, Telegram cho con cháu"
             style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
             <Text style={styles.primaryButtonText}>
-              📨 Gửi cảnh báo SMS / Zalo / Telegram cho con cháu
+              📨 Báo cho con cháu qua SMS / Zalo / Telegram
             </Text>
           </Pressable>
           <Pressable
@@ -196,7 +235,7 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
             accessibilityRole="button"
             accessibilityLabel="Đóng khoảng dừng an toàn"
             style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
-            <Text style={styles.secondaryButtonText}>Đóng</Text>
+            <Text style={styles.secondaryButtonText}>Mình đóng lại</Text>
           </Pressable>
         </View>
       </View>
@@ -240,6 +279,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#475569',
+    fontFamily: Fonts.mono,
+    letterSpacing: 1,
   },
   timerCard: {
     backgroundColor: '#FFFFFF',
@@ -249,6 +290,21 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     gap: 12,
+  },
+  breathStage: {
+    width: 190,
+    height: 190,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  breathHalo: {
+    position: 'absolute',
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    borderWidth: 8,
+    borderColor: '#5EEAD4',
+    backgroundColor: '#99F6E4',
   },
   timerCircle: {
     width: 190,
@@ -265,6 +321,8 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#065F46',
     fontVariant: ['tabular-nums'],
+    fontFamily: Fonts.mono,
+    letterSpacing: 1,
   },
   timerCaption: {
     fontSize: 16,

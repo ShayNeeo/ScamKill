@@ -1,6 +1,14 @@
-/* ScamKill PWA service worker — app-shell cache with network fallback. */
-const CACHE = 'scamkill-shell-v1';
-const APP_SHELL = ['/', '/manifest.json', '/assets/images/icon.png'];
+/* ScamKill PWA Service Worker v2 — Richer Install + Offline App Shell */
+const CACHE = 'scamkill-shell-v2';
+const APP_SHELL = [
+  '/',
+  '/?source=pwa',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable-512.png',
+  '/icons/apple-touch-icon.png',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -26,17 +34,17 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(request)
+      const networkFetch = fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response && response.ok) {
             const copy = response.clone();
             caches.open(CACHE).then((cache) => cache.put(request, copy));
           }
           return response;
         })
-        .catch(() => (request.mode === 'navigate' ? caches.match('/') : undefined));
+        .catch(() => cached || (request.mode === 'navigate' ? caches.match('/') : undefined));
+
+      return cached || networkFetch;
     })
   );
 });

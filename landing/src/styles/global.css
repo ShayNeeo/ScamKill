@@ -1,10 +1,24 @@
 @import 'tailwindcss';
 
 @theme {
+  /* Be Vietnam Pro carries headings; Lexend carries long-form Vietnamese body copy;
+     JetBrains Mono is reserved for phone numbers, timers and measured values. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif;
+  --font-display:
+    'Be Vietnam Pro', 'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  /* Serif role retired on this brand: legacy surfaces that still use it get the
+     display face instead of Georgia until they migrate. */
+  --font-serif: 'Be Vietnam Pro', 'Lexend', ui-serif, Georgia, serif;
+
+  /* One authored easing curve, reused everywhere motion is meaningful. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 
   --color-ink-950: #06110f;
   --color-ink-900: #0b1f1c;
@@ -37,25 +51,69 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-600) transparent;
   }
 
   body {
     @apply bg-cream-50 font-sans text-ink-900 antialiased;
+    font-variant-numeric: tabular-nums;
     text-rendering: optimizeLegibility;
-  }
-
-  ::selection {
-    @apply bg-amber-300 text-ink-950;
-  }
-
-  :focus-visible {
-    @apply outline-2 outline-offset-2 outline-jade-600;
+    caret-color: var(--color-jade-600);
   }
 
   h1,
   h2,
-  h3 {
+  h3,
+  h4 {
+    font-family: var(--font-display);
     text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background-color: #0b5d56;
+    color: #faf6ee;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-jade-600);
+    outline-offset: 2px;
+  }
+
+  input,
+  select,
+  textarea {
+    color: var(--color-ink-900);
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+  }
+
+  ::placeholder {
+    color: var(--color-ink-500);
+    opacity: 1;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-ink-600);
+    border: 3px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-jade-600);
   }
 }
 
@@ -63,30 +121,46 @@
   @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
 }
 
-@utility eyebrow {
-  @apply text-xs font-bold uppercase tracking-[0.2em] text-jade-700;
-}
-
-/* Fine-dot texture used behind the dark hero. */
+/* Fine-dot texture used behind the dark surfaces. */
 .dot-grid {
   background-image: radial-gradient(rgba(217, 245, 236, 0.13) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 
-/* Subtle reveal without layout shift; disabled by reduced-motion below. */
+/* Hero entrance: runs once, from an already-visible default. */
 @media (prefers-reduced-motion: no-preference) {
   .reveal {
-    animation: reveal 0.6s ease-out both;
+    animation: reveal 0.7s var(--ease-out-expo) both;
   }
 
   @keyframes reveal {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      translate: 0 14px;
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      translate: 0 0;
+    }
+  }
+
+  /* Section-level reveals follow the scroll instead of firing offscreen. */
+  @supports (animation-timeline: view()) {
+    .rise {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 6% entry 45%;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        translate: 0 18px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
     }
   }
 }
@@ -102,5 +176,6 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

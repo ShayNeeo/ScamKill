@@ -28,6 +28,7 @@ const ogImage = canonical ? new URL('/favicon.svg', canonical).toString() : unde
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#0b1f1c" />
     <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="vi_VN" />
@@ -38,7 +39,14 @@ const ogImage = canonical ? new URL('/favicon.svg', canonical).toString() : unde
     <meta name="twitter:card" content="summary_large_image" />
 
     <meta name="robots" content="index, follow" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://scamkill-pwa.9ez.workers.dev" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700;800&family=Lexend:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+    />
   </head>
   <body>
     <a

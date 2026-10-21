@@ -59,7 +59,7 @@ describe('Structured Study & Micro-Learning Taxonomy', () => {
     const cert = generateCertificate('Bác Nguyễn Văn A', [1, 2, 3]);
     expect(cert.userName).toBe('Bác Nguyễn Văn A');
     expect(cert.totalCompleted).toBe(3);
-    expect(cert.certificateId).toContain('UNESCO-MIL-');
-    expect(cert.verifiedBy).toContain('UNESCO');
+    expect(cert.certificateId).toContain('SCAMKILL-');
+    expect(cert.verifiedBy).toContain('ScamKill');
   });
 });

@@ -4,7 +4,7 @@
 # The crafted message triggers two high-weight red-flag signals
 # (upfront_payment + urgency) in the local mock backend, so the result is
 # deterministically "Rủi ro cao" (high risk).
-appId: com.anonymous.unesco_hackathon_app
+appId: vn.quaddrake.scamkill
 name: Companion Analyze Flow
 tags:
   - e2e

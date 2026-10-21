@@ -1,4 +1,4 @@
-# Contributing to SilverTrust
+# Contributing to ScamKill
 
 ## Quick Start
 

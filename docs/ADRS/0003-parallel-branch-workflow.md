@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-07-15
-- Deciders: SilverTrust Engineering Team
+- Deciders: QuadDraKe Engineering Team
 - Context: 7-WP Expo app for elderly Vietnamese scam protection. Need maintainable workflow for parallel development by multiple agents/people over 50+ year lifespan.
 - Decision: Use git worktrees for true parallel branch isolation, one PR per issue, conventional commits, and strict CI gates.
 - Consequences:
@@ -56,4 +56,3 @@ Git worktrees are a native Git feature (since 2.5, 2015) with zero external depe
 ## References
 
 - [parallel-branch-workflow skill](/.config/opencode/skills/parallel-branch-workflow/SKILL.md)
-- [BACKEND_ARCHITECTURE.md §7.1](../BACKEND_ARCHITECTURE.md#71-branch-workflow)

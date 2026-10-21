@@ -9,7 +9,9 @@
     "scheme": "scamkill",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "vn.quaddrake.scamkill",
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +21,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.unesco_hackathon_app"
+      "package": "vn.quaddrake.scamkill"
     },
     "web": {
       "bundler": "metro",
