@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "scamkill-landing",
+  "account_id": "9df9d709f5cfa6826655e5416b9d6e1e",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "scamkill-db",
+      "database_id": "a68267ea-87fe-40a3-a00b-50a764c71bb9",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "PUBLIC_APP_URL": "https://scamkill-pwa.9ez.workers.dev"
+  }
+}

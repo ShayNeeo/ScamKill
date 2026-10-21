@@ -1,0 +1,34 @@
+{
+  "name": "scamkill-landing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply scamkill-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply scamkill-db --remote",
+    "deploy": "pnpm build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
+    "@astrojs/svelte": "^7.2.5",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^5.18.2",
+    "drizzle-orm": "^0.45.4",
+    "svelte": "^5.57.2",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261021.1",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.151.3"
+  }
+}

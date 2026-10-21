@@ -1,0 +1,457 @@
+import { useState, useEffect } from 'react';
+import { ScrollView, StyleSheet, View, Pressable, TextInput, Modal, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { t } from '@/i18n';
+import { Accessibility } from '@/theme/tokens';
+import { Spacing } from '@/constants/theme';
+import { RiskBadge } from '@/components/risk-badge';
+import { useTheme } from '@/hooks/use-theme';
+import { useLanguageDialect } from '@/i18n/regional';
+import { PageContainer } from '@/components/page-container';
+import { AudioReadback } from '@/components/audio-readback';
+import { DualPane } from '@/components/dual-pane';
+import { useResponsive } from '@/hooks/use-responsive';
+import {
+  OFFICIAL_THREAT_FEEDS,
+  filterThreatAlerts,
+  dispatchAlertToCircle,
+  ThreatAlert,
+  ThreatSource,
+  ThreatCategory,
+  THREAT_SOURCES_VI,
+  THREAT_SOURCES_EN,
+  formatCategory,
+} from '@/lib/threat-feeds';
+
+type SourceFilter = ThreatSource | 'All';
+type CategoryFilter = ThreatCategory | 'All';
+
+export default function AlertsScreen() {
+  const theme = useTheme();
+  const { isWide } = useResponsive();
+
+  const [activeSource, setActiveSource] = useState<SourceFilter>('All');
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('All');
+  const [search, setSearch] = useState('');
+  const [selectedAlert, setSelectedAlert] = useState<ThreatAlert | null>(OFFICIAL_THREAT_FEEDS[0] || null);
+
+  // Dispatch modal state
+  const [dispatchModalAlert, setDispatchModalAlert] = useState<ThreatAlert | null>(null);
+  const [customDispatchNote, setCustomDispatchNote] = useState('');
+  const [dispatchSuccess, setDispatchSuccess] = useState(false);
+
+  const [dialect] = useLanguageDialect();
+  const isEn = dialect === 'en';
+  const availableSources: SourceFilter[] = ['All', ...(isEn ? THREAT_SOURCES_EN : THREAT_SOURCES_VI)];
+
+  useEffect(() => {
+    setActiveSource('All');
+  }, [dialect]);
+
+  const filteredAlerts = filterThreatAlerts(undefined, {
+    source: activeSource,
+    category: activeCategory,
+    search,
+    lang: dialect,
+  });
+
+  const handleDispatchSubmit = () => {
+    if (!dispatchModalAlert) return;
+    dispatchAlertToCircle(dispatchModalAlert, 2, customDispatchNote);
+    setDispatchSuccess(true);
+    setTimeout(() => {
+      setDispatchSuccess(false);
+      setDispatchModalAlert(null);
+      setCustomDispatchNote('');
+    }, 1500);
+  };
+
+  const listPane = (
+    <View style={styles.paneContent}>
+      <View style={[styles.searchBar, { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder }]}>
+        <Ionicons name="search" size={24} color={theme.textSecondary} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.text }]}
+          placeholder={isEn ? 'Search alerts...' : 'Tìm kiếm cảnh báo từ Bộ Công an, Ngân hàng Nhà nước...'}
+          value={search}
+          onChangeText={setSearch}
+          placeholderTextColor={theme.textSecondary}
+          accessibilityLabel={isEn ? 'Search alerts' : 'Tìm kiếm cảnh báo'}
+        />
+      </View>
+
+      {/* Source Filters */}
+      <View style={styles.filterSection}>
+        <ThemedText style={styles.filterSectionTitle}>{isEn ? 'Trusted Sources:' : 'Nguồn dữ liệu uy tín:'}</ThemedText>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+          {availableSources.map((src) => {
+            const isActive = activeSource === src;
+            return (
+              <Pressable
+                key={src}
+                style={[
+                  styles.filterBtn,
+                  {
+                    backgroundColor: isActive ? theme.primaryAction : theme.backgroundElement,
+                    borderColor: isActive ? theme.primaryAction : theme.cardBorder,
+                  },
+                ]}
+                onPress={() => setActiveSource(src)}
+                accessibilityRole="button"
+                accessibilityLabel={`${t('alert.sourceTitle')} ${src === 'All' ? t('alert.allSources') : src}`}>
+                <ThemedText
+                  style={[
+                    styles.filterText,
+                    { color: isActive ? theme.primaryActionText : theme.text, fontWeight: isActive ? '700' : '400' },
+                  ]}>
+                  {src === 'All' ? t('alert.allSources') : src}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Category Filters */}
+      <View style={styles.filterSection}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+          {(['All', 'Fake Authority', 'Scam', 'Banking', 'E-Commerce', 'Health'] as CategoryFilter[]).map((cat) => {
+            const isActive = activeCategory === cat;
+            return (
+              <Pressable
+                key={cat}
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: isActive ? theme.surfaceElevated : theme.surfaceCard,
+                    borderColor: isActive ? theme.primaryAction : theme.cardBorder,
+                  },
+                ]}
+                onPress={() => setActiveCategory(cat)}
+                accessibilityRole="button"
+                accessibilityLabel={isEn ? `Filter: ${cat}` : `Lọc: ${cat === 'All' ? 'Tất cả' : formatCategory(cat, dialect)}`}>
+                <ThemedText
+                  style={[
+                    styles.filterChipText,
+                    { color: isActive ? theme.primaryAction : theme.textSecondary },
+                  ]}>
+                  {cat === 'All' ? t('alert.allCategories') : formatCategory(cat, dialect)}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Alerts List */}
+      <View style={styles.alertsList}>
+        {filteredAlerts.length === 0 ? (
+          <ThemedText style={styles.emptyText}>{t('alert.empty')}</ThemedText>
+        ) : (
+          filteredAlerts.map((alert) => (
+            <ThemedView
+              key={alert.id}
+              type="backgroundElement"
+              style={[
+                styles.alertCard,
+                selectedAlert?.id === alert.id && { borderColor: theme.primaryAction, borderWidth: 2 },
+              ]}>
+              <Pressable
+                onPress={() => setSelectedAlert(alert)}
+                accessibilityRole="button"
+                accessibilityLabel={isEn ? `View alert details: ${alert.title}` : `Xem chi tiết cảnh báo: ${alert.title}`}>
+                <View style={styles.cardHeader}>
+                  <RiskBadge level={alert.risk} />
+                  <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
+                    {formatCategory(alert.category, dialect)}
+                  </ThemedText>
+                </View>
+                <ThemedText style={styles.alertTitle}>{alert.title}</ThemedText>
+                <ThemedText style={styles.alertSummary}>{alert.summary}</ThemedText>
+
+                <View style={styles.cardFooter}>
+                  <Ionicons name="newspaper-outline" size={18} color={theme.textSecondary} />
+                  <ThemedText style={[styles.sourceText, { color: theme.textSecondary }]}>
+                    {isEn ? 'Source: ' : 'Nguồn: '}{alert.source} • {alert.publishedAt}
+                  </ThemedText>
+                </View>
+              </Pressable>
+
+              <Pressable
+                style={[styles.dispatchBtn, { backgroundColor: theme.primaryAction }]}
+                onPress={() => setDispatchModalAlert(alert)}
+                accessibilityRole="button"
+                accessibilityLabel={t('alert.dispatchAlert')}>
+                <Ionicons name="people-outline" size={20} color={theme.primaryActionText} />
+                <ThemedText style={[styles.dispatchBtnText, { color: theme.primaryActionText }]}>
+                  {t('alert.dispatchAlert')}
+                </ThemedText>
+              </Pressable>
+            </ThemedView>
+          ))
+        )}
+      </View>
+    </View>
+  );
+
+  const detailPane = selectedAlert ? (
+    <ThemedView type="backgroundElement" style={styles.detailContainer}>
+      <View style={styles.cardHeader}>
+        <RiskBadge level={selectedAlert.risk} />
+        <ThemedText style={[styles.categoryText, { color: theme.textSecondary }]}>
+          {formatCategory(selectedAlert.category, dialect)}
+        </ThemedText>
+      </View>
+
+      <ThemedText style={styles.detailTitle}>{selectedAlert.title}</ThemedText>
+
+      <AudioReadback
+        text={
+          isEn
+            ? `Warning from ${selectedAlert.source}. ${selectedAlert.title}. Content: ${selectedAlert.summary}`
+            : `Cảnh báo từ ${selectedAlert.source}. ${selectedAlert.title}. Nội dung: ${selectedAlert.summary}`
+        }
+        label={isEn ? 'Read alert out loud' : 'Đọc thông tin cảnh báo'}
+      />
+
+      <ThemedText style={styles.detailSummary}>{selectedAlert.summary}</ThemedText>
+
+      <View style={[styles.verifiedBox, { backgroundColor: theme.riskSafeBg, borderColor: theme.riskSafe }]}>
+        <Ionicons name="checkmark-circle-outline" size={24} color={theme.riskSafe} />
+        <ThemedText style={[styles.verifiedText, { color: theme.riskSafe }]}>
+          {isEn ? 'Verified by: ' : 'Đã xác minh bởi: '}{selectedAlert.verifiedBy}
+        </ThemedText>
+      </View>
+
+      {selectedAlert.affectedDemographic && (
+        <View style={styles.metaRow}>
+          <Ionicons name="people" size={20} color={theme.textSecondary} />
+          <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>
+            {isEn ? 'Targeted demographic: ' : 'Đối tượng bị nhắm tới: '}{selectedAlert.affectedDemographic}
+          </ThemedText>
+        </View>
+      )}
+
+      <Pressable
+        style={[styles.dispatchBtnLarge, { backgroundColor: theme.primaryAction }]}
+        onPress={() => setDispatchModalAlert(selectedAlert)}
+        accessibilityRole="button"
+        accessibilityLabel={t('alert.dispatchAlert')}>
+        <Ionicons name="megaphone" size={24} color={theme.primaryActionText} />
+        <ThemedText style={[styles.dispatchBtnTextLarge, { color: theme.primaryActionText }]}>
+          {isEn ? 'Dispatch Warning to Family Circle' : 'Gửi cảnh báo Khẩn cấp cho Người thân'}
+        </ThemedText>
+      </Pressable>
+    </ThemedView>
+  ) : null;
+
+  return (
+    <PageContainer>
+      {isWide ? (
+        <DualPane master={listPane} detail={detailPane} />
+      ) : (
+        <View style={styles.mobileWrap}>
+          {listPane}
+        </View>
+      )}
+
+      {/* Dispatch Modal */}
+      <Modal
+        visible={!!dispatchModalAlert}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setDispatchModalAlert(null)}>
+        <View style={styles.modalOverlay}>
+          <ThemedView style={[styles.modalContent, { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder }]}>
+            <ThemedText style={styles.modalTitle}>
+              {t('alert.dispatchTitle')}
+            </ThemedText>
+
+            {dispatchSuccess ? (
+              <View style={styles.successBox}>
+                <Ionicons name="checkmark-circle" size={48} color={theme.riskSafe} />
+                <ThemedText style={[styles.successText, { color: theme.riskSafe }]}>
+                  {t('alert.dispatchSuccess')}
+                </ThemedText>
+              </View>
+            ) : (
+              <>
+                <ThemedText style={styles.modalSub}>
+                  {isEn ? `Alert content: "${dispatchModalAlert?.title}"` : `Nội dung cảnh báo: "${dispatchModalAlert?.title}"`}
+                </ThemedText>
+                <ThemedText style={styles.modalNote}>
+                  {isEn
+                    ? '(Sensitive information auto-redacted & secured prior to dispatch)'
+                    : '(Thông tin nhạy cảm đã được hệ thống tự động làm sạch & bảo mật trước khi gửi)'}
+                </ThemedText>
+
+                <TextInput
+                  style={[
+                    styles.modalInput,
+                    { backgroundColor: theme.backgroundElement, borderColor: theme.cardBorder, color: theme.text },
+                  ]}
+                  value={customDispatchNote}
+                  onChangeText={setCustomDispatchNote}
+                  placeholder={t('alert.customNotePlaceholder')}
+                  placeholderTextColor={theme.textSecondary}
+                  multiline
+                  accessibilityLabel="Lời nhắn kèm theo"
+                />
+
+                <View style={styles.modalButtons}>
+                  <Pressable
+                    style={[styles.modalButton, { backgroundColor: theme.backgroundElement }]}
+                    onPress={() => setDispatchModalAlert(null)}>
+                    <ThemedText style={[styles.cancelText, { color: theme.text }]}>{t('common.cancel')}</ThemedText>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.modalButton, { backgroundColor: theme.primaryAction }]}
+                    onPress={handleDispatchSubmit}>
+                    <ThemedText style={[styles.confirmText, { color: theme.primaryActionText }]}>
+                      {t('alert.sendNow')}
+                    </ThemedText>
+                  </Pressable>
+                </View>
+              </>
+            )}
+          </ThemedView>
+        </View>
+      </Modal>
+    </PageContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  paneContent: { flex: 1, gap: Spacing.three },
+  mobileWrap: { flex: 1, gap: Spacing.four },
+  title: { fontSize: Accessibility.fontSize.title, marginBottom: Spacing.one },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.three,
+    height: 56,
+    borderWidth: 1,
+    gap: Spacing.two,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: Accessibility.fontSize.normal,
+  },
+  filterSection: { gap: Spacing.one },
+  filterSectionTitle: { fontSize: Accessibility.fontSize.small, fontWeight: '700' },
+  filterScroll: { marginVertical: Spacing.one },
+  filterBtn: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.five,
+    borderWidth: 1,
+    marginRight: Spacing.two,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  filterText: { fontSize: Accessibility.fontSize.normal },
+  filterChip: {
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    marginRight: Spacing.two,
+  },
+  filterChipText: { fontSize: Accessibility.fontSize.small, fontWeight: '600' },
+  alertsList: { gap: Spacing.three },
+  alertCard: {
+    padding: Spacing.three,
+    borderRadius: Spacing.four,
+    gap: Spacing.two,
+  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  categoryText: { fontSize: Accessibility.fontSize.small, fontStyle: 'italic' },
+  alertTitle: { fontSize: Accessibility.fontSize.large, lineHeight: 30, fontWeight: '700' },
+  alertSummary: { fontSize: Accessibility.fontSize.normal, lineHeight: 26 },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one, marginTop: Spacing.one },
+  sourceText: { fontSize: Accessibility.fontSize.small },
+  dispatchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: Spacing.three,
+    marginTop: Spacing.one,
+    minHeight: 44,
+  },
+  dispatchBtnText: { fontSize: Accessibility.fontSize.normal, fontWeight: '700' },
+  emptyText: { fontSize: Accessibility.fontSize.normal, textAlign: 'center', marginVertical: Spacing.four },
+  detailContainer: {
+    padding: Spacing.four,
+    borderRadius: Spacing.four,
+    gap: Spacing.three,
+  },
+  detailTitle: { fontSize: Accessibility.fontSize.title, lineHeight: 42, fontWeight: '700' },
+  detailSummary: { fontSize: Accessibility.fontSize.normal, lineHeight: 28 },
+  verifiedBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: 1,
+  },
+  verifiedText: { fontSize: Accessibility.fontSize.normal, fontWeight: '600', flex: 1 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  metaText: { fontSize: Accessibility.fontSize.small },
+  dispatchBtnLarge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: Spacing.four,
+    marginTop: Spacing.two,
+    minHeight: Accessibility.minTouchSize,
+  },
+  dispatchBtnTextLarge: { fontSize: Accessibility.fontSize.large, fontWeight: '700' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.four,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 500,
+    borderRadius: Spacing.four,
+    padding: Spacing.four,
+    gap: Spacing.three,
+    borderWidth: 1,
+  },
+  modalTitle: { fontSize: Accessibility.fontSize.large, fontWeight: '700', textAlign: 'center' },
+  modalSub: { fontSize: Accessibility.fontSize.normal, fontWeight: '600' },
+  modalNote: { fontSize: Accessibility.fontSize.small, fontStyle: 'italic', color: '#888' },
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: Spacing.two,
+    padding: Spacing.three,
+    fontSize: Accessibility.fontSize.normal,
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  modalButtons: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two },
+  modalButton: {
+    flex: 1,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: Accessibility.minTouchSize,
+  },
+  cancelText: { fontSize: Accessibility.fontSize.normal, fontWeight: '600' },
+  confirmText: { fontSize: Accessibility.fontSize.normal, fontWeight: '700' },
+  successBox: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
+  successText: { fontSize: Accessibility.fontSize.large, fontWeight: '700', textAlign: 'center' },
+});

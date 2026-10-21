@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "ScamKill",
+    "slug": "scamkill",
+    "version": "1.0.0",
+    "description": "Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "scamkill",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/expo.icon"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.unesco_hackathon_app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "ScamKill — Lá chắn chống lừa đảo",
+      "shortName": "ScamKill",
+      "themeColor": "#0F766E",
+      "backgroundColor": "#F8FAFC"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#208AEF",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ],
+      "expo-status-bar"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

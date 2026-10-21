@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+landing/node_modules/
+
+# Expo & Web Build Outputs
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+
+# Astro & Cloudflare Wrangler / Local D1 State
+landing/dist/
+landing/.astro/
+landing/.wrangler/
+.wrangler/
+
+# Native & Signing
+.kotlin/
+/ios
+/android
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+# Logs & Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.*
+*.tsbuildinfo
+
+# Environment & Secrets (NEVER commit real tokens)
+.env
+.env.*
+!.env.example
+!landing/.env.example
+
+# Agent / Harness / Local Workspace State
+.agent/
+.claude/
+.opencode/
+.opencode-state/
+.serena/
+.tokensave/
+.loop-state/
+.eas/
+.maestro/
+.idea/
+.DS_Store
+
+# Coverage & Test Artifacts
+coverage/
+playwright-report/
+test-results/
+
+# Local Scratch & Unrelated Drafts
+UNESCO_Requirement.pdf
+An_Tam_So_UNESCO_Youth_Hackathon_Report.md
+IDEA CHỐT STARTUP.md
+session-*.md
+extract_pdf.js
+temp_extract.js
+package-lock.json
+example

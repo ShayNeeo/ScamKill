@@ -1,0 +1,449 @@
+import { useState } from 'react';
+import { StyleSheet, View, Pressable, ScrollView, Modal, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { t } from '@/i18n';
+import { Accessibility } from '@/theme/tokens';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { PageContainer } from '@/components/page-container';
+import { AudioReadback } from '@/components/audio-readback';
+import { DualPane } from '@/components/dual-pane';
+import { useResponsive } from '@/hooks/use-responsive';
+import {
+  TAXONOMY_MODULES,
+  STRUCTURED_LESSONS,
+  getTaxonomyModules,
+  getLessonsByModule,
+  calculateProgress,
+  evaluateBadges,
+  generateCertificate,
+  ModuleCategory,
+  MicroLesson,
+  DigitalCertificate,
+} from '@/lib/learning-taxonomy';
+import { useLanguageDialect } from '@/i18n/regional';
+
+type ActiveModule = ModuleCategory | 'all';
+
+export default function LearningScreen() {
+  const theme = useTheme();
+  const { isWide } = useResponsive();
+  const [dialect] = useLanguageDialect();
+  const isEn = dialect === 'en';
+
+  const modules = getTaxonomyModules(dialect);
+  const [activeModule, setActiveModule] = useState<ActiveModule>('all');
+  const [completedLessons, setCompletedLessons] = useState<number[]>([1]);
+  const lessons = getLessonsByModule(activeModule, dialect);
+  const [selectedLessonId, setSelectedLessonId] = useState<number>(1);
+  const currentSelectedLesson = lessons.find((l) => l.id === selectedLessonId) || lessons[0];
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [certificate, setCertificate] = useState<DigitalCertificate | null>(null);
+
+  const { percent, completed, total } = calculateProgress(completedLessons);
+  const badges = evaluateBadges(completedLessons, dialect);
+
+  const handleQuiz = (lessonId: number, optionIndex: number, correctIndex: number) => {
+    if (optionIndex === correctIndex) {
+      if (!completedLessons.includes(lessonId)) {
+        setCompletedLessons((prev) => [...prev, lessonId]);
+      }
+      Alert.alert(
+        isEn ? 'Correct! 🎉' : 'Chính xác! 🎉',
+        t('learning.quizCorrect')
+      );
+    } else {
+      Alert.alert(
+        isEn ? 'Incorrect' : 'Chưa chính xác',
+        t('learning.quizIncorrect')
+      );
+    }
+  };
+
+  const handleShowCert = () => {
+    const userName = isEn ? 'Senior Companion User' : 'Cô/Chú An Tâm';
+    const cert = generateCertificate(userName, completedLessons, dialect);
+    setCertificate(cert);
+    setShowCertificateModal(true);
+  };
+
+  const masterPane = (
+    <View style={styles.paneContent}>
+      {/* Progress Bar Card */}
+      <ThemedView type="backgroundElement" style={styles.progressCard}>
+        <View style={styles.progressHeader}>
+          <Ionicons name="ribbon-outline" size={28} color={theme.primaryAction} />
+          <View style={{ flex: 1 }}>
+            <ThemedText style={styles.progressTitle}>
+              {isEn ? 'Digital Safety Learning Progress' : 'Tiến độ học tập an toàn'}
+            </ThemedText>
+
+            <ThemedText style={[styles.progressSubtitle, { color: theme.textSecondary }]}>
+              {isEn
+                ? `Completed ${completed}/${total} lessons (${percent}%)`
+                : `Đã hoàn thành ${completed}/${total} bài học (${percent}%)`}
+            </ThemedText>
+          </View>
+        </View>
+
+        <View style={[styles.progressBarBg, { backgroundColor: theme.cardBorder }]}>
+          <View
+            style={[
+              styles.progressBarFill,
+              { width: `${percent}%`, backgroundColor: theme.primaryAction },
+            ]}
+          />
+        </View>
+
+        <Pressable
+          style={[styles.badgeBtn, { backgroundColor: theme.primaryAction }]}
+          onPress={handleShowCert}
+          accessibilityRole="button"
+          accessibilityLabel={isEn ? 'Certificates & Badges Earned' : 'Bằng khen & Huy hiệu đã đạt'}>
+          <Ionicons name="trophy-outline" size={20} color={theme.primaryActionText} />
+          <ThemedText style={[styles.badgeBtnText, { color: theme.primaryActionText }]}>
+            {isEn ? 'Certificates & Badges Earned' : 'Bằng khen & Huy hiệu đã đạt'}
+          </ThemedText>
+        </Pressable>
+      </ThemedView>
+
+      {/* Taxonomy Module Filters */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.moduleScroll}>
+        <Pressable
+          style={[
+            styles.moduleChip,
+            {
+              backgroundColor: activeModule === 'all' ? theme.primaryAction : theme.surfaceCard,
+              borderColor: activeModule === 'all' ? theme.primaryAction : theme.cardBorder,
+            },
+          ]}
+          onPress={() => setActiveModule('all')}
+          accessibilityRole="button">
+          <ThemedText
+            style={[
+              styles.moduleChipText,
+              { color: activeModule === 'all' ? theme.primaryActionText : theme.text },
+            ]}>
+            {isEn ? 'All Modules' : 'Tất cả bài học'}
+          </ThemedText>
+        </Pressable>
+
+        {modules.map((mod) => {
+          const isActive = activeModule === mod.id;
+          return (
+            <Pressable
+              key={mod.id}
+              style={[
+                styles.moduleChip,
+                {
+                  backgroundColor: isActive ? theme.primaryAction : theme.surfaceCard,
+                  borderColor: isActive ? theme.primaryAction : theme.cardBorder,
+                },
+              ]}
+              onPress={() => setActiveModule(mod.id)}
+              accessibilityRole="button">
+              <Ionicons
+                name={mod.icon as any}
+                size={18}
+                color={isActive ? theme.primaryActionText : theme.primaryAction}
+              />
+              <ThemedText
+                style={[
+                  styles.moduleChipText,
+                  { color: isActive ? theme.primaryActionText : theme.text },
+                ]}>
+                {mod.title}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
+      {/* Lessons List */}
+      <View style={styles.lessonsList}>
+        {lessons.map((lesson) => {
+          const isDone = completedLessons.includes(lesson.id);
+          const isSelected = currentSelectedLesson?.id === lesson.id;
+          return (
+            <Pressable
+              key={lesson.id}
+              onPress={() => setSelectedLessonId(lesson.id)}
+              accessibilityRole="button">
+              <ThemedView
+                type="backgroundElement"
+                style={[
+                  styles.lessonCard,
+                  isSelected && { borderColor: theme.primaryAction, borderWidth: 2 },
+                ]}>
+                <View style={styles.lessonHeader}>
+                  <Ionicons name="book" size={28} color={theme.primaryAction} />
+                  <ThemedText style={styles.lessonTitle}>{lesson.title}</ThemedText>
+                  {isDone && <Ionicons name="checkmark-circle" size={28} color={theme.riskSafe} />}
+                </View>
+                <ThemedText style={[styles.summaryText, { color: theme.textSecondary }]}>
+                  {lesson.summary}
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+
+  const detailPane = currentSelectedLesson ? (
+    <ThemedView type="backgroundElement" style={styles.detailCard}>
+      <View style={styles.lessonHeader}>
+        <Ionicons name="book-outline" size={32} color={theme.primaryAction} />
+        <ThemedText style={styles.detailLessonTitle}>{currentSelectedLesson.title}</ThemedText>
+      </View>
+
+      <AudioReadback
+        text={
+          isEn
+            ? `Lesson: ${currentSelectedLesson.title}. Key takeaways: ${currentSelectedLesson.points.join('. ')}`
+            : `Bài học: ${currentSelectedLesson.title}. Gợi ý quan trọng: ${currentSelectedLesson.points.join('. ')}`
+        }
+        label={isEn ? 'Listen to lesson' : 'Nghe bài học'}
+      />
+
+      <View style={styles.points}>
+        <ThemedText style={styles.pointsTitle}>
+          {isEn ? 'Key Safety Reminders for Seniors:' : 'Các lưu ý quan trọng cho người cao tuổi:'}
+        </ThemedText>
+        {currentSelectedLesson.points.map((p, i) => (
+          <View key={i} style={styles.pointRow}>
+            <ThemedText style={[styles.bullet, { color: theme.primaryAction }]}>•</ThemedText>
+            <ThemedText style={styles.pointText}>{p}</ThemedText>
+          </View>
+        ))}
+      </View>
+
+      <View style={[styles.quizBox, { borderTopColor: theme.cardBorder }]}>
+        <ThemedText style={styles.quizQuestion}>{currentSelectedLesson.quiz.question}</ThemedText>
+        {currentSelectedLesson.quiz.options.map((opt, idx) => (
+          <Pressable
+            key={idx}
+            style={[styles.optionBtn, { backgroundColor: theme.surfaceCard, borderColor: theme.primaryAction }]}
+            onPress={() => handleQuiz(currentSelectedLesson.id, idx, currentSelectedLesson.quiz.correctIndex)}
+            accessibilityRole="button">
+            <ThemedText style={styles.optionText}>{opt}</ThemedText>
+          </Pressable>
+        ))}
+
+        <View style={[styles.explanationBox, { backgroundColor: theme.riskSafeBg, borderColor: theme.riskSafe }]}>
+          <Ionicons name="information-circle-outline" size={20} color={theme.riskSafe} />
+          <ThemedText style={[styles.explanationText, { color: theme.riskSafe }]}>
+            {isEn ? 'Explanation: ' : 'Giải thích: '}{currentSelectedLesson.quiz.explanation}
+          </ThemedText>
+        </View>
+      </View>
+    </ThemedView>
+  ) : null;
+
+  return (
+    <PageContainer>
+      {isWide ? (
+        <DualPane master={masterPane} detail={detailPane} />
+      ) : (
+        <View style={styles.mobileWrap}>
+          {masterPane}
+          {detailPane}
+        </View>
+      )}
+
+      {/* Badges & Certificate Modal */}
+      <Modal
+        visible={showCertificateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCertificateModal(false)}>
+        <View style={styles.modalOverlay}>
+          <ThemedView style={[styles.modalContent, { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder }]}>
+            <View style={styles.certHeader}>
+              <Ionicons name="ribbon" size={48} color={theme.primaryAction} />
+              <ThemedText style={styles.certTitle}>
+                {isEn ? 'Digital Certificates & Badges' : 'Bằng khen & Huy hiệu Số'}
+              </ThemedText>
+              <ThemedText style={[styles.certSub, { color: theme.textSecondary }]}>
+                {isEn ? 'UNESCO MIL Digital Inclusion Program' : 'Chương trình UNESCO MIL Digital Inclusion'}
+              </ThemedText>
+            </View>
+
+            {/* Badges Grid */}
+            <ThemedText style={styles.badgeSectionTitle}>
+              {isEn ? 'Unlocked Badges:' : 'Huy hiệu đã mở khóa:'}
+            </ThemedText>
+            <View style={styles.badgeGrid}>
+              {badges.map((b) => (
+                <View
+                  key={b.id}
+                  style={[
+                    styles.badgeCard,
+                    {
+                      backgroundColor: b.unlocked ? theme.riskSafeBg : theme.backgroundElement,
+                      borderColor: b.unlocked ? theme.riskSafe : theme.cardBorder,
+                      opacity: b.unlocked ? 1 : 0.5,
+                    },
+                  ]}>
+                  <Ionicons
+                    name={b.icon as any}
+                    size={28}
+                    color={b.unlocked ? theme.riskSafe : theme.textSecondary}
+                  />
+                  <ThemedText style={[styles.badgeName, { color: b.unlocked ? theme.text : theme.textSecondary }]}>
+                    {b.name}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+
+            {/* Certificate Box */}
+            {certificate && (
+              <View style={[styles.certificateBox, { backgroundColor: theme.surfaceElevated, borderColor: theme.primaryAction }]}>
+                <ThemedText style={[styles.certSubject, { color: theme.primaryAction }]}>
+                  {isEn ? 'DIGITAL SAFETY SKILLS CERTIFICATE' : 'CHỨNG NHẬN HOÀN THÀNH KỸ NĂNG AN TÂM SỐ'}
+                </ThemedText>
+                <ThemedText style={styles.certName}>{certificate.userName}</ThemedText>
+                <ThemedText style={styles.certDesc}>
+                  {isEn
+                    ? `Completed ${certificate.totalCompleted} digital safety micro-lessons (${certificate.scorePercent}%)`
+                    : `Đã hoàn thành ${certificate.totalCompleted} bài học an toàn thông tin (${certificate.scorePercent}%)`}
+                </ThemedText>
+                <ThemedText style={[styles.certFooter, { color: theme.textSecondary }]}>
+                  {isEn ? 'Verification ID: ' : 'Mã xác thực: '}{certificate.certificateId}
+                </ThemedText>
+              </View>
+            )}
+
+            <Pressable
+              style={[styles.closeBtn, { backgroundColor: theme.primaryAction }]}
+              onPress={() => setShowCertificateModal(false)}>
+              <ThemedText style={[styles.closeBtnText, { color: theme.primaryActionText }]}>{t('common.close')}</ThemedText>
+            </Pressable>
+          </ThemedView>
+        </View>
+      </Modal>
+    </PageContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  paneContent: { flex: 1, gap: Spacing.three },
+  mobileWrap: { flex: 1, gap: Spacing.four },
+  title: { fontSize: Accessibility.fontSize.title, marginBottom: Spacing.one },
+  progressCard: {
+    padding: Spacing.three,
+    borderRadius: Spacing.four,
+    gap: Spacing.two,
+  },
+  progressHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  progressBarBg: { height: 12, borderRadius: 6, width: '100%', overflow: 'hidden' },
+  progressBarFill: { height: '100%', borderRadius: 6 },
+  progressTitle: { fontSize: Accessibility.fontSize.large, lineHeight: 30, fontWeight: '700' },
+  progressSubtitle: { fontSize: Accessibility.fontSize.small, lineHeight: 22 },
+  badgeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: Spacing.three,
+    marginTop: Spacing.one,
+  },
+  badgeBtnText: { fontSize: Accessibility.fontSize.normal, fontWeight: '700' },
+  moduleScroll: { marginVertical: Spacing.one },
+  moduleChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.five,
+    borderWidth: 1,
+    marginRight: Spacing.two,
+    minHeight: 44,
+  },
+  moduleChipText: { fontSize: Accessibility.fontSize.normal, fontWeight: '600' },
+  lessonsList: { gap: Spacing.three },
+  lessonCard: { padding: Spacing.three, borderRadius: Spacing.four, gap: Spacing.two },
+  lessonHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.two },
+  lessonTitle: { flex: 1, fontSize: Accessibility.fontSize.large, lineHeight: 30, fontWeight: '700' },
+  summaryText: { fontSize: Accessibility.fontSize.small, lineHeight: 22 },
+  detailCard: { padding: Spacing.four, borderRadius: Spacing.four, gap: Spacing.three },
+  detailLessonTitle: { flex: 1, fontSize: Accessibility.fontSize.title, lineHeight: 42, fontWeight: '700' },
+  pointsTitle: { fontSize: Accessibility.fontSize.normal, fontWeight: '700', marginBottom: Spacing.one },
+  points: { gap: Spacing.one },
+  pointRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'flex-start' },
+  bullet: { fontSize: Accessibility.fontSize.normal },
+  pointText: { flex: 1, fontSize: Accessibility.fontSize.normal, lineHeight: 26 },
+  quizBox: { marginTop: Spacing.two, gap: Spacing.two, borderTopWidth: 1, paddingTop: Spacing.three },
+  quizQuestion: { fontSize: Accessibility.fontSize.normal, fontWeight: '700', marginBottom: Spacing.one },
+  optionBtn: {
+    borderWidth: 2,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+  },
+  optionText: { fontSize: Accessibility.fontSize.normal, textAlign: 'center' },
+  explanationBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    padding: Spacing.two,
+    borderRadius: Spacing.two,
+    borderWidth: 1,
+    marginTop: Spacing.one,
+  },
+  explanationText: { fontSize: Accessibility.fontSize.small, flex: 1 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.four,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 550,
+    borderRadius: Spacing.four,
+    padding: Spacing.four,
+    gap: Spacing.three,
+    borderWidth: 1,
+  },
+  certHeader: { alignItems: 'center', gap: Spacing.one },
+  certTitle: { fontSize: Accessibility.fontSize.large, fontWeight: '700' },
+  certSub: { fontSize: Accessibility.fontSize.small },
+  badgeSectionTitle: { fontSize: Accessibility.fontSize.normal, fontWeight: '700' },
+  badgeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  badgeCard: {
+    padding: Spacing.two,
+    borderRadius: Spacing.three,
+    borderWidth: 1,
+    alignItems: 'center',
+    width: '47%',
+    gap: Spacing.one,
+  },
+  badgeName: { fontSize: Accessibility.fontSize.small, fontWeight: '600', textAlign: 'center' },
+  certificateBox: {
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: 2,
+    alignItems: 'center',
+    gap: Spacing.one,
+    marginTop: Spacing.two,
+  },
+  certSubject: { fontSize: Accessibility.fontSize.small, fontWeight: '700', textAlign: 'center' },
+  certName: { fontSize: Accessibility.fontSize.title, fontWeight: '700' },
+  certDesc: { fontSize: Accessibility.fontSize.small, textAlign: 'center' },
+  certFooter: { fontSize: Accessibility.fontSize.small, fontStyle: 'italic' },
+  closeBtn: {
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    alignItems: 'center',
+    minHeight: Accessibility.minTouchSize,
+  },
+  closeBtnText: { fontSize: Accessibility.fontSize.normal, fontWeight: '700' },
+});

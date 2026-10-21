@@ -1,0 +1,18 @@
+# The landing app is a standalone pnpm project so it can be installed and
+# deployed independently from the Expo app at the repo root.
+packages: []
+
+# Dependency postinstall hooks. esbuild/workerd need theirs to place the right
+# platform binary; sharp is optional for this landing page (no Astro <Image>)
+# and its source build is not required, so its hook is denied.
+allowBuilds:
+  esbuild: true
+  workerd: true
+  unrs-resolver: true
+  sharp: false
+
+strictDepBuilds: false
+
+# The MVP pins fast-moving tooling (new adapter/wrangler/workers-types releases)
+# and must install reproducibly for the demo; the lockfile is committed.
+minimumReleaseAge: 0

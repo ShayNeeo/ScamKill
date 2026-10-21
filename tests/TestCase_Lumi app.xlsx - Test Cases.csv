@@ -1,0 +1,157 @@
+TEST CASE - ỨNG DỤNG TRỢ LÝ AI VỀ NĂNG LỰC THÔNG TIN & TRUYỀN THÔNG (MIL) CHO NGƯỜI CAO TUỔI,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+,,,,,,,,,,,,,
+Module Name,Test Case ID,Requirement ID,Test Priority,Test Case Description,Test Objective,Pre-condition,Test Data,Test Steps,Expected Results,Actual Results,Status,Post-condition,Notes/Comments/Questions
+Đăng nhập/Đăng ký,TC_FR01_01,FR01,High,Kiểm thử đăng ký tài khoản mới bằng số điện thoại và xác thực OTP hợp lệ,Đảm bảo người dùng có thể đăng ký tài khoản thành công với OTP đúng,Người dùng chưa có tài khoản trong hệ thống,SĐT: 0901234567; OTP: 123456 (hợp lệ),"1. Mở app, chọn 'Đăng ký'
+2. Nhập số điện thoại
+3. Nhấn 'Nhận mã OTP'
+4. Nhập mã OTP đúng
+5. Nhấn 'Xác nhận'","Tài khoản được tạo thành công, hệ thống chuyển đến màn hình chính/onboarding",,Pending,"Tài khoản mới tồn tại trong hệ thống, người dùng ở trạng thái đã đăng nhập","Ưu tiên cỡ chữ lớn, nút bấm rõ ràng phù hợp NCT"
+,TC_FR01_02,FR01,High,Kiểm thử đăng nhập với mã OTP sai,Đảm bảo hệ thống từ chối đăng nhập khi OTP không đúng và hiển thị thông báo lỗi dễ hiểu,"Người dùng đã có tài khoản, đang ở màn hình nhập OTP",SĐT: 0901234567; OTP nhập: 000000 (sai),"1. Nhập số điện thoại đã đăng ký
+2. Nhấn 'Nhận mã OTP'
+3. Nhập mã OTP sai
+4. Nhấn 'Xác nhận'","Hệ thống hiển thị thông báo lỗi rõ ràng bằng ngôn ngữ đơn giản, không cho đăng nhập, cho phép nhập lại",,Pending,Người dùng vẫn ở trạng thái chưa đăng nhập,
+,TC_FR01_03,FR01,Medium,Kiểm thử đăng ký với số điện thoại đã tồn tại trong hệ thống,Đảm bảo hệ thống ngăn tạo trùng tài khoản và hướng dẫn người dùng đăng nhập thay vì đăng ký,Số điện thoại 0901234567 đã được đăng ký trước đó,SĐT: 0901234567 (đã tồn tại),"1. Chọn 'Đăng ký'
+2. Nhập số điện thoại đã tồn tại
+3. Nhấn 'Nhận mã OTP'",Hệ thống thông báo số điện thoại đã được sử dụng và đề xuất chuyển sang đăng nhập,,Pending,Không tạo tài khoản trùng lặp,
+Quản lý thông tin cá nhân,TC_FR02_01,FR02,High,"Kiểm thử cập nhật thông tin cá nhân hợp lệ (họ tên, ngày sinh, người thân liên hệ khẩn cấp)",Đảm bảo người dùng cập nhật được thông tin cá nhân chính xác,Người dùng đã đăng nhập thành công,Họ tên: 'Nguyễn Văn A'; Ngày sinh: 01/01/1955; Người liên hệ khẩn cấp: 'Nguyễn Văn B - 0912345678',"1. Vào mục 'Thông tin cá nhân'
+2. Nhấn 'Chỉnh sửa'
+3. Cập nhật các trường thông tin
+4. Nhấn 'Lưu'","Thông tin được lưu thành công, hiển thị thông báo xác nhận, dữ liệu mới hiển thị đúng khi mở lại màn hình",,Pending,Thông tin cá nhân được cập nhật trong hệ thống,
+,TC_FR02_02,FR02,Medium,Kiểm thử cập nhật thông tin cá nhân với dữ liệu không hợp lệ,Đảm bảo hệ thống kiểm tra tính hợp lệ của dữ liệu đầu vào,"Người dùng đã đăng nhập thành công, đang ở màn hình chỉnh sửa thông tin",Số điện thoại người thân: 'abc123' (không hợp lệ); Ngày sinh: 32/13/1955 (không hợp lệ),"1. Vào mục 'Thông tin cá nhân' > 'Chỉnh sửa'
+2. Nhập dữ liệu không hợp lệ vào các trường
+3. Nhấn 'Lưu'","Hệ thống hiển thị cảnh báo lỗi cụ thể tại từng trường, không lưu dữ liệu sai",,Pending,Thông tin cá nhân giữ nguyên như trước khi chỉnh sửa,
+Cài đặt trợ năng,TC_FR03_01,FR03,Medium,Kiểm thử điều chỉnh cỡ chữ và độ tương phản,Đảm bảo người dùng có thể tùy chỉnh giao diện phù hợp với thị lực suy giảm,"Người dùng đã đăng nhập, vào màn hình 'Cài đặt trợ năng'",Cỡ chữ: Lớn (Large); Độ tương phản: Cao (High contrast),"1. Vào 'Cài đặt' > 'Trợ năng'
+2. Chọn cỡ chữ Lớn
+3. Bật độ tương phản cao
+4. Quay lại màn hình chính","Toàn bộ giao diện áp dụng cỡ chữ và độ tương phản mới ngay lập tức, không cần khởi động lại app",,Pending,Cài đặt trợ năng được lưu cho lần sử dụng sau,
+,TC_FR03_02,FR03,Medium,Kiểm thử điều chỉnh tốc độ giọng đọc,Đảm bảo tốc độ đọc màn hình có thể tùy chỉnh phù hợp khả năng nghe của NCT,Người dùng đã bật tính năng đọc màn hình,Tốc độ giọng đọc: Chậm,"1. Vào 'Cài đặt' > 'Trợ năng' > 'Tốc độ giọng đọc'
+2. Chọn mức 'Chậm'
+3. Nhấn nghe thử","Giọng đọc phát ra với tốc độ chậm như đã chọn, rõ ràng, dễ nghe",,Pending,Cài đặt tốc độ giọng đọc được áp dụng cho toàn bộ ứng dụng,
+Điều khiển bằng giọng nói,TC_FR04_01,FR04,Medium,Kiểm thử ra lệnh điều hướng ứng dụng bằng giọng nói rõ ràng,Đảm bảo hệ thống nhận diện đúng lệnh giọng nói để điều hướng,"Người dùng đã bật tính năng điều khiển giọng nói, môi trường ít tiếng ồn",Câu lệnh: 'Mở phần cảnh báo lừa đảo',"1. Nhấn biểu tượng micro
+2. Nói câu lệnh rõ ràng
+3. Chờ hệ thống xử lý",Hệ thống nhận diện đúng lệnh và điều hướng đến màn hình 'Scam Alert Center',,Pending,Ứng dụng ở màn hình được yêu cầu,
+,TC_FR04_02,FR04,Medium,Kiểm thử khi hệ thống không nhận diện được giọng nói (giọng địa phương/nhiễu âm),Đảm bảo hệ thống xử lý phù hợp khi không nhận diện được lệnh,Người dùng đã bật tính năng điều khiển giọng nói,Câu lệnh không rõ hoặc bị nhiễu âm thanh nền lớn,"1. Nhấn biểu tượng micro
+2. Nói lệnh trong môi trường ồn/giọng không rõ
+3. Chờ hệ thống xử lý",Hệ thống thông báo không nhận diện được và đề xuất người dùng nói lại hoặc chuyển sang nhập tay,,Pending,Ứng dụng không thực hiện hành động sai với lệnh không nhận diện được,
+Thông báo & nhắc nhở,TC_FR05_01,FR05,Medium,Kiểm thử nhận thông báo khi có cảnh báo lừa đảo mới,Đảm bảo người dùng được thông báo kịp thời về cảnh báo lừa đảo mới,"Người dùng đã bật thông báo, hệ thống vừa cập nhật cảnh báo lừa đảo mới",Cảnh báo mới: 'Lừa đảo giả danh công an gọi điện',"1. Hệ thống Scam Alert Center cập nhật cảnh báo mới
+2. Quan sát thông báo trên app/điện thoại","Người dùng nhận được thông báo đẩy (push notification) đúng nội dung, nhấn vào mở đúng chi tiết cảnh báo",,Pending,Thông báo được đánh dấu đã đọc sau khi xem,
+,TC_FR05_02,FR05,Medium,Kiểm thử nhắc nhở bài học MIL chưa hoàn thành,Đảm bảo hệ thống nhắc người dùng hoàn thành bài học còn dang dở,Người dùng có bài học MIL đang ở trạng thái chưa hoàn thành quá 3 ngày,Bài học: 'Nhận diện cuộc gọi giả danh ngân hàng' (chưa hoàn thành),"1. Chờ đến thời điểm hệ thống gửi nhắc nhở định kỳ
+2. Quan sát thông báo","Người dùng nhận được thông báo nhắc nhở hoàn thành bài học, nhấn vào chuyển đến đúng bài học",,Pending,,
+Chuyển đổi ngôn ngữ,TC_FR06_01,FR06,Medium,Kiểm thử chuyển đổi giao diện từ Tiếng Việt sang Tiếng Anh,Đảm bảo toàn bộ nội dung giao diện chuyển đổi đúng ngôn ngữ đã chọn,"Người dùng đã đăng nhập, giao diện đang ở Tiếng Việt",Ngôn ngữ chọn: English,"1. Vào 'Cài đặt' > 'Ngôn ngữ'
+2. Chọn 'English'
+3. Xác nhận","Toàn bộ giao diện, hướng dẫn, bài học chuyển sang Tiếng Anh; không còn sót nội dung Tiếng Việt",,Pending,Ngôn ngữ English được lưu làm mặc định cho các lần sử dụng sau,
+,TC_FR06_02,FR06,Medium,Kiểm thử chuyển đổi giao diện từ Tiếng Anh về Tiếng Việt,Đảm bảo chuyển đổi ngôn ngữ hoạt động hai chiều và không mất dữ liệu,Người dùng đang sử dụng giao diện Tiếng Anh,Ngôn ngữ chọn: Tiếng Việt,"1. Vào 'Settings' > 'Language'
+2. Chọn 'Tiếng Việt'
+3. Xác nhận","Giao diện chuyển hoàn toàn về Tiếng Việt, dữ liệu người dùng (lịch sử, cài đặt) không bị mất",,Pending,Ngôn ngữ Tiếng Việt được lưu làm mặc định,
+AI Decision Companion,TC_FR07_01,FR07,High,Kiểm thử gửi văn bản để AI phân tích độ tin cậy,Đảm bảo người dùng gửi được nội dung văn bản và nhận kết quả phân tích,"Người dùng đã đăng nhập, ở màn hình AI Decision Companion","Văn bản: 'Chúc mừng bạn đã trúng thưởng 50 triệu đồng, vui lòng chuyển phí nhận thưởng 500.000đ'","1. Nhấn 'Gửi nội dung để phân tích'
+2. Dán/nhập văn bản
+3. Nhấn 'Phân tích'","Hệ thống trả về kết quả phân tích trong thời gian hợp lý (<10s), có đánh giá mức độ tin cậy rõ ràng",,Pending,Kết quả phân tích được lưu vào lịch sử,
+,TC_FR07_02,FR07,High,Kiểm thử gửi hình ảnh để AI phân tích,Đảm bảo hệ thống xử lý được nội dung dạng hình ảnh,"Người dùng đã đăng nhập, ở màn hình AI Decision Companion",Hình ảnh: ảnh chụp màn hình tin nhắn lừa đảo giả danh ngân hàng (định dạng .jpg),"1. Nhấn 'Gửi nội dung để phân tích'
+2. Chọn 'Tải ảnh lên'
+3. Chọn ảnh từ thư viện
+4. Nhấn 'Phân tích'",Hệ thống nhận diện được nội dung trong ảnh và trả về kết quả phân tích phù hợp,,Pending,Kết quả phân tích kèm ảnh được lưu vào lịch sử,
+,TC_FR07_03,FR07,High,Kiểm thử gửi đường link nghi ngờ để AI phân tích,Đảm bảo hệ thống phân tích được nội dung từ đường link,"Người dùng đã đăng nhập, có đường link nghi ngờ",Link: 'http://vietin-bank-uudai.xyz/nhanthuong',"1. Nhấn 'Gửi nội dung để phân tích'
+2. Dán đường link
+3. Nhấn 'Phân tích'","Hệ thống truy xuất và phân tích nội dung trang đích (nếu an toàn) hoặc cảnh báo ngay nếu link có dấu hiệu độc hại, không tự động mở link",,Pending,Kết quả phân tích được lưu vào lịch sử,Cần đảm bảo hệ thống không tự mở link độc hại trực tiếp trên thiết bị người dùng
+,TC_FR08_01,FR08,High,Kiểm thử AI phát hiện dấu hiệu lừa đảo giả mạo ngân hàng,Đảm bảo AI nhận diện chính xác các mẫu lừa đảo giả mạo ngân hàng phổ biến,Người dùng gửi nội dung nghi ngờ để phân tích,"Tin nhắn: 'Tài khoản của quý khách bị khóa, vui lòng đăng nhập http://vietin-bank.fake để xác minh'","1. Gửi nội dung nghi ngờ vào AI Decision Companion
+2. Chờ kết quả phân tích","AI xác định đây là lừa đảo giả mạo ngân hàng, hiển thị mức độ rủi ro cao và các dấu hiệu cụ thể (link giả, yêu cầu đăng nhập khẩn cấp)",,Pending,,
+,TC_FR08_02,FR08,High,"Kiểm thử AI với nội dung an toàn, không có dấu hiệu lừa đảo",Đảm bảo AI không báo động giả (false positive) với nội dung hợp lệ,"Người dùng gửi nội dung thông thường, không có dấu hiệu lừa đảo","Tin nhắn: 'Con chào bố, tối nay con về ăn cơm nhé'","1. Gửi nội dung an toàn vào AI Decision Companion
+2. Chờ kết quả phân tích","AI đánh giá nội dung là an toàn, không đưa ra cảnh báo sai lệch",,Pending,,
+,TC_FR09_01,FR09,High,Kiểm thử AI phát hiện video deepfake,Đảm bảo AI nhận diện được video có dấu hiệu bị chỉnh sửa bởi AI (deepfake),"Người dùng có video nghi ngờ là deepfake, hệ thống hỗ trợ định dạng video được tải lên","Video mẫu deepfake (định dạng .mp4, thời lượng < 1 phút)","1. Nhấn 'Gửi nội dung để phân tích'
+2. Chọn 'Tải video lên'
+3. Chọn video
+4. Nhấn 'Phân tích'","AI phát hiện dấu hiệu deepfake (bất thường về khuôn mặt, đồng bộ môi-âm thanh) và cảnh báo rõ ràng cho người dùng",,Pending,Kết quả được lưu vào lịch sử,
+,TC_FR09_02,FR09,High,Kiểm thử AI phát hiện giọng nói giả (voice cloning) qua tin nhắn thoại,Đảm bảo AI nhận diện được giọng nói tổng hợp/giả mạo,Người dùng gửi bản ghi âm nghi ngờ là giọng nói giả mạo người thân,File âm thanh: đoạn ghi âm giọng nói giả mạo yêu cầu chuyển tiền gấp,"1. Nhấn 'Gửi nội dung để phân tích'
+2. Tải file ghi âm hoặc ghi âm trực tiếp
+3. Nhấn 'Phân tích'",AI cảnh báo khả năng cao đây là giọng nói giả và đề xuất xác minh trực tiếp với người thân qua kênh khác,,Pending,Kết quả được lưu vào lịch sử,
+,TC_FR10_01,FR10,High,Kiểm thử AI phát hiện kỹ thuật thao túng tâm lý (tạo cảm giác khẩn cấp),Đảm bảo AI nhận diện được các chiêu trò thao túng tâm lý thường dùng trong lừa đảo,Người dùng gửi nội dung có yếu tố thao túng tâm lý,Tin nhắn: 'Tài khoản của bạn sẽ bị khóa trong 1 giờ nếu không xác nhận ngay bây giờ',"1. Gửi nội dung vào AI Decision Companion
+2. Chờ kết quả phân tích",AI chỉ ra kỹ thuật thao túng cụ thể (tạo áp lực thời gian) và giải thích vì sao đây là dấu hiệu đáng ngờ,,Pending,,
+,TC_FR10_02,FR10,High,Kiểm thử AI phát hiện tin giả/thông tin sai lệch dạng bài viết,Đảm bảo AI nhận diện được thông tin sai lệch không liên quan đến lừa đảo tài chính,Người dùng gửi một bài viết tin tức chưa kiểm chứng,Bài viết: tin đồn về 'bài thuốc chữa bách bệnh' lan truyền trên mạng xã hội,"1. Gửi nội dung bài viết vào AI Decision Companion
+2. Chờ kết quả phân tích","AI đánh giá độ tin cậy nguồn tin, chỉ ra các dấu hiệu tin giả (thiếu nguồn kiểm chứng, ngôn từ giật gân)",,Pending,,
+,TC_FR11_01,FR11,High,"Kiểm thử nội dung giải thích kết quả bằng ngôn ngữ đơn giản, dễ hiểu",Đảm bảo phần giải thích không chứa thuật ngữ kỹ thuật khó hiểu với NCT,Đã có kết quả phân tích cho một nội dung lừa đảo,Kết quả phân tích của TC_FR08_01,"1. Sau khi có kết quả phân tích, xem phần 'Giải thích'
+2. Đọc nội dung giải thích","Nội dung giải thích dùng từ ngữ đơn giản, ví dụ cụ thể, không dùng thuật ngữ kỹ thuật (VD: không dùng 'phishing', 'machine learning')",,Pending,,Có thể phối hợp kiểm thử với người dùng thật là NCT để đánh giá mức độ dễ hiểu
+,TC_FR11_02,FR11,Medium,Kiểm thử giải thích khi kết quả phân tích ở mức độ nghi ngờ trung bình (không rõ ràng),Đảm bảo AI vẫn giải thích rõ ràng ngay cả khi không chắc chắn 100%,"Nội dung gửi phân tích có dấu hiệu mập mờ, khó xác định tuyệt đối đúng/sai","Tin nhắn mơ hồ, thiếu thông tin để kết luận chắc chắn","1. Gửi nội dung mập mờ vào AI Decision Companion
+2. Xem kết quả và phần giải thích","AI thể hiện rõ mức độ không chắc chắn (VD: 'có khả năng nghi ngờ') thay vì khẳng định tuyệt đối sai lệch, và đề xuất xác minh thêm",,Pending,,
+,TC_FR12_01,FR12,Medium,Kiểm thử AI đề xuất hành động 'không nhấp vào liên kết' khi phát hiện lừa đảo,"Đảm bảo hệ thống đưa khuyến nghị hành động cụ thể, dễ thực hiện",Đã có kết quả phân tích xác định nội dung là lừa đảo có chứa link độc hại,Kết quả phân tích của TC_FR08_01,"1. Xem kết quả phân tích
+2. Xem phần 'Đề xuất hành động'","Hệ thống hiển thị khuyến nghị cụ thể: không nhấp vào liên kết, xóa tin nhắn, chặn người gửi",,Pending,,
+,TC_FR12_02,FR12,Medium,Kiểm thử AI đề xuất báo cáo cơ quan chức năng khi phát hiện lừa đảo nghiêm trọng,Đảm bảo hệ thống hướng dẫn người dùng báo cáo khi cần thiết,Kết quả phân tích xác định mức độ rủi ro rất cao (lừa đảo tài chính),Nội dung nghi ngờ lừa đảo chiếm đoạt tài sản lớn,"1. Xem kết quả phân tích mức rủi ro cao
+2. Xem phần 'Đề xuất hành động'","Hệ thống đề xuất báo cáo cơ quan công an/tổng đài chống lừa đảo, có link hoặc số điện thoại liên hệ chính thống",,Pending,,
+,TC_FR13_01,FR13,High,Kiểm thử hiển thị và sử dụng nút 'Share to Trusted Circle' để chia sẻ kết quả phân tích,Đảm bảo người dùng chia sẻ được bản tóm tắt phân tích đến người thân,"Người dùng đã có ít nhất 1 người trong Trusted Circle, đã có kết quả phân tích","Người nhận: 'Nguyễn Văn B' (con trai, trong Trusted Circle)","1. Sau khi có kết quả phân tích, nhấn nút 'Share to Trusted Circle'
+2. Chọn người nhận
+3. Nhấn 'Gửi'","Bản tóm tắt (tình hình hiện tại, kết quả phân tích, đề xuất của AI) được gửi thành công đến người nhận đã chọn",,Pending,Bản tóm tắt xuất hiện trong cuộc trò chuyện với người nhận,
+,TC_FR13_02,FR13,High,Kiểm thử nút 'Share to Trusted Circle' khi danh sách Trusted Circle đang trống,Đảm bảo hệ thống xử lý hợp lý khi chưa có liên hệ tin cậy nào,Người dùng chưa thêm ai vào Trusted Circle,Không có dữ liệu Trusted Circle,"1. Có kết quả phân tích
+2. Nhấn nút 'Share to Trusted Circle'",Hệ thống thông báo chưa có liên hệ tin cậy và hướng dẫn/điều hướng người dùng đến màn hình thêm liên hệ,,Pending,,
+,TC_FR14_01,FR14,Medium,Kiểm thử lưu lịch sử các nội dung đã phân tích,Đảm bảo mọi nội dung đã phân tích đều được lưu để xem lại,Người dùng đã thực hiện ít nhất 1 lần phân tích nội dung,Kết quả phân tích của TC_FR07_01,"1. Thực hiện phân tích một nội dung
+2. Vào mục 'Lịch sử phân tích'","Nội dung vừa phân tích xuất hiện trong danh sách lịch sử với đầy đủ thông tin: thời gian, nội dung, kết quả",,Pending,,
+,TC_FR14_02,FR14,Medium,Kiểm thử xem lại chi tiết một kết quả phân tích cũ trong lịch sử,Đảm bảo người dùng truy xuất lại được đầy đủ thông tin phân tích cũ,Đã có ít nhất 3 bản ghi trong lịch sử phân tích,Bản ghi lịch sử bất kỳ,"1. Vào 'Lịch sử phân tích'
+2. Chọn một bản ghi
+3. Xem chi tiết","Hiển thị đầy đủ nội dung gốc, kết quả phân tích, giải thích và đề xuất như lúc phân tích ban đầu",,Pending,,
+Micro MIL Learning,TC_FR15_01,FR15,High,Kiểm thử tự động tạo bài học ngắn sau khi phân tích một tình huống lừa đảo,Đảm bảo bài học được tạo phù hợp và bám sát tình huống thực tế người dùng gặp,Người dùng vừa nhận kết quả phân tích xác định là lừa đảo,Kết quả phân tích của TC_FR08_01 (lừa đảo giả mạo ngân hàng),"1. Sau khi có kết quả phân tích, xem mục 'Bài học gợi ý'
+2. Mở bài học",Hệ thống tạo bài học MIL ngắn gọn liên quan trực tiếp đến tình huống lừa đảo giả mạo ngân hàng vừa gặp,,Pending,Bài học được thêm vào danh sách bài học đã học/gợi ý,
+,TC_FR15_02,FR15,Medium,Kiểm thử gợi ý video Youtube phù hợp với tình huống người dùng vừa gặp,Đảm bảo hệ thống gợi ý video học tập liên quan và từ nguồn uy tín,Người dùng vừa có kết quả phân tích liên quan đến deepfake,Kết quả phân tích của TC_FR09_01,"1. Xem kết quả phân tích deepfake
+2. Xem mục 'Video gợi ý'","Hệ thống hiển thị danh sách video Youtube liên quan đến chủ đề deepfake, video phát được trong app hoặc mở link hợp lệ",,Pending,,
+,TC_FR16_01,FR16,Medium,Kiểm thử làm bài luyện tập trắc nghiệm và trả lời đúng,Đảm bảo chức năng luyện tập hoạt động chính xác và ghi nhận đúng kết quả,Người dùng đã mở một bài học có phần luyện tập trắc nghiệm,Câu hỏi: 'Ngân hàng có bao giờ yêu cầu bạn cung cấp mã OTP qua điện thoại không?' Đáp án đúng: 'Không',"1. Mở bài luyện tập
+2. Chọn đáp án đúng
+3. Nhấn 'Nộp bài'","Hệ thống thông báo trả lời đúng, cập nhật điểm/tiến độ học tập",,Pending,Kết quả luyện tập được lưu lại,
+,TC_FR16_02,FR16,Medium,Kiểm thử làm bài luyện tập tình huống giả định và trả lời sai,Đảm bảo hệ thống phản hồi và giải thích phù hợp khi người dùng trả lời sai,Người dùng đang làm bài luyện tập tình huống giả định,"Câu hỏi tình huống lừa đảo trúng thưởng, người dùng chọn đáp án sai","1. Mở bài luyện tập tình huống
+2. Chọn đáp án sai
+3. Nhấn 'Nộp bài'","Hệ thống thông báo trả lời sai kèm giải thích đáp án đúng bằng ngôn ngữ đơn giản, khuyến khích thử lại",,Pending,,
+,TC_FR17_01,FR17,Medium,Kiểm thử lưu và xem lại bài học đã học theo chủ đề,Đảm bảo người dùng tìm lại được bài học cũ theo chủ đề mong muốn,Người dùng đã hoàn thành ít nhất 3 bài học ở các chủ đề khác nhau,Chủ đề tìm kiếm: 'Deepfake',"1. Vào mục 'Bài học đã lưu'
+2. Lọc theo chủ đề 'Deepfake'",Danh sách hiển thị đúng các bài học thuộc chủ đề Deepfake đã học trước đó,,Pending,,
+,TC_FR17_02,FR17,Medium,Kiểm thử xem lại bài học theo thời gian (sắp xếp theo ngày học),Đảm bảo chức năng sắp xếp/lọc theo thời gian hoạt động chính xác,Người dùng đã học nhiều bài học ở các thời điểm khác nhau,Sắp xếp: 'Mới nhất trước',"1. Vào mục 'Bài học đã lưu'
+2. Chọn sắp xếp theo 'Mới nhất'",Danh sách bài học hiển thị đúng thứ tự từ mới đến cũ,,Pending,,
+,TC_FR18_01,FR18,Low,"Kiểm thử theo dõi tiến độ học tập (số bài học hoàn thành, mức độ tiến bộ)",Đảm bảo hệ thống ghi nhận chính xác tiến độ học tập của người dùng theo thời gian,Người dùng đã hoàn thành một số bài học MIL,Số bài học đã hoàn thành: 5/10,"1. Vào mục 'Tiến độ học tập'
+2. Quan sát biểu đồ/chỉ số tiến độ","Hệ thống hiển thị đúng số bài đã hoàn thành, tỷ lệ phần trăm và xu hướng cải thiện theo thời gian",,Pending,,
+Trusted Circle,TC_FR19_01,FR19,High,Kiểm thử thêm người thân vào vòng tròn tin cậy thành công,Đảm bảo người dùng thiết lập được Trusted Circle với thông tin hợp lệ,"Người dùng đã đăng nhập, ở màn hình Trusted Circle",Tên: 'Nguyễn Văn B'; SĐT: '0912345678'; Mối quan hệ: 'Con trai',"1. Vào 'Trusted Circle'
+2. Nhấn 'Thêm liên hệ'
+3. Nhập thông tin
+4. Nhấn 'Lưu'","Liên hệ được thêm thành công vào danh sách Trusted Circle, hiển thị đúng thông tin",,Pending,Liên hệ mới xuất hiện trong danh sách Trusted Circle,
+,TC_FR19_02,FR19,High,Kiểm thử thêm liên hệ với số điện thoại không hợp lệ,Đảm bảo hệ thống xác thực định dạng số điện thoại trước khi lưu,Người dùng ở màn hình thêm liên hệ Trusted Circle,SĐT nhập: '12345' (không hợp lệ),"1. Vào 'Trusted Circle' > 'Thêm liên hệ'
+2. Nhập số điện thoại không hợp lệ
+3. Nhấn 'Lưu'","Hệ thống hiển thị thông báo lỗi định dạng số điện thoại, không lưu liên hệ",,Pending,Danh sách Trusted Circle không thay đổi,
+,TC_FR20_01,FR20,High,Kiểm thử hiển thị danh sách cuộc trò chuyện với các thành viên Trusted Circle,Đảm bảo giao diện trò chuyện hiển thị đúng và trực quan giống ứng dụng nhắn tin quen thuộc,Người dùng đã có ít nhất 2 liên hệ trong Trusted Circle và đã có tin nhắn trao đổi,"2 liên hệ: 'Nguyễn Văn B', 'Bác sĩ Trần C'","1. Vào mục 'Trusted Circle'
+2. Xem danh sách cuộc trò chuyện","Danh sách hiển thị đầy đủ các cuộc trò chuyện, sắp xếp theo tin nhắn mới nhất, giao diện dễ nhận biết (giống Zalo/Messenger)",,Pending,,
+,TC_FR20_02,FR20,Medium,Kiểm thử hiển thị khi chưa có cuộc trò chuyện nào (danh sách trống),Đảm bảo trạng thái rỗng được xử lý và hướng dẫn người dùng phù hợp,Người dùng chưa từng nhắn tin với ai trong Trusted Circle,Không có dữ liệu trò chuyện,"1. Vào mục 'Trusted Circle'
+2. Quan sát màn hình danh sách trò chuyện",Hệ thống hiển thị màn hình trống với hướng dẫn/gợi ý bắt đầu trò chuyện hoặc chia sẻ kết quả phân tích,,Pending,,
+,TC_FR21_01,FR21,High,Kiểm thử gửi bản tóm tắt cho người thân từ cuộc trò chuyện với AI Companion,Đảm bảo nút 'Trusted Circle' trong khung chat AI hoạt động đúng chức năng gửi tóm tắt,Người dùng đang trò chuyện với AI Companion và có nội dung cần chia sẻ,Người nhận: 'Nguyễn Văn B',"1. Trong cuộc trò chuyện với AI, nhấn nút 'Trusted Circle'
+2. Chọn người liên hệ muốn chia sẻ
+3. Nhấn 'Gửi'",Bản tóm tắt được gửi thành công và hiển thị trong cuộc trò chuyện với người nhận đã chọn,,Pending,,
+,TC_FR21_02,FR21,Medium,Kiểm thử gửi bản tóm tắt khi mất kết nối mạng,Đảm bảo hệ thống xử lý phù hợp khi gửi thất bại do lỗi mạng,Thiết bị người dùng đang ở trạng thái mất kết nối Internet,Người nhận: 'Nguyễn Văn B',"1. Nhấn nút 'Trusted Circle' để gửi tóm tắt
+2. Chọn người nhận
+3. Nhấn 'Gửi' trong khi không có mạng","Hệ thống thông báo gửi thất bại do mất kết nối, lưu tin nhắn ở trạng thái chờ và tự động gửi lại khi có mạng",,Pending,,
+,TC_FR22_01,FR22,High,Kiểm thử hệ thống không tự động chia sẻ dữ liệu khi chưa có sự đồng ý của người dùng,Đảm bảo quyền riêng tư người dùng được bảo vệ tuyệt đối,"Người dùng có dữ liệu phân tích nhạy cảm, chưa nhấn nút chia sẻ",Kết quả phân tích bất kỳ chưa được người dùng chọn chia sẻ,"1. Thực hiện phân tích nội dung
+2. Không nhấn nút chia sẻ
+3. Kiểm tra cuộc trò chuyện với Trusted Circle",Không có dữ liệu nào được tự động gửi đến bất kỳ thành viên Trusted Circle nào,,Pending,,
+,TC_FR22_02,FR22,High,Kiểm thử yêu cầu xác nhận đồng ý trước khi chia sẻ dữ liệu,Đảm bảo hệ thống luôn xin phép người dùng trước mỗi lần chia sẻ,Người dùng nhấn nút chia sẻ đến Trusted Circle,Người nhận: 'Nguyễn Văn B',"1. Nhấn 'Share to Trusted Circle'
+2. Quan sát màn hình xác nhận trước khi gửi",Hệ thống hiển thị màn hình xác nhận nội dung sẽ chia sẻ và yêu cầu người dùng xác nhận trước khi gửi đi,,Pending,,
+Community Hub,TC_FR23_01,FR23,Medium,Kiểm thử xem danh sách hoạt động MIL tại địa phương,Đảm bảo danh sách hội thảo/lớp học hiển thị đúng và cập nhật theo khu vực người dùng,"Người dùng đã đăng nhập, đã cập nhật khu vực sinh sống","Khu vực: Quận 1, TP.HCM","1. Vào 'Community Hub'
+2. Xem danh sách hoạt động","Danh sách hiển thị đúng các hoạt động (hội thảo, lớp hướng dẫn) tại khu vực Quận 1, kèm thời gian, địa điểm",,Pending,,
+,TC_FR23_02,FR23,Medium,Kiểm thử khi không có hoạt động MIL nào tại khu vực người dùng,Đảm bảo hệ thống xử lý hợp lý khi không có dữ liệu hoạt động,Khu vực người dùng chưa có hoạt động MIL nào được tổ chức,Khu vực: một huyện vùng sâu chưa có chương trình MIL,"1. Vào 'Community Hub'
+2. Quan sát danh sách hoạt động",Hệ thống hiển thị thông báo chưa có hoạt động tại khu vực và gợi ý mở rộng phạm vi tìm kiếm hoặc xem hoạt động online,,Pending,,
+,TC_FR24_01,FR24,Low,Kiểm thử đăng ký tham gia một hoạt động cộng đồng và nhận nhắc lịch,Đảm bảo người dùng đăng ký thành công và được nhắc lịch trước sự kiện,Có ít nhất 1 hoạt động cộng đồng đang mở đăng ký,Hoạt động: 'Lớp hướng dẫn dùng VNeID - 10/08/2026',"1. Chọn hoạt động
+2. Nhấn 'Đăng ký tham gia'
+3. Xác nhận","Đăng ký thành công, hệ thống lên lịch nhắc nhở trước ngày diễn ra hoạt động",,Pending,Hoạt động xuất hiện trong danh sách 'Đã đăng ký' của người dùng,
+,TC_FR25_01,FR25,Low,Kiểm thử kết nối với tình nguyện viên hỗ trợ tại địa phương,Đảm bảo người dùng liên hệ được với tình nguyện viên khi cần trợ giúp trực tiếp,Có tình nguyện viên đang hoạt động tại khu vực người dùng,"Khu vực: Quận 1, TP.HCM","1. Vào 'Community Hub' > 'Kết nối tình nguyện viên'
+2. Chọn tình nguyện viên/nhóm hỗ trợ
+3. Nhấn 'Liên hệ'","Hệ thống kết nối thành công (qua chat hoặc cuộc gọi), hiển thị thông tin tình nguyện viên rõ ràng",,Pending,,
+Scam Alert Center,TC_FR26_01,FR26,High,Kiểm thử hiển thị cảnh báo lừa đảo mới nhất tổng hợp từ nguồn chính thống,Đảm bảo thông tin cảnh báo được cập nhật kịp thời và chính xác từ nguồn uy tín,Hệ thống backend vừa cập nhật cảnh báo mới từ Bộ Công an/Cổng TTĐT Chính phủ,Cảnh báo mới: 'Thủ đoạn lừa đảo giả danh nhân viên điện lực',"1. Vào 'Scam Alert Center'
+2. Xem danh sách cảnh báo mới nhất","Cảnh báo mới hiển thị ở đầu danh sách, có nguồn trích dẫn rõ ràng, thời gian cập nhật chính xác",,Pending,,
+,TC_FR26_02,FR26,Medium,Kiểm thử khi chưa có cảnh báo mới trong ngày,Đảm bảo hệ thống hiển thị đúng trạng thái khi không có cập nhật mới,Không có cảnh báo mới nào được đăng trong ngày,Không có dữ liệu cảnh báo mới,"1. Vào 'Scam Alert Center'
+2. Quan sát danh sách cảnh báo","Hệ thống hiển thị các cảnh báo gần nhất trước đó, không báo lỗi hay để trống màn hình gây khó hiểu",,Pending,,
+,TC_FR27_01,FR27,Medium,Kiểm thử gửi cảnh báo cá nhân hóa theo khu vực sinh sống,Đảm bảo cảnh báo phù hợp với khu vực địa lý của người dùng,Người dùng đã khai báo khu vực sinh sống là Đà Nẵng,Cảnh báo cục bộ: 'Lừa đảo giả danh du lịch tại Đà Nẵng',"1. Hệ thống phát hiện cảnh báo liên quan khu vực Đà Nẵng
+2. Kiểm tra thông báo gửi đến người dùng tại Đà Nẵng","Người dùng tại Đà Nẵng nhận được cảnh báo, người dùng ở khu vực khác không nhận cảnh báo không liên quan",,Pending,,
+,TC_FR27_02,FR27,Medium,Kiểm thử gửi cảnh báo cá nhân hóa theo nhu cầu/sở thích người dùng đã khai báo,"Đảm bảo cảnh báo phù hợp với mối quan tâm cá nhân (VD: sức khỏe, tài chính)",Người dùng đã khai báo quan tâm đến chủ đề 'sức khỏe',Cảnh báo: 'Lừa đảo bán thực phẩm chức năng giả',"1. Hệ thống phát hiện cảnh báo thuộc chủ đề sức khỏe
+2. Kiểm tra thông báo gửi đến người dùng quan tâm chủ đề này",Người dùng quan tâm chủ đề sức khỏe nhận được cảnh báo phù hợp với nhu cầu đã khai báo,,Pending,,
+,TC_FR28_01,FR28,Medium,Kiểm thử đọc bài báo thực tế về lừa đảo trực tuyến trong thư viện,Đảm bảo người dùng truy cập và đọc được nội dung bài báo đầy đủ,Thư viện bài báo đã có sẵn nội dung,Bài báo: 'Vietnam intensifies probe into holiday contract fraud scheme',"1. Vào 'Thư viện bài báo'
+2. Chọn một bài báo
+3. Đọc nội dung","Bài báo hiển thị đầy đủ, dễ đọc (cỡ chữ phù hợp NCT), có nguồn trích dẫn rõ ràng",,Pending,,
+,TC_FR28_02,FR28,Medium,"Kiểm thử tìm kiếm bài báo theo chủ đề (deepfake, tin giả)",Đảm bảo chức năng tìm kiếm/lọc bài báo hoạt động chính xác,Thư viện có nhiều bài báo thuộc các chủ đề khác nhau,Từ khóa tìm kiếm: 'deepfake',"1. Vào 'Thư viện bài báo'
+2. Nhập từ khóa 'deepfake' vào ô tìm kiếm
+3. Nhấn tìm kiếm",Kết quả trả về đúng các bài báo liên quan đến chủ đề deepfake,,Pending,,
+,TC_FR29_01,FR29,Low,Kiểm thử tra cứu số điện thoại nghi ngờ đã nằm trong danh sách lừa đảo,Đảm bảo hệ thống trả về đúng kết quả tra cứu số điện thoại lừa đảo đã ghi nhận,Số điện thoại '0899999999' đã được ghi nhận là số lừa đảo trong cơ sở dữ liệu,SĐT tra cứu: '0899999999',"1. Vào 'Tra cứu số điện thoại/đường link'
+2. Nhập số điện thoại
+3. Nhấn 'Tra cứu'","Hệ thống cảnh báo số điện thoại này đã được ghi nhận lừa đảo, hiển thị thông tin liên quan (nếu có)",,Pending,,
+,TC_FR29_02,FR29,Low,Kiểm thử tra cứu đường link an toàn (không nằm trong danh sách lừa đảo),Đảm bảo hệ thống không báo động giả với đường link hợp lệ,Đường link 'https://vneid.gov.vn' không nằm trong danh sách lừa đảo,Link tra cứu: 'https://vneid.gov.vn',"1. Vào 'Tra cứu số điện thoại/đường link'
+2. Nhập đường link
+3. Nhấn 'Tra cứu'",Hệ thống thông báo link an toàn/chưa ghi nhận dấu hiệu lừa đảo,,Pending,,

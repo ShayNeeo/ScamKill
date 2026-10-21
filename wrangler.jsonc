@@ -1,0 +1,12 @@
+{
+  "name": "scamkill-pwa",
+  "account_id": "9df9d709f5cfa6826655e5416b9d6e1e",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
