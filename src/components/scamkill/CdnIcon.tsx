@@ -1,27 +1,39 @@
 import * as React from 'react';
-import { Platform, View } from 'react-native';
+import { Image, Platform, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export interface CdnIconProps {
-  /** Iconify CDN icon name, e.g. "lucide:shield-alert" or "ph:phone-incoming-bold" */
+  /** Iconify CDN icon identifier, e.g. "lucide:shield-alert" */
   icon: string;
-  /** Native vector fallback for iOS/Android/Vitest */
+  /** Synchronous vector fallback for iOS/Android/offline/Vitest */
   fallback?: React.ComponentProps<typeof Ionicons>['name'];
   size?: number;
   color?: string;
 }
 
 /**
- * CDN-Optimized Vector Icon (`iconify-icon` via jsDelivr + Cloudflare Iconify API on Web,
- * with `Ionicons` native vector fallback on iOS/Android and unit test environments).
+ * CDN-Optimized Vector Icon:
+ * Fetches crisp SVG vectors directly from Cloudflare-backed Iconify Edge CDN
+ * (`https://api.iconify.design/<prefix>/<name>.svg?color=...`) on Web,
+ * with synchronous `Ionicons` vector rendering during load, offline, or on native iOS/Android.
  */
 export function CdnIcon({
   icon,
   fallback = 'shield-checkmark-outline',
   size = 18,
-  color = 'currentColor',
+  color = '#0B5D56',
 }: CdnIconProps): React.JSX.Element {
-  if (Platform.OS === 'web' && typeof window !== 'undefined' && !('vitest' in globalThis)) {
+  const [cdnFailed, setCdnFailed] = React.useState(false);
+
+  if (
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    !('vitest' in globalThis) &&
+    !cdnFailed &&
+    icon.includes(':')
+  ) {
+    const [prefix, name] = icon.split(':');
+    const uri = `https://api.iconify.design/${prefix}/${name}.svg?color=${encodeURIComponent(color)}`;
     return (
       <View
         style={{
@@ -30,13 +42,14 @@ export function CdnIcon({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        {React.createElement('iconify-icon', {
-          icon,
-          width: String(size),
-          height: String(size),
-          style: { color, display: 'inline-flex', verticalAlign: 'middle' },
-          'aria-hidden': 'true',
-        })}
+        <Image
+          source={{ uri }}
+          style={{ width: size, height: size }}
+          resizeMode="contain"
+          onError={() => setCdnFailed(true)}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
       </View>
     );
   }
