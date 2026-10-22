@@ -1,4 +1,3 @@
-/// <reference lib="dom" />
 import * as React from 'react';
 import {
   AccessibilityInfo,
@@ -9,1093 +8,674 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
+  useWindowDimensions,
 } from 'react-native';
-import type { DimensionValue } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
 
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, type ThemeColor } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { Fonts } from '@/constants/theme';
+import {
+  cycleSeniorFontScale,
+  useSeniorFontScale,
+  useTheme,
+} from '@/hooks/use-theme';
 import { useLanguageDialect } from '@/i18n/regional';
-import { hapticTap } from '@/lib/haptics';
-
-type IconName = ComponentProps<typeof Ionicons>['name'];
-type Palette = Record<ThemeColor, string>;
+import { hapticSuccess, hapticTap } from '@/lib/haptics';
 
 export interface InteractiveGuidebookModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
+type PersonaId = 'seniors' | 'family' | 'judges';
+type StepId = 1 | 2 | 3 | 4 | 5;
+type ZoomLevel = 1 | 1.4 | 1.8;
+
 interface Bilingual {
   en: string;
   vi: string;
 }
 
-type PersonaId = 'seniors' | 'family' | 'judges';
-
-interface PersonaStep {
-  icon: IconName;
+interface GuideStep {
+  id: StepId;
+  circle: string;
+  shortLabel: Bilingual;
   title: Bilingual;
-  body: Bilingual;
+  targetPreviewTitle: Bilingual;
+  targetPreviewBadge: Bilingual;
+  targetPreviewSub: Bilingual;
+  targetButtonLabel: Bilingual;
+  tone: 'high' | 'caution' | 'jade';
+  pointerDirection: Bilingual;
+  personaCopy: Record<
+    PersonaId,
+    {
+      whatToLookAt: Bilingual;
+      whatToTap: Bilingual;
+      whyItWorks: Bilingual;
+    }
+  >;
+  liveActionLabel: Bilingual;
+  liveRoute: '/call_shield' | '/' | '/trusted_circle' | 'toggle_font';
 }
 
-interface PersonaContent {
-  id: PersonaId;
-  emoji: string;
-  label: Bilingual;
-  headline: Bilingual;
-  subline: Bilingual;
-  steps: PersonaStep[];
-  footnote: Bilingual;
-}
-
-const PERSONAS: PersonaContent[] = [
+const PERSONAS: { id: PersonaId; icon: string; label: Bilingual; tagline: Bilingual }[] = [
   {
     id: 'seniors',
-    emoji: '👵',
+    icon: '👵',
     label: { en: 'For Older Adults', vi: 'Dành cho Bố Mẹ' },
-    headline: { en: 'Three rules. That is all.', vi: 'Chỉ cần nhớ ba điều.' },
-    subline: {
-      en: 'Big letters, slow pace, no jargon. Read one rule at a time.',
-      vi: 'Chữ to, nhịp chậm, không thuật ngữ. Đọc từng điều một.',
-    },
-    steps: [
-      {
-        icon: 'hand-left-outline',
-        title: { en: 'Rule 1: Stop and hold', vi: 'Điều 1: Dừng lại, giữ nguyên' },
-        body: {
-          en: 'Do not transfer money. Do not read an OTP. Do not photograph a card. A real bank never asks for those.',
-          vi: 'Không chuyển tiền. Không đọc mã OTP. Không chụp ảnh thẻ. Ngân hàng thật không bao giờ hỏi những thứ đó.',
-        },
-      },
-      {
-        icon: 'leaf-outline',
-        title: { en: 'Rule 2: Breathe 4 and 4', vi: 'Điều 2: Thở 4 và 4' },
-        body: {
-          en: 'Breathe in for 4 seconds, then out for 4 seconds. Press Slow down and let the call wait.',
-          vi: 'Hít vào 4 giây, rồi thở ra 4 giây. Bấm Chậm lại và để cuộc gọi chờ.',
-        },
-      },
-      {
-        icon: 'key-outline',
-        title: { en: 'Rule 3: Ask the family code', vi: 'Điều 3: Hỏi mã gia đình' },
-        body: {
-          en: 'Only trust a caller who says the family code. If they cannot say it, hang up and call your child.',
-          vi: 'Chỉ tin người gọi khi họ nói đúng mã gia đình. Nếu họ không nói được, tắt máy và gọi con.',
-        },
-      },
-    ],
-    footnote: {
-      en: 'Large buttons, one action per screen, plain words only.',
-      vi: 'Nút to, mỗi màn hình một việc, chỉ dùng từ đơn giản.',
+    tagline: {
+      en: 'Simple, big-letter steps. One action at a time.',
+      vi: 'Chữ to, chỉ dẫn từng bước một, không dùng từ kỹ thuật.',
     },
   },
   {
     id: 'family',
-    emoji: '👨‍👩‍👧',
+    icon: '👨‍👩‍👧',
     label: { en: 'For Adult Children', vi: 'Dành cho Con Cháu' },
-    headline: { en: 'Set up the shield in 15 minutes.', vi: 'Cài lá chắn trong 15 phút.' },
-    subline: {
-      en: 'Family code first, alert channels second, home screen icon third. Rehearse once a month.',
-      vi: 'Mã gia đình trước, kênh cảnh báo sau, biểu tượng màn hình chính cuối. Diễn tập mỗi tháng một lần.',
-    },
-    steps: [
-      {
-        icon: 'key-outline',
-        title: { en: 'Family code card', vi: 'Thẻ mã gia đình' },
-        body: {
-          en: 'Open Family & Bot, then the Family code card. Pick two short words, for example "ca phe sua". Never post the word online.',
-          vi: 'Mở Gia đình & Bot, rồi mở thẻ Mã gia đình. Chọn hai từ ngắn, ví dụ "cà phê sữa". Tuyệt đối không đăng từ này lên mạng.',
-        },
-      },
-      {
-        icon: 'paper-plane-outline',
-        title: { en: 'Link Telegram, Zalo, SMS', vi: 'Nối Telegram, Zalo, SMS' },
-        body: {
-          en: 'Turn on each channel your family uses. Telegram needs the bot chat ID. Tick the PDPD 2025 consent before any message content is shared.',
-          vi: 'Bật từng kênh gia đình đang dùng. Telegram cần chat ID của bot. Tích đồng ý PDPD 2025 trước khi chia sẻ nội dung tin nhắn.',
-        },
-      },
-      {
-        icon: 'phone-portrait-outline',
-        title: { en: 'Install on the home screen', vi: 'Cài ra màn hình chính' },
-        body: {
-          en: 'Android Chrome: open the menu, then Add to Home screen. iPhone Safari: tap Share, then Add to Home Screen. The icon opens full screen like a normal app.',
-          vi: 'Android Chrome: mở menu, rồi Thêm vào màn hình chính. iPhone Safari: bấm Chia sẻ, rồi Thêm vào Màn hình chính. Biểu tượng mở toàn màn hình như ứng dụng thật.',
-        },
-      },
-      {
-        icon: 'mic-outline',
-        title: { en: 'Rehearse monthly', vi: 'Diễn tập mỗi tháng' },
-        body: {
-          en: 'Run the Mrs. Lan scenario together. Confirm the alert reaches every channel in under 10 seconds.',
-          vi: 'Chạy kịch bản Bà Lan cùng nhau. Kiểm tra cảnh báo tới mọi kênh trong dưới 10 giây.',
-        },
-      },
-    ],
-    footnote: {
-      en: 'Consent stays visible and reversible. One switch turns every channel off.',
-      vi: 'Sự đồng ý luôn hiển thị và có thể thu hồi. Một công tắc tắt được mọi kênh.',
+    tagline: {
+      en: 'How to set up the Family Code and receive instant alerts.',
+      vi: 'Cách cài Mã gia đình và nhận tin báo qua SMS, Zalo, Telegram.',
     },
   },
   {
     id: 'judges',
-    emoji: '⚖️',
+    icon: '⚖️',
     label: { en: 'For Competition Judges', vi: 'Dành cho Giám khảo' },
-    headline: { en: 'Five fixtures, four loop steps, six privacy gates.', vi: 'Năm kịch bản, bốn bước vòng lặp, sáu cổng riêng tư.' },
-    subline: {
-      en: 'Every scenario is deterministic. Same input, same verdict, no network required.',
-      vi: 'Mọi kịch bản đều cố định. Cùng đầu vào, cùng kết luận, không cần mạng.',
-    },
-    steps: [
-      {
-        icon: 'play-circle-outline',
-        title: { en: 'Run the five fixtures', vi: 'Chạy năm kịch bản mẫu' },
-        body: {
-          en: 'Open the Scenario Drawer (Kịch bản Demo) or this guide. Each fixture comes from a fixed data file, so a replay always produces the same output.',
-          vi: 'Mở Kịch bản Demo hoặc hướng dẫn này. Mỗi kịch bản lấy từ tệp dữ liệu cố định, nên chạy lại luôn cho cùng kết quả.',
-        },
-      },
-      {
-        icon: 'list-outline',
-        title: { en: 'Check the verdict shape', vi: 'Kiểm tra cấu trúc kết luận' },
-        body: {
-          en: 'Every result shows one risk badge, at most 3 plain-language reasons, and an epistemic note. Unverified is a valid answer, not a failure.',
-          vi: 'Mỗi kết quả có một nhãn rủi ro, tối đa 3 lý do dễ hiểu và một ghi chú về giới hạn dữ liệu. Chưa xác minh là câu trả lời hợp lệ, không phải lỗi.',
-        },
-      },
-      {
-        icon: 'shield-checkmark-outline',
-        title: { en: 'Check the privacy gates', vi: 'Kiểm tra cổng riêng tư' },
-        body: {
-          en: 'With consent off, only the alert type, time, and phone number leave the device. Content fan-out requires an explicit tick.',
-          vi: 'Khi chưa đồng ý, chỉ loại cảnh báo, thời điểm và số điện thoại rời thiết bị. Muốn gửi nội dung phải tích đồng ý rõ ràng.',
-        },
-      },
-      {
-        icon: 'git-compare-outline',
-        title: { en: 'Check the loop mapping', vi: 'Kiểm tra ánh xạ vòng lặp' },
-        body: {
-          en: 'Each verdict names its next loop step. Detect leads to Slow down. Slow down leads to Verify. Verify leads to Co-decide.',
-          vi: 'Mỗi kết luận chỉ ra bước tiếp theo. Phát hiện dẫn tới Chậm lại. Chậm lại dẫn tới Xác minh. Xác minh dẫn tới Cùng quyết định.',
-        },
-      },
-    ],
-    footnote: {
-      en: 'PDPD 2025: consent, least data, redaction, withdrawal, no overclaim, audit trail.',
-      vi: 'PDPD 2025: đồng ý, tối thiểu dữ liệu, che dữ liệu, thu hồi, không nói quá, lưu vết.',
+    tagline: {
+      en: 'Architecture, behavioral science, and PDPD 2025 privacy gates.',
+      vi: 'Kiến trúc 3 lớp, khoa học hành vi và cổng quyền riêng tư PDPD 2025.',
     },
   },
 ];
 
-type HotspotId = 1 | 2 | 3 | 4 | 5;
-
-interface Hotspot {
-  id: HotspotId;
-  glyph: string;
-  x: number;
-  y: number;
-  arrow: string;
-  arrowX: number;
-  arrowY: number;
-  title: Bilingual;
-  body: Bilingual;
-}
-
-const HOTSPOTS: Hotspot[] = [
+const STEPS: GuideStep[] = [
   {
     id: 1,
-    glyph: '①',
-    x: 80,
-    y: 26,
-    arrow: '↙',
-    arrowX: 73,
-    arrowY: 31,
-    title: { en: 'Verdict shield', vi: 'Khiên kết luận' },
-    body: {
-      en: 'One badge plus one plain sentence. It states a risk level, never a promise of 100% safety.',
-      vi: 'Một nhãn và một câu dễ hiểu. Chỉ nêu mức rủi ro, không hứa an toàn 100%.',
+    circle: '①',
+    shortLabel: { en: '1. Call Shield', vi: '1. Cảnh báo Gọi' },
+    title: {
+      en: 'Step 1: Check the Caller Risk Before You Pick Up',
+      vi: 'Bước 1: Xem nhãn rủi ro trước khi bắt máy',
     },
+    targetPreviewTitle: {
+      en: 'Incoming Call: 0918 765 432',
+      vi: 'Cuộc gọi đến: 0918 765 432',
+    },
+    targetPreviewBadge: {
+      en: 'USE CAUTION · NOT IN CONTACTS',
+      vi: 'CẦN CẢNH GIÁC · SỐ LẠ NGOÀI DANH BẠ',
+    },
+    targetPreviewSub: {
+      en: '"Unknown number. If this caller asks for urgent money, verify first." (Shows "Unverified" when data is insufficient.)',
+      vi: '"Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, hãy xác minh." (Hiển thị "Chưa xác minh" khi chưa đủ dữ liệu.)',
+    },
+    targetButtonLabel: {
+      en: '🛡 CHECK & ALERT FAMILY NOW',
+      vi: '🛡 KIỂM TRA & BÁO NGƯỜI THÂN NGAY',
+    },
+    tone: 'caution',
+    pointerDirection: {
+      en: '↘ Look at the color badge first, then tap this button',
+      vi: '↘ Nhìn nhãn màu phía trên, rồi bấm nút lớn này',
+    },
+    personaCopy: {
+      seniors: {
+        whatToLookAt: {
+          en: 'Look at the colored banner at the top of the call screen. Red means High Risk, Amber means Use Caution, Slate means Unverified.',
+          vi: 'Nhìn khung màu ngay đầu màn hình cuộc gọi: Đỏ là Nguy cơ cao, Cam là Cần cảnh giác, Xám là Chưa xác minh.',
+        },
+        whatToTap: {
+          en: 'If the caller claims an accident or demands money, tap "CHECK & ALERT FAMILY NOW".',
+          vi: 'Nếu người gọi báo tai nạn hoặc giục chuyển tiền, hãy chạm nút "KIỂM TRA & BÁO NGƯỜI THÂN NGAY".',
+        },
+        whyItWorks: {
+          en: 'You do not have to guess if a voice is real or fake. One tap brings your family in to help.',
+          vi: 'Bố/Mẹ không cần tự đoán giọng thật hay giả. Chỉ một chạm là con cháu biết để kiểm tra phụ.',
+        },
+      },
+      family: {
+        whatToLookAt: {
+          en: 'ScamKill checks community reports, public advisories (nTrust/MPS), foreign prefixes (+855), and whether the number is in your parent’s contacts.',
+          vi: 'ScamKill đối chiếu báo cáo cộng đồng, nguồn công khai (nTrust/Bộ CA), đầu số lạ (+855) và danh bạ của Bố/Mẹ.',
+        },
+        whatToTap: {
+          en: 'Test the 5 pre-loaded scenarios in the "Demo scenarios" bar on the Call Shield tab.',
+          vi: 'Chạm thử 5 kịch bản mẫu trong thanh "Kịch bản Demo" ở màn hình Gọi đến.',
+        },
+        whyItWorks: {
+          en: 'Honest epistemic boundary: when a number has no reports yet, ScamKill shows "Unverified" rather than making a false claim.',
+          vi: 'Giới hạn trung thực: khi chưa đủ dữ liệu, ứng dụng hiển thị "Chưa xác minh" chứ không đoán bừa.',
+        },
+      },
+      judges: {
+        whatToLookAt: {
+          en: 'Feature 1 (Pre-Call Layer): deterministic reputation lookup + structural heuristics (international prefix, burst calling, contact presence).',
+          vi: 'Tính năng 1 (Trước khi bắt máy): tra cứu danh tiếng tất định kết hợp quy tắc đặc điểm cuộc gọi.',
+        },
+        whatToTap: {
+          en: 'Tap "Try Step 1 Live" below to open Call Shield and run the Mrs. Lan 30M emergency call scenario.',
+          vi: 'Bấm nút "Thử Bước 1 trực tiếp" bên dưới để mở Lá chắn cuộc gọi và chạy kịch bản Bà Lan 30 triệu.',
+        },
+        whyItWorks: {
+          en: 'Solves the Timing Gap: warns the senior before panic sets in, while transparently labeling unknown numbers as "Unverified".',
+          vi: 'Lấp khoảng trống thời điểm: cảnh báo trước khi người già hoảng loạn và giữ chuẩn trung thực "Chưa xác minh".',
+        },
+      },
+    },
+    liveActionLabel: {
+      en: '⚡ Try Step 1 Live: Open Call Shield',
+      vi: '⚡ Thử Bước 1 ngay: Mở Cảnh báo Gọi đến',
+    },
+    liveRoute: '/call_shield',
   },
   {
     id: 2,
-    glyph: '②',
-    x: 16,
-    y: 62,
-    arrow: '↘',
-    arrowX: 23,
-    arrowY: 66,
-    title: { en: '4 second reset', vi: 'Nhịp thở 4 giây' },
-    body: {
-      en: 'Breathe in 4 seconds, out 4 seconds. This interrupts the amygdala hijack before any money moves.',
-      vi: 'Hít vào 4 giây, thở ra 4 giây. Việc này cắt cơn hoảng trước khi tiền rời tài khoản.',
+    circle: '②',
+    shortLabel: { en: '2. 60s Pause', vi: '2. Dừng 60 giây' },
+    title: {
+      en: 'Step 2: Slow Down with the 60-Second Breathing Pause',
+      vi: 'Bước 2: Khoảng dừng 60 giây để hạ nhịp tim',
     },
+    targetPreviewTitle: {
+      en: '00:59 · Breathe in 4s, out 4s',
+      vi: '00:59 · Hít vào 4 giây, thở ra 4 giây',
+    },
+    targetPreviewBadge: {
+      en: 'BRAIN SCIENCE · AMYGDALA RESET',
+      vi: 'KHOA HỌC NÃO BỘ · CẮT CƠN HOẢNG LOẠN',
+    },
+    targetPreviewSub: {
+      en: '"Hold off sending money. Breathe slowly with the green circle for 60 seconds while we verify."',
+      vi: '"Khoan mở ứng dụng ngân hàng. Hãy hít thở chậm theo vòng tròn xanh trong 60 giây."',
+    },
+    targetButtonLabel: {
+      en: '⏸ Pause 60s & Check Family Code',
+      vi: '⏸ Dừng 60 giây & Kiểm tra Mã gia đình',
+    },
+    tone: 'jade',
+    pointerDirection: {
+      en: '↘ Follow the expanding breathing ring for 60 seconds',
+      vi: '↘ Nhìn vòng tròn nhịp thở phồng-xẹp trong 60 giây',
+    },
+    personaCopy: {
+      seniors: {
+        whatToLookAt: {
+          en: 'Watch the calm green circle expand for 4 seconds and contract for 4 seconds.',
+          vi: 'Nhìn vòng tròn màu xanh ngọc mở rộng 4 giây rồi thu lại 4 giây.',
+        },
+        whatToTap: {
+          en: 'Do not open your banking app while the 60-second timer is counting down.',
+          vi: 'Trong lúc đồng hồ 60 giây đang đếm, Bố/Mẹ tuyệt đối chưa mở ứng dụng ngân hàng.',
+        },
+        whyItWorks: {
+          en: 'Scammers always rush you so you panic. Taking 60 seconds to breathe brings your calm thinking back.',
+          vi: 'Kẻ gian luôn giục gấp để mình hoảng. Dừng 1 phút hít thở sâu giúp trí não tỉnh táo trở lại.',
+        },
+      },
+      family: {
+        whatToLookAt: {
+          en: 'Along with the 60-second pause, ScamKill sets a 48-hour high-risk transaction cooling-off reminder.',
+          vi: 'Kèm theo khoảng dừng 60 giây là khóa nhắc nhở trì hoãn giao dịch rủi ro cao trong 48 giờ.',
+        },
+        whatToTap: {
+          en: 'Practice this screen once with your parents so they recognize the breathing ring when a real scam call happens.',
+          vi: 'Hãy bấm thử màn hình này cùng Bố/Mẹ một lần để ông bà quen với vòng thở an toàn.',
+        },
+        whyItWorks: {
+          en: 'Friction Engineering (Thaler & Sunstein): inserting a 60-second pause breaks psychological manipulation.',
+          vi: 'Thiết kế điểm dừng hành vi: 60 giây trì hoãn giúp phá vỡ sự thao túng tâm lý của kẻ lừa đảo.',
+        },
+      },
+      judges: {
+        whatToLookAt: {
+          en: 'GSAP + React Native Animated 4s-inhale / 4s-exhale physiological box-breathing cadence + `expo-haptics` warning pulse.',
+          vi: 'Vòng thở sinh học 4 giây hít - 4 giây thở điều khiển bằng GSAP + Animated kèm phản hồi rung xúc giác.',
+        },
+        whatToTap: {
+          en: 'Trigger any high-risk call or message and tap "Slow down & Ask Family Code" to inspect the Cooling-Off Modal.',
+          vi: 'Chạy kịch bản rủi ro cao và bấm "Làm chậm & Hỏi Mã gia đình" để kiểm tra màn hình Khoảng dừng.',
+        },
+        whyItWorks: {
+          en: 'Neuroscience: acute threat triggers an amygdala hijack. Paced 4s/4s breathing activates the vagus nerve and restores prefrontal executive control.',
+          vi: 'Khoa học thần kinh: hít thở nhịp 4s/4s kích hoạt dây thần kinh phế vị, khôi phục vùng vỏ não trước trán để suy xét.',
+        },
+      },
+    },
+    liveActionLabel: {
+      en: '⚡ Try Step 2 Live: Test Call & Breathing Pause',
+      vi: '⚡ Thử Bước 2 ngay: Mở Khoảng dừng 60 giây',
+    },
+    liveRoute: '/call_shield',
   },
   {
     id: 3,
-    glyph: '③',
-    x: 22,
-    y: 78,
-    arrow: '↗',
-    arrowX: 29,
-    arrowY: 71,
-    title: { en: 'Verify callback', vi: 'Gọi lại để xác minh' },
-    body: {
-      en: 'Hang up, then call the number saved in contacts. Never call back the number that just called you.',
-      vi: 'Tắt máy, rồi gọi số đã lưu trong danh bạ. Không gọi lại số vừa gọi tới.',
+    circle: '③',
+    shortLabel: { en: '3. Message Scan', vi: '3. Quét Tin nhắn' },
+    title: {
+      en: 'Step 3: Analyze Suspicious Messages & Links in Plain Language',
+      vi: 'Bước 3: Phân tích tin nhắn & đường dẫn lạ bằng ngôn ngữ đời thường',
     },
+    targetPreviewTitle: {
+      en: 'HIGH RISK · 3 Plain Reasons Found',
+      vi: 'NGUY CƠ CAO · 3 lý do dễ hiểu',
+    },
+    targetPreviewBadge: {
+      en: 'FEATURE 2 · WHEN READING A MESSAGE',
+      vi: 'TÍNH NĂNG 2 · KHI ĐỌC TIN NHẮN',
+    },
+    targetPreviewSub: {
+      en: '1. Pretends to be a bank or authority. 2. Pressures you within 24 hours. 3. Uses an unfamiliar web link. Next action: Do not tap the link. Ask your family first.',
+      vi: '1. Giả danh ngân hàng/cơ quan. 2. Ép phải làm trong 24 giờ. 3. Có đường dẫn lạ. Việc cần làm: Đừng bấm liên kết. Hỏi người thân trước.',
+    },
+    targetButtonLabel: {
+      en: '🔊 Listen at 0.85x Slow Voice Readback',
+      vi: '🔊 Nghe đọc giọng nói chậm 0.85x',
+    },
+    tone: 'high',
+    pointerDirection: {
+      en: '↘ Read the 1-3 short reasons or tap Listen to hear them',
+      vi: '↘ Đọc 1-3 lý do ngắn gọn hoặc bấm Nghe đọc thành tiếng',
+    },
+    personaCopy: {
+      seniors: {
+        whatToLookAt: {
+          en: 'You only need to read 1 to 3 short bullet points and one clear instruction: "Do not tap the link. Ask your family first."',
+          vi: 'Bố/Mẹ chỉ cần đọc từ 1 đến 3 gạch đầu dòng ngắn và câu hướng dẫn: "Đừng bấm liên kết. Hỏi người thân trước."',
+        },
+        whatToTap: {
+          en: 'Paste a text message, upload a screenshot, or tap "Read aloud" to hear ScamKill read the warning slowly.',
+          vi: 'Dán tin nhắn, tải ảnh chụp màn hình, hoặc bấm nút "Đọc cho tôi nghe" để nghe máy đọc chậm rãi.',
+        },
+        whyItWorks: {
+          en: 'No confusing computer words. Everything is explained in everyday family language.',
+          vi: 'Không có từ ngữ máy tính khó hiểu. Mọi lý do đều được giải thích như lời con cháu dặn ở nhà.',
+        },
+      },
+      family: {
+        whatToLookAt: {
+          en: 'Supports 4 input modes (Text, Link/URL, Screenshot Image, Voice Recording) plus QR Code scanning.',
+          vi: 'Hỗ trợ 4 cách kiểm tra (Văn bản, Đường link, Ảnh chụp màn hình, Giọng nói) và quét mã QR.',
+        },
+        whatToTap: {
+          en: 'Tap "Try Step 3 Live" below to open the Messages tab and run the Fake Bank OTP SMS scenario.',
+          vi: 'Bấm "Thử Bước 3 ngay" bên dưới để mở tab Tin nhắn và chạy thử tin nhắn giả mạo ngân hàng.',
+        },
+        whyItWorks: {
+          en: 'Respects Google Play & iOS store policies: works immediately via user share/paste without requiring invasive background permissions.',
+          vi: 'Tuân thủ chính sách kho ứng dụng Google Play và iOS: kiểm tra ngay khi người dùng dán hoặc chia sẻ.',
+        },
+      },
+      judges: {
+        whatToLookAt: {
+          en: '5-stage Multi-Agent Pipeline: PII Redactor -> Rule Engine -> 61-Alert RAG Index -> LLM Explainer -> Miller’s Law 3-Reason Cap.',
+          vi: 'Chuỗi 5 tác tử AI: Che thông tin nhạy cảm -> Tập luật -> Đối chiếu 61 cảnh báo chính thức -> Giải thích -> Giới hạn 3 lý do.',
+        },
+        whatToTap: {
+          en: 'Test custom scam texts or use the deterministic "Fake bank message" scenario on the Messages tab.',
+          vi: 'Thử nhập tin nhắn bất kỳ hoặc bấm kịch bản "Tin nhắn giả danh ngân hàng" ở tab Tin nhắn.',
+        },
+        whyItWorks: {
+          en: 'Miller’s Law under stress: working memory shrinks to 2-3 chunks during fear, so ScamKill strictly caps output to 1-3 plain reasons.',
+          vi: 'Định luật Miller khi căng thẳng: trí nhớ ngắn hạn co lại còn 2-3 ý, nên ScamKill chỉ hiển thị tối đa 3 lý do cốt lõi.',
+        },
+      },
+    },
+    liveActionLabel: {
+      en: '⚡ Try Step 3 Live: Open Message Scanner',
+      vi: '⚡ Thử Bước 3 ngay: Mở Phân tích Tin nhắn',
+    },
+    liveRoute: '/',
   },
   {
     id: 4,
-    glyph: '④',
-    x: 78,
-    y: 78,
-    arrow: '↖',
-    arrowX: 71,
-    arrowY: 71,
-    title: { en: 'Co-decide with family', vi: 'Cùng gia đình quyết định' },
-    body: {
-      en: 'Send one alert to family. Consent decides whether the message text travels with it.',
-      vi: 'Gửi một cảnh báo cho gia đình. Sự đồng ý quyết định nội dung tin nhắn có đi kèm hay không.',
+    circle: '④',
+    shortLabel: { en: '4. Family & Bots', vi: '4. Mã & Báo tin' },
+    title: {
+      en: 'Step 4: Ask the Family Safe-Word & Alert Relatives in 1 Tap',
+      vi: 'Bước 4: Hỏi "Mã gia đình" & Báo tin qua SMS, Zalo, Telegram',
     },
+    targetPreviewTitle: {
+      en: 'Family Code: "Sweet starfruit (Cây khế ngọt)"',
+      vi: 'Mã gia đình: "Cây khế ngọt"',
+    },
+    targetPreviewBadge: {
+      en: 'FEATURE 3 · PRIVACY-FIRST MULTI-BOT SOS',
+      vi: 'TÍNH NĂNG 3 · BÁO TIN ĐA KÊNH BẢO MẬT',
+    },
+    targetPreviewSub: {
+      en: '(i) Ask the secret Family Code. (ii) Hang up and call back saved number. Default alert sends ONLY alert type, time, and phone number (PDPD 2025).',
+      vi: '(i) Hỏi mật khẩu gia đình. (ii) Cúp máy gọi lại số lưu sẵn. Mặc định chỉ gửi loại cảnh báo, giờ và SĐT; nội dung chỉ gửi khi đồng ý.',
+    },
+    targetButtonLabel: {
+      en: '📨 Send Alert to SMS + Zalo + Telegram',
+      vi: '📨 Gửi cảnh báo qua SMS + Zalo + Telegram',
+    },
+    tone: 'jade',
+    pointerDirection: {
+      en: '↘ Check the Family Code, then tap to alert your children',
+      vi: '↘ Xem Mã gia đình, rồi bấm nút này để gọi con cháu hỗ trợ',
+    },
+    personaCopy: {
+      seniors: {
+        whatToLookAt: {
+          en: 'Your secret Family Code (for example "Sweet starfruit") is shown in large green letters at the top of the Family tab.',
+          vi: 'Cụm từ bí mật của nhà mình (ví dụ "Cây khế ngọt") luôn hiện chữ thật to ở đầu mục Gia đình.',
+        },
+        whatToTap: {
+          en: 'Tap "Send alert to family". Your message text stays private unless you tick the box agreeing to share it.',
+          vi: 'Bấm "Gửi cảnh báo cho người thân". Nội dung tin nhắn luôn được giữ kín trừ khi Bố/Mẹ tích ô đồng ý chia sẻ.',
+        },
+        whyItWorks: {
+          en: 'Even if AI copies your child’s voice, the scammer cannot know your family’s secret phrase.',
+          vi: 'Dù AI có làm giả giọng giống hệt con cháu, kẻ gian cũng không thể biết mật khẩu riêng của nhà mình.',
+        },
+      },
+      family: {
+        whatToLookAt: {
+          en: 'Inspect the Live Multi-Bot Family Inbox on the Family tab to see the exact SMS, Zalo, and Telegram cards you receive.',
+          vi: 'Xem Hộp thư Bot Gia đình ngay bên dưới để thấy rõ tin nhắn SMS, Zalo, Telegram gửi tới máy con cháu.',
+        },
+        whatToTap: {
+          en: 'Tap "Daughter: Call Mom back now (Block 30M)" inside the inbox to simulate the family intervention loop.',
+          vi: 'Bấm nút "Chị Hương: Gọi lại cho Mẹ ngay (Chặn 30 triệu)" trong hộp thư để hoàn tất vòng bảo vệ.',
+        },
+        whyItWorks: {
+          en: 'Polyvagal Co-Regulation: knowing a trusted child has been notified immediately ends isolation panic.',
+          vi: 'Đồng điều hòa tâm lý: biết con cháu đã nhận tin báo giúp người cao tuổi hết cảm giác đơn độc.',
+        },
+      },
+      judges: {
+        whatToLookAt: {
+          en: 'Two-part differentiator: (3A) Consent-gated SMS/Zalo/Telegram dispatch (`sharedContent: null` by default) + (3B) 2-step Safe-Word & Callback protocol.',
+          vi: 'Hai cơ chế tạo khác biệt: (3A) Báo người thân có cổng đồng ý PDPD 2025 + (3B) Quy trình 2 bước chống giả giọng AI.',
+        },
+        whatToTap: {
+          en: 'Toggle the PDPD 2025 consent checkbox off and on, dispatch an alert, and verify the payload in the Bot Inbox.',
+          vi: 'Thử tắt và bật ô đồng ý chia sẻ nội dung, bấm gửi cảnh báo và đối chiếu kết quả trong Hộp thư Bot.',
+        },
+        whyItWorks: {
+          en: 'Works 100% reliably in the MVP today without depending on restricted OS call-audio APIs or cloud eavesdropping.',
+          vi: 'Triển khai được ngay trong MVP mà không phụ thuộc quyền thu âm cuộc gọi bị hạn chế trên iOS/Android.',
+        },
+      },
+    },
+    liveActionLabel: {
+      en: '⚡ Try Step 4 Live: Open Family & Bot Hub',
+      vi: '⚡ Thử Bước 4 ngay: Mở Gia đình & Hộp thư Bot',
+    },
+    liveRoute: '/trusted_circle',
   },
   {
     id: 5,
-    glyph: '⑤',
-    x: 70,
-    y: 7,
-    arrow: '↗',
-    arrowX: 77,
-    arrowY: 11,
-    title: { en: 'Guide pill', vi: 'Nút Hướng dẫn' },
-    body: {
-      en: 'Reopen this map from any screen with one tap.',
-      vi: 'Mở lại bản đồ này từ mọi màn hình chỉ với một chạm.',
+    circle: '⑤',
+    shortLabel: { en: '5. Senior Zoom', vi: '5. Chữ To & Màu' },
+    title: {
+      en: 'Step 5: Adjust Text Size (A+), High-Contrast & Language Anytime',
+      vi: 'Bước 5: Đổi Cỡ chữ (A+), Nền Vàng-Đen và Ngôn ngữ chỉ với 1 chạm',
     },
+    targetPreviewTitle: {
+      en: '[📖 Guide]  [A+ Text: 130%]  [◐ Hi-Contrast]  [🌐 EN/VN]',
+      vi: '[📖 Hướng dẫn]  [A+ Chữ: Rất to]  [◐ Vàng-Đen]  [🌐 VN/EN]',
+    },
+    targetPreviewBadge: {
+      en: 'TOP HEADER BAR · ALWAYS REACHABLE',
+      vi: 'THANH ĐIỀU KHIỂN ĐẦU TRANG · LUÔN HIỂN THỊ',
+    },
+    targetPreviewSub: {
+      en: 'Tap "A+" to enlarge all text (100% -> 115% -> 130%). Tap "Warm" to switch to High-Contrast Gold-on-Black for aging eyes.',
+      vi: 'Bấm "A+" để phóng to toàn bộ chữ (100% -> 115% -> 130%). Bấm "Sáng ấm" để chuyển sang nền Vàng-Đen chống chói cho mắt lão thị.',
+    },
+    targetButtonLabel: {
+      en: '🔍 Tap A+ to Enlarge All App Letters Now',
+      vi: '🔍 Bấm A+ để phóng to chữ toàn ứng dụng ngay',
+    },
+    tone: 'jade',
+    pointerDirection: {
+      en: '↗ These 4 quick buttons stay at the top-right of every screen',
+      vi: '↗ 4 nút tiện ích này luôn nằm ở góc trên bên phải mọi màn hình',
+    },
+    personaCopy: {
+      seniors: {
+        whatToLookAt: {
+          en: 'Look at the top-right corner of the screen. The "A+" button and the Contrast button are always there for you.',
+          vi: 'Nhìn lên góc trên bên phải màn hình. Nút "A+" phóng to chữ và nút đổi màu nền luôn nằm sẵn ở đó.',
+        },
+        whatToTap: {
+          en: 'Tap "A+" once for Large letters, or twice for Extra-Large letters. Tap the Contrast button if bright screens hurt your eyes.',
+          vi: 'Chạm "A+" để chữ to lên. Chạm nút độ tương phản nếu màn hình sáng làm Bố/Mẹ bị chói mắt.',
+        },
+        whyItWorks: {
+          en: 'You never have to dig through complicated settings menus to make the words easy to read.',
+          vi: 'Bố/Mẹ không bao giờ phải tìm kiếm sâu trong mục cài đặt mới chỉnh được cỡ chữ vừa mắt.',
+        },
+      },
+      family: {
+        whatToLookAt: {
+          en: 'You can also visit the Settings tab to choose regional dialects and color-blindness palettes.',
+          vi: 'Con cháu có thể vào thêm mục Cài đặt để chọn phương ngữ vùng miền và bảng màu hỗ trợ mù màu.',
+        },
+        whatToTap: {
+          en: 'Set your parent’s preferred text size and theme right after adding ScamKill to their home screen.',
+          vi: 'Hãy chỉnh sẵn cỡ chữ "To" hoặc "Rất to" ngay sau khi đặt ScamKill ra màn hình chính cho Bố/Mẹ.',
+        },
+        whyItWorks: {
+          en: 'Uses Atkinson Hyperlegible (designed by the Braille Institute) so digits like 0/O and 1/I/l never look alike.',
+          vi: 'Sử dụng phông chữ Atkinson Hyperlegible của Viện chữ nổi giúp số 0/O và 1/I không bao giờ bị nhầm.',
+        },
+      },
+      judges: {
+        whatToLookAt: {
+          en: 'Reactive global font-scale multiplier (`1.0x / 1.15x / 1.30x`), 3 visual worlds (`Warm Rice Paper`, `Calm Night`, `Gold-on-Obsidian`), and instant `EN / VN` switching.',
+          vi: 'Bộ nhân cỡ chữ toàn cục thời gian thực, 3 chế độ ánh sáng bảo vệ mắt lão thị và chuyển đổi Anh - Việt tức thì.',
+        },
+        whatToTap: {
+          en: 'Tap the action button below to cycle the live font scale right now.',
+          vi: 'Bấm nút hành động bên dưới để phóng to chữ trực tiếp ngay lúc này.',
+        },
+        whyItWorks: {
+          en: 'Eliminates visual crowding and cataract glare while maintaining >= 7.5:1 WCAG AAA contrast ratios.',
+          vi: 'Loại bỏ hiện tượng chữ dính nhau và chói sáng thủy tinh thể, đạt chuẩn tương phản WCAG AAA >= 7.5:1.',
+        },
+      },
+    },
+    liveActionLabel: {
+      en: '⚡ Try Step 5 Live: Enlarge App Text (A+) Now',
+      vi: '⚡ Thử Bước 5 ngay: Phóng to cỡ chữ (A+)',
+    },
+    liveRoute: 'toggle_font',
   },
 ];
 
-type ScenarioTone = 'high' | 'caution' | 'unverified';
-
-interface JudgeScenario {
-  id: string;
-  emoji: string;
-  name: Bilingual;
-  badge: Bilingual;
-  check: Bilingual;
-  tone: ScenarioTone;
-}
-
-const JUDGE_SCENARIOS: JudgeScenario[] = [
-  {
-    id: 'ba-lan-30m',
-    emoji: '👵',
-    name: { en: 'Mrs. Lan 30M Call', vi: 'Bà Lan 30 triệu' },
-    badge: { en: 'Caution', vi: 'Cần cảnh giác' },
-    check: {
-      en: 'Unknown number claims to be her daughter after an accident. Verify with a callback and the family code.',
-      vi: 'Số lạ tự nhận là con gái gặp tai nạn. Xác minh bằng cuộc gọi lại và mã gia đình.',
-    },
-    tone: 'caution',
-  },
-  {
-    id: 'fake-police-call',
-    emoji: '🚨',
-    name: { en: 'Fake Police +855', vi: 'Giả công an +855' },
-    badge: { en: 'High risk', vi: 'Nguy cơ cao' },
-    check: {
-      en: 'Foreign prefix, 4 burst calls, arrest threat. Expect the high risk badge and a family alert.',
-      vi: 'Đầu số nước ngoài, 4 cuộc gọi dồn dập, đe dọa bắt giữ. Kỳ vọng nhãn nguy cơ cao và cảnh báo gia đình.',
-    },
-    tone: 'high',
-  },
-  {
-    id: 'unverified-number',
-    emoji: '❓',
-    name: { en: 'Unverified Number', vi: 'Số chưa xác minh' },
-    badge: { en: 'Unverified', vi: 'Chưa xác minh' },
-    check: {
-      en: 'No data means unverified. The app must say so and must not guess.',
-      vi: 'Không có dữ liệu thì hiện chưa xác minh. Ứng dụng phải nói rõ và không được đoán bừa.',
-    },
-    tone: 'unverified',
-  },
-  {
-    id: 'fake-bank-otp-sms',
-    emoji: '💬',
-    name: { en: 'Bank OTP SMS', vi: 'SMS OTP ngân hàng' },
-    badge: { en: 'High risk', vi: 'Nguy cơ cao' },
-    check: {
-      en: 'A fake domain asks for the OTP. The link must be flagged and the OTP must be redacted.',
-      vi: 'Tên miền giả đòi mã OTP. Phải gắn cờ link lạ và che mã OTP.',
-    },
-    tone: 'high',
-  },
-  {
-    id: 'zalo-voice-clone',
-    emoji: '🎙',
-    name: { en: 'Zalo Voice Clone', vi: 'Giả giọng Zalo' },
-    badge: { en: 'Caution', vi: 'Cần cảnh giác' },
-    check: {
-      en: 'A cloned grandchild voice asks for 15M and secrecy. Secrecy plus urgency means caution.',
-      vi: 'Giọng cháu ngoại bị ghép đòi 15 triệu và giữ bí mật. Bí mật cộng gấp gáp là dấu hiệu cảnh giác.',
-    },
-    tone: 'caution',
-  },
-];
-
-const PRIVACY_GATES: Bilingual[] = [
-  {
-    en: 'Consent first: message content is shared with family channels only after an explicit PDPD 2025 tick.',
-    vi: 'Đồng ý trước: nội dung tin nhắn chỉ được chia sẻ với kênh gia đình sau khi tích đồng ý PDPD 2025 rõ ràng.',
-  },
-  {
-    en: 'Least data: with consent off, an alert carries only the alert type, time, and phone number.',
-    vi: 'Tối thiểu dữ liệu: khi chưa đồng ý, cảnh báo chỉ mang loại cảnh báo, thời điểm và số điện thoại.',
-  },
-  {
-    en: 'Redaction: OTP codes, ID numbers, card numbers, and bank accounts are masked before analysis.',
-    vi: 'Che dữ liệu: mã OTP, số căn cước, số thẻ và số tài khoản được che trước khi phân tích.',
-  },
-  {
-    en: 'Withdrawal: switching a channel off stops future routing immediately.',
-    vi: 'Thu hồi: tắt một kênh là dừng mọi lần gửi sau đó ngay lập tức.',
-  },
-  {
-    en: 'No overclaim: verdicts state risk, never certainty. Unverified is a first class answer.',
-    vi: 'Không nói quá: kết luận nêu rủi ro, không khẳng định chắc chắn. Chưa xác minh là câu trả lời chính thức.',
-  },
-  {
-    en: 'Audit trail: alerts keep channel, timestamp, and delivery status. Content appears only when consent is on.',
-    vi: 'Lưu vết: cảnh báo giữ kênh, thời điểm và trạng thái gửi. Nội dung chỉ xuất hiện khi đã đồng ý.',
-  },
-];
-
-const ZOOM_LEVELS = [1, 1.4, 1.8] as const;
-type ZoomLevel = (typeof ZOOM_LEVELS)[number];
-
-interface GsapTweenTarget {
-  s: number;
-  x: number;
-  y: number;
-}
-
-interface GsapVars {
-  s?: number;
-  x?: number;
-  y?: number;
-  duration?: number;
-  ease?: string;
-  overwrite?: boolean;
-  onUpdate?: () => void;
-}
-
-interface GsapLike {
-  to: (target: GsapTweenTarget, vars: GsapVars) => void;
-  killTweensOf: (target: GsapTweenTarget) => void;
-}
-
-let gsapPromise: Promise<GsapLike | null> | null = null;
-
-function loadGsap(): Promise<GsapLike | null> {
-  if (Platform.OS !== 'web') return Promise.resolve(null);
-  if (!gsapPromise) {
-    gsapPromise = import('gsap')
-      .then((mod) => mod.gsap as unknown as GsapLike)
-      .catch(() => null);
-  }
-  return gsapPromise;
-}
-
-function scenarioTone(tone: ScenarioTone, theme: Palette): { color: string; background: string } {
-  if (tone === 'high') return { color: theme.riskHigh, background: theme.riskHighBg };
-  if (tone === 'caution') return { color: theme.riskCaution, background: theme.riskCautionBg };
-  return { color: theme.riskInsufficient, background: theme.riskInsufficientBg };
-}
-
-function pct(value: number): DimensionValue {
-  return `${value}%` as DimensionValue;
-}
-
-interface MockScreenProps {
-  theme: Palette;
-  isEn: boolean;
-}
-
-function MockScreen(props: MockScreenProps): React.JSX.Element {
-  const { theme, isEn } = props;
-
-  return (
-    <View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      style={[
-        styles.mock,
-        { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder },
-      ]}>
-      <View style={styles.mockTopBar}>
-        <View style={{ gap: 1 }}>
-          <Text style={{ fontSize: 11, fontWeight: '900', color: theme.text }}>ScamKill</Text>
-          <Text style={{ fontSize: 7, fontWeight: '600', color: theme.textSecondary }}>
-            {isEn ? 'AI shield for families' : 'Lá chắn AI cho Gia đình'}
-          </Text>
-        </View>
-        <View style={[styles.mockGuidePill, { backgroundColor: theme.primaryAction }]}>
-          <Text style={{ fontSize: 8, fontWeight: '900', color: theme.primaryActionText }}>
-            {isEn ? '📖 Guide' : '📖 Hướng dẫn'}
-          </Text>
-        </View>
-      </View>
-
-      <View
-        style={[
-          styles.mockVerdict,
-          { backgroundColor: theme.riskHighBg, borderColor: theme.riskHigh },
-        ]}>
-        <View style={styles.mockVerdictTop}>
-          <Ionicons name="warning" size={12} color={theme.riskHigh} />
-          <Text style={{ fontSize: 8, fontWeight: '900', color: theme.riskHigh }}>
-            {isEn ? 'HIGH RISK' : 'NGUY CƠ CAO'}
-          </Text>
-        </View>
-        <Text
-          style={{
-            fontSize: 15,
-            fontWeight: '900',
-            color: theme.text,
-            fontFamily: Fonts.mono,
-          }}>
-          +855 92 111 2233
-        </Text>
-        <Text style={{ fontSize: 8, lineHeight: 11, color: theme.textSecondary }} numberOfLines={2}>
-          {isEn
-            ? 'Fake police. 4 calls in 3 minutes. Do not transfer.'
-            : 'Giả danh công an. 4 cuộc gọi trong 3 phút. Không chuyển tiền.'}
-        </Text>
-      </View>
-
-      <View style={{ gap: 4 }}>
-        {[
-          isEn ? 'Threatens an arrest warrant' : 'Đe dọa lệnh bắt tạm giam',
-          isEn ? 'Foreign prefix +855' : 'Đầu số nước ngoài +855',
-          isEn ? 'Asks for an urgent transfer' : 'Yêu cầu chuyển tiền gấp',
-        ].map((reason) => (
-          <View key={reason} style={styles.mockReason}>
-            <View style={[styles.mockDot, { backgroundColor: theme.riskHigh }]} />
-            <Text style={{ flex: 1, fontSize: 8, lineHeight: 11, color: theme.text }}>{reason}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View
-        style={[
-          styles.mockBreath,
-          { backgroundColor: theme.backgroundElement, borderColor: theme.cardBorder },
-        ]}>
-        <Ionicons name="leaf-outline" size={13} color={theme.primaryAction} />
-        <Text style={{ flex: 1, fontSize: 8, fontWeight: '800', color: theme.text }}>
-          {isEn ? 'Breathe in 4s, out 4s' : 'Hít vào 4 giây, thở ra 4 giây'}
-        </Text>
-        <Text style={{ fontSize: 8, fontWeight: '900', color: theme.primaryAction }}>
-          {isEn ? 'Slow down' : 'Chậm lại'}
-        </Text>
-      </View>
-
-      <View style={styles.mockActions}>
-        <View
-          style={[
-            styles.mockAction,
-            { backgroundColor: theme.primaryAction, borderColor: theme.primaryAction },
-          ]}>
-          <Ionicons name="call" size={11} color={theme.primaryActionText} />
-          <Text style={{ fontSize: 8, fontWeight: '900', color: theme.primaryActionText }}>
-            {isEn ? 'Call saved' : 'Gọi số đã lưu'}
-          </Text>
-        </View>
-        <View
-          style={[
-            styles.mockAction,
-            { backgroundColor: theme.surfaceCard, borderColor: theme.primaryAction },
-          ]}>
-          <Ionicons name="people" size={11} color={theme.primaryAction} />
-          <Text style={{ fontSize: 8, fontWeight: '900', color: theme.primaryAction }}>
-            {isEn ? 'Tell family' : 'Báo gia đình'}
-          </Text>
-        </View>
-      </View>
-
-      <View style={[styles.mockTabBar, { borderTopColor: theme.cardBorder }]}>
-        {(['call', 'chatbubbles', 'people', 'warning', 'person-circle'] as IconName[]).map(
-          (icon, index) => (
-            <View key={icon} style={styles.mockTab}>
-              <Ionicons
-                name={icon}
-                size={11}
-                color={index === 0 ? theme.primaryAction : theme.textSecondary}
-              />
-              <View
-                style={[
-                  styles.mockTabDot,
-                  { backgroundColor: index === 0 ? theme.primaryAction : 'transparent' },
-                ]}
-              />
-            </View>
-          ),
-        )}
-      </View>
-    </View>
-  );
-}
-
-interface BlueprintProps {
-  theme: Palette;
-  isEn: boolean;
-  persona: PersonaId;
-  zoom: ZoomLevel;
-  focusId: HotspotId | null;
-  onSelectZoom: (level: ZoomLevel) => void;
-  onSelectHotspot: (id: HotspotId) => void;
-  onStep: (direction: 1 | -1) => void;
-  onReset: () => void;
-}
-
-function Blueprint(props: BlueprintProps): React.JSX.Element {
-  const {
-    theme,
-    isEn,
-    persona,
-    zoom,
-    focusId,
-    onSelectZoom,
-    onSelectHotspot,
-    onStep,
-    onReset,
-  } = props;
-
-  const [canvas, setCanvas] = React.useState({ w: 0, h: 0 });
-  const [reduceMotion, setReduceMotion] = React.useState(false);
-  const scale = React.useRef(new Animated.Value(1)).current;
-  const panX = React.useRef(new Animated.Value(0)).current;
-  const panY = React.useRef(new Animated.Value(0)).current;
-  const viewState = React.useRef({ s: 1, x: 0, y: 0 });
-  const tweenTarget = React.useRef<GsapTweenTarget | null>(null);
-
-  const focusIndex = focusId === null ? -1 : HOTSPOTS.findIndex((item) => item.id === focusId);
-  const canvasW = canvas.w;
-  const canvasH = canvas.h;
-  const stepText =
-    focusId === null
-      ? isEn
-        ? 'Step: off'
-        : 'Bước: tắt'
-      : `${isEn ? 'Step' : 'Bước'} ${focusIndex + 1} / 5`;
-  const bodyScale = persona === 'seniors' ? 1.08 : 1;
-
-  React.useEffect(() => {
-    let mounted = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((value) => {
-        if (mounted) setReduceMotion(value);
-      })
-      .catch(() => {
-        // Keep motion on when the platform cannot answer.
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  React.useEffect(() => {
-    const scaleId = scale.addListener(({ value }) => {
-      viewState.current.s = value;
-    });
-    const panXId = panX.addListener(({ value }) => {
-      viewState.current.x = value;
-    });
-    const panYId = panY.addListener(({ value }) => {
-      viewState.current.y = value;
-    });
-    return () => {
-      scale.removeListener(scaleId);
-      panX.removeListener(panXId);
-      panY.removeListener(panYId);
-    };
-  }, [scale, panX, panY]);
-
-  React.useEffect(() => {
-    const targetScale = zoom;
-    const hotspot = HOTSPOTS.find((item) => item.id === focusId);
-    let tx = 0;
-    let ty = 0;
-
-    if (hotspot && canvasW > 0 && canvasH > 0) {
-      tx = -((hotspot.x / 100) - 0.5) * canvasW * targetScale;
-      ty = -((hotspot.y / 100) - 0.5) * canvasH * targetScale;
-      const maxX = (canvasW * (targetScale - 1)) / 2;
-      const maxY = (canvasH * (targetScale - 1)) / 2;
-      tx = Math.max(-maxX, Math.min(maxX, tx));
-      ty = Math.max(-maxY, Math.min(maxY, ty));
-    }
-
-    const settle = () => {
-      scale.setValue(targetScale);
-      panX.setValue(tx);
-      panY.setValue(ty);
-      viewState.current = { s: targetScale, x: tx, y: ty };
-    };
-
-    if (reduceMotion) {
-      settle();
-      return;
-    }
-
-    if (Platform.OS === 'web') {
-      let cancelled = false;
-      void loadGsap().then((gsap) => {
-        if (cancelled) return;
-        if (!gsap) {
-          settle();
-          return;
-        }
-        const proxy = { ...viewState.current };
-        if (tweenTarget.current) {
-          gsap.killTweensOf(tweenTarget.current);
-        }
-        tweenTarget.current = proxy;
-        gsap.to(proxy, {
-          s: targetScale,
-          x: tx,
-          y: ty,
-          duration: 0.55,
-          ease: 'power3.out',
-          overwrite: true,
-          onUpdate: () => {
-            scale.setValue(proxy.s);
-            panX.setValue(proxy.x);
-            panY.setValue(proxy.y);
-          },
-        });
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    Animated.parallel([
-      Animated.spring(scale, {
-        toValue: targetScale,
-        useNativeDriver: true,
-        friction: 7,
-        tension: 55,
-      }),
-      Animated.spring(panX, {
-        toValue: tx,
-        useNativeDriver: true,
-        friction: 7,
-        tension: 55,
-      }),
-      Animated.spring(panY, {
-        toValue: ty,
-        useNativeDriver: true,
-        friction: 7,
-        tension: 55,
-      }),
-    ]).start();
-
-    return undefined;
-  }, [zoom, focusId, canvasW, canvasH, reduceMotion, scale, panX, panY]);
-
-  return (
-    <View
-      style={[
-        styles.blueprint,
-        { borderColor: theme.cardBorder, backgroundColor: theme.surfaceCard },
-      ]}>
-      <View style={[styles.blueprintHead, { borderBottomColor: theme.cardBorder }]}>
-        <View style={{ flex: 1, gap: 2 }}>
-          <ThemedText
-            style={{
-              fontSize: 15,
-              fontWeight: '900',
-              color: theme.text,
-              fontFamily: Fonts.rounded,
-            }}>
-            {isEn ? 'Annotated blueprint' : 'Bản đồ chú thích'}
-          </ThemedText>
-          <ThemedText style={{ fontSize: 11, lineHeight: 15, color: theme.textSecondary }}>
-            {isEn
-              ? 'Tap a numbered circle to zoom into that region.'
-              : 'Chạm vào vòng tròn số để phóng to đúng vùng đó.'}
-          </ThemedText>
-        </View>
-        <View style={[styles.zoomHudBadge, { backgroundColor: theme.backgroundSelected }]}>
-          <Text
-            style={{
-              fontFamily: Fonts.mono,
-              fontSize: 11,
-              fontWeight: '900',
-              color: theme.primaryAction,
-            }}>
-            {zoom.toFixed(1)}x
-          </Text>
-        </View>
-      </View>
-
-      <View style={[styles.zoomBar, { borderBottomColor: theme.cardBorder }]}>
-        <View style={styles.zoomRow}>
-          <Text style={{ fontSize: 13, fontWeight: '900', color: theme.textSecondary }}>
-            🔍 {isEn ? 'Zoom:' : 'Phóng to:'}
-          </Text>
-          {ZOOM_LEVELS.map((level) => {
-            const active = zoom === level;
-            return (
-              <Pressable
-                key={level}
-                onPress={() => {
-                  void hapticTap();
-                  onSelectZoom(level);
-                }}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                accessibilityLabel={
-                  isEn ? `Zoom ${level.toFixed(1)} times` : `Phóng to ${level.toFixed(1)} lần`
-                }
-                style={[
-                  styles.zoomChip,
-                  {
-                    backgroundColor: active ? theme.primaryAction : theme.surfaceCard,
-                    borderColor: active ? theme.primaryAction : theme.cardBorder,
-                  },
-                ]}>
-                <Text
-                  style={{
-                    fontFamily: Fonts.mono,
-                    fontSize: 12,
-                    fontWeight: '900',
-                    color: active ? theme.primaryActionText : theme.text,
-                  }}>
-                  {level.toFixed(1)}x
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <View style={styles.stepRow}>
-          <Pressable
-            onPress={() => {
-              void hapticTap();
-              onStep(-1);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={isEn ? 'Previous step' : 'Bước trước'}
-            style={[styles.stepButton, { borderColor: theme.cardBorder, backgroundColor: theme.surfaceCard }]}>
-            <Ionicons name="chevron-back" size={16} color={theme.primaryAction} />
-          </Pressable>
-          <Text
-            style={{
-              flex: 1,
-              textAlign: 'center',
-              fontFamily: Fonts.mono,
-              fontSize: 11,
-              fontWeight: '800',
-              color: theme.textSecondary,
-            }}>
-            {stepText}
-          </Text>
-          <Pressable
-            onPress={() => {
-              void hapticTap();
-              onStep(1);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={isEn ? 'Next step' : 'Bước tiếp theo'}
-            style={[styles.stepButton, { borderColor: theme.cardBorder, backgroundColor: theme.surfaceCard }]}>
-            <Ionicons name="chevron-forward" size={16} color={theme.primaryAction} />
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              void hapticTap();
-              onReset();
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={isEn ? 'Reset zoom and focus' : 'Đặt lại phóng to và tiêu điểm'}
-            style={[styles.stepButton, { borderColor: theme.cardBorder, backgroundColor: theme.surfaceCard }]}>
-            <Ionicons name="scan-outline" size={16} color={theme.primaryAction} />
-          </Pressable>
-        </View>
-      </View>
-
-      <View
-        style={[styles.canvas, { backgroundColor: theme.surfaceElevated }]}
-        onLayout={(event) => {
-          const { width, height } = event.nativeEvent.layout;
-          setCanvas((prev) => (prev.w === width && prev.h === height ? prev : { w: width, h: height }));
-        }}>
-        <Animated.View
-          style={[
-            styles.canvasLayer,
-            { transform: [{ translateX: panX }, { translateY: panY }] },
-          ]}>
-          <Animated.View style={[styles.canvasLayer, { transform: [{ scale }] }]}>
-            <MockScreen theme={theme} isEn={isEn} />
-
-            {HOTSPOTS.map((hotspot) => {
-              const active = focusId === hotspot.id;
-              return (
-                <React.Fragment key={hotspot.id}>
-                  <View
-                    pointerEvents="none"
-                    accessibilityElementsHidden
-                    importantForAccessibility="no-hide-descendants"
-                    style={[
-                      styles.hotspotArrowWrap,
-                      { left: pct(hotspot.arrowX), top: pct(hotspot.arrowY) },
-                    ]}>
-                    <Text style={[styles.hotspotArrow, { color: theme.primaryAction }]}>
-                      {hotspot.arrow}
-                    </Text>
-                  </View>
-                  <Pressable
-                    onPress={() => {
-                      void hapticTap();
-                      onSelectHotspot(hotspot.id);
-                    }}
-                    hitSlop={8}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={`${isEn ? 'Callout' : 'Chú thích'} ${hotspot.id}: ${
-                      isEn ? hotspot.title.en : hotspot.title.vi
-                    }`}
-                    style={[
-                      styles.hotspot,
-                      {
-                        left: pct(hotspot.x),
-                        top: pct(hotspot.y),
-                        backgroundColor: active ? theme.primaryAction : theme.surfaceCard,
-                        borderColor: theme.primaryAction,
-                      },
-                    ]}>
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        lineHeight: 18,
-                        fontWeight: '900',
-                        color: active ? theme.primaryActionText : theme.primaryAction,
-                      }}>
-                      {hotspot.glyph}
-                    </Text>
-                  </Pressable>
-                </React.Fragment>
-              );
-            })}
-          </Animated.View>
-        </Animated.View>
-      </View>
-
-      <View style={styles.calloutList}>
-        {HOTSPOTS.map((hotspot) => {
-          const active = focusId === hotspot.id;
-          return (
-            <Pressable
-              key={hotspot.id}
-              onPress={() => {
-                void hapticTap();
-                onSelectHotspot(hotspot.id);
-              }}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              style={[
-                styles.calloutRow,
-                {
-                  borderColor: active ? theme.primaryAction : theme.cardBorder,
-                  backgroundColor: active ? theme.surfaceElevated : theme.surfaceCard,
-                },
-              ]}>
-              <View
-                style={[
-                  styles.calloutBadge,
-                  {
-                    backgroundColor: active ? theme.primaryAction : theme.backgroundElement,
-                  },
-                ]}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '900',
-                    color: active ? theme.primaryActionText : theme.primaryAction,
-                  }}>
-                  {hotspot.glyph}
-                </Text>
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <ThemedText
-                  style={{
-                    fontSize: 13 * bodyScale,
-                    fontWeight: '900',
-                    color: theme.text,
-                  }}>
-                  {isEn ? hotspot.title.en : hotspot.title.vi}
-                </ThemedText>
-                <ThemedText
-                  style={{
-                    fontSize: 12 * bodyScale,
-                    lineHeight: 17 * bodyScale,
-                    color: theme.textSecondary,
-                  }}>
-                  {isEn ? hotspot.body.en : hotspot.body.vi}
-                </ThemedText>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
-  );
-}
+const ZOOM_LEVELS: ZoomLevel[] = [1, 1.4, 1.8];
 
 export function InteractiveGuidebookModal(
   props: InteractiveGuidebookModalProps,
 ): React.JSX.Element | null {
   const { visible, onClose } = props;
   const theme = useTheme();
+  const router = useRouter();
   const [dialect] = useLanguageDialect();
+  const [fontScale] = useSeniorFontScale();
   const isEn = dialect === 'en';
   const { width } = useWindowDimensions();
+  const isWide = width >= 760;
 
   const [persona, setPersona] = React.useState<PersonaId>('seniors');
+  const [activeStepId, setActiveStepId] = React.useState<StepId>(1);
   const [zoom, setZoom] = React.useState<ZoomLevel>(1);
-  const [focusId, setFocusId] = React.useState<HotspotId | null>(null);
-  const [reduceMotion, setReduceMotion] = React.useState(false);
-  const entry = React.useRef(new Animated.Value(0)).current;
+  const [autoTour, setAutoTour] = React.useState(false);
 
-  const content = PERSONAS.find((item) => item.id === persona) ?? PERSONAS[0];
-  const compact = width < 390;
+  const pulseAnim = React.useRef(new Animated.Value(0)).current;
+  const loupeScaleAnim = React.useRef(new Animated.Value(1)).current;
 
-  React.useEffect(() => {
-    let mounted = true;
-    AccessibilityInfo.isReduceMotionEnabled()
-      .then((value) => {
-        if (mounted) setReduceMotion(value);
-      })
-      .catch(() => {
-        // Keep motion on when the platform cannot answer.
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const activeStep = React.useMemo(
+    () => STEPS.find((s) => s.id === activeStepId) ?? STEPS[0],
+    [activeStepId],
+  );
+  const activePersonaInfo = React.useMemo(
+    () => PERSONAS.find((p) => p.id === persona) ?? PERSONAS[0],
+    [persona],
+  );
+  const stepDetail = activeStep.personaCopy[persona];
 
+  // Gentle pulse for the active target ring & arrow
   React.useEffect(() => {
     if (!visible) {
-      entry.setValue(0);
-      setFocusId(null);
-      setZoom(1);
+      setAutoTour(false);
       return;
     }
-    if (reduceMotion) {
-      entry.setValue(1);
-      return;
-    }
-    Animated.timing(entry, {
-      toValue: 1,
-      duration: 240,
-      useNativeDriver: Platform.OS !== 'web',
+    let reduced = false;
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((val) => {
+        reduced = val;
+      })
+      .catch(() => {});
+
+    if (reduced) return;
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0,
+          duration: 1100,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [visible, pulseAnim]);
+
+  // Smooth spring transition when switching steps or zoom level
+  React.useEffect(() => {
+    const targetVisualScale = zoom === 1 ? 1 : zoom === 1.4 ? 1.04 : 1.07;
+    Animated.spring(loupeScaleAnim, {
+      toValue: targetVisualScale,
+      friction: 7,
+      tension: 65,
+      useNativeDriver: true,
     }).start();
-  }, [visible, reduceMotion, entry]);
+  }, [zoom, activeStepId, loupeScaleAnim]);
 
-  const handleClose = React.useCallback(() => {
+  // Auto-Play Guided Tour timer (steps 1 -> 2 -> 3 -> 4 -> 5 every 3.6s)
+  React.useEffect(() => {
+    if (!visible || !autoTour) return;
+    const timer = setInterval(() => {
+      setActiveStepId((prev) => (prev === 5 ? 1 : ((prev + 1) as StepId)));
+    }, 3600);
+    return () => clearInterval(timer);
+  }, [visible, autoTour]);
+
+  if (!visible) return null;
+
+  const selectStep = (id: StepId) => {
     void hapticTap();
-    onClose();
-  }, [onClose]);
-
-  const handleStep = React.useCallback(
-    (direction: 1 | -1) => {
-      const index = focusId === null ? -1 : HOTSPOTS.findIndex((item) => item.id === focusId);
-      const base = index === -1 && direction === -1 ? 0 : index;
-      const next = HOTSPOTS[(base + direction + HOTSPOTS.length) % HOTSPOTS.length];
-      setFocusId(next.id);
-      setZoom((currentZoom) => (currentZoom === 1 ? 1.4 : currentZoom));
-    },
-    [focusId],
-  );
-
-  const dialogStyle = {
-    opacity: entry,
-    transform: [
-      {
-        translateY: entry.interpolate({ inputRange: [0, 1], outputRange: [22, 0] }),
-      },
-      {
-        scale: entry.interpolate({ inputRange: [0, 1], outputRange: [0.98, 1] }),
-      },
-    ],
+    setAutoTour(false);
+    setActiveStepId(id);
   };
 
+  const stepDelta = (delta: 1 | -1) => {
+    void hapticTap();
+    setAutoTour(false);
+    setActiveStepId((prev) => {
+      const next = prev + delta;
+      if (next < 1) return 5;
+      if (next > 5) return 1;
+      return next as StepId;
+    });
+  };
+
+  const handleLiveAction = () => {
+    void hapticSuccess();
+    setAutoTour(false);
+    if (activeStep.liveRoute === 'toggle_font') {
+      cycleSeniorFontScale();
+      return;
+    }
+    onClose();
+    router.push(activeStep.liveRoute);
+  };
+
+  const zoomTextScale = zoom === 1 ? 1 : zoom === 1.4 ? 1.18 : 1.34;
+  const toneColors =
+    activeStep.tone === 'high'
+      ? { border: '#B91C1C', bg: '#FEF2F2', badgeBg: '#B91C1C', badgeText: '#FFFFFF' }
+      : activeStep.tone === 'caution'
+        ? { border: '#B45309', bg: '#FFFBEB', badgeBg: '#B45309', badgeText: '#FFFFFF' }
+        : { border: '#0B5D56', bg: '#ECFDF5', badgeBg: '#0B5D56', badgeText: '#FAF6EE' };
+
+  const ringScale = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.12] });
+
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.modalRoot}>
         <Pressable
           style={styles.backdrop}
-          onPress={handleClose}
+          onPress={() => {
+            void hapticTap();
+            onClose();
+          }}
           accessibilityRole="button"
-          accessibilityLabel={isEn ? 'Close guidebook' : 'Đóng hướng dẫn'}
+          accessibilityLabel={isEn ? 'Close guidebook backdrop' : 'Đóng nền hướng dẫn'}
         />
 
-        <Animated.View
-          accessibilityViewIsModal
+        <View
           style={[
             styles.dialog,
             { backgroundColor: theme.background, borderColor: theme.cardBorder },
-            dialogStyle,
           ]}>
+          {/* Top Header */}
           <View
             style={[
               styles.header,
-              { borderBottomColor: theme.cardBorder, backgroundColor: theme.surfaceCard },
+              { backgroundColor: theme.surfaceCard, borderBottomColor: theme.cardBorder },
             ]}>
-            <View style={styles.headerRow}>
-              <View style={[styles.headerIcon, { backgroundColor: theme.backgroundElement }]}>
-                <ThemedText style={{ fontSize: 20 }}>📖</ThemedText>
+            <View style={styles.headerTopRow}>
+              <View style={styles.headerTitleWrap}>
+                <View style={[styles.headerBadge, { backgroundColor: theme.primaryAction }]}>
+                  <Text style={{ fontSize: 18 }}>📖</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={[styles.headerTitle, { color: theme.text }]}>
+                    {isEn
+                      ? 'Interactive Visual Guidebook'
+                      : 'Cẩm nang Hướng dẫn Trực quan'}
+                  </ThemedText>
+                  <ThemedText style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+                    {isEn
+                      ? `${activePersonaInfo.tagline.en}`
+                      : `${activePersonaInfo.tagline.vi}`}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={styles.headerText}>
-                <ThemedText
-                  style={{
-                    fontSize: 19,
-                    fontWeight: '900',
-                    color: theme.text,
-                    fontFamily: Fonts.rounded,
-                  }}>
-                  {isEn ? 'Interactive Guidebook' : 'Hướng dẫn tương tác'}
-                </ThemedText>
-                <ThemedText style={{ fontSize: 11, lineHeight: 15, color: theme.textSecondary }}>
-                  {isEn
-                    ? 'Visual map, 3 personas, 5 annotated callouts'
-                    : 'Bản đồ trực quan, 3 góc nhìn, 5 chú thích'}
-                </ThemedText>
-              </View>
+
               <Pressable
-                onPress={handleClose}
-                hitSlop={8}
+                onPress={() => {
+                  void hapticTap();
+                  onClose();
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={isEn ? 'Close guidebook' : 'Đóng hướng dẫn'}
-                style={[styles.closeButton, { borderColor: theme.cardBorder }]}>
+                style={[
+                  styles.closeBtn,
+                  { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
+                ]}>
                 <Ionicons name="close" size={22} color={theme.text} />
               </Pressable>
             </View>
 
-            <View style={styles.personaRow}>
+            {/* 3 Persona Tabs */}
+            <View style={styles.personaRow} accessibilityRole="tablist">
               {PERSONAS.map((item) => {
-                const active = persona === item.id;
+                const selected = item.id === persona;
                 return (
                   <Pressable
                     key={item.id}
@@ -1103,23 +683,21 @@ export function InteractiveGuidebookModal(
                       void hapticTap();
                       setPersona(item.id);
                     }}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={isEn ? item.label.en : item.label.vi}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected }}
                     style={[
                       styles.personaPill,
                       {
-                        backgroundColor: active ? theme.primaryAction : theme.surfaceCard,
-                        borderColor: active ? theme.primaryAction : theme.cardBorder,
+                        backgroundColor: selected ? theme.primaryAction : theme.surfaceElevated,
+                        borderColor: selected ? theme.primaryAction : theme.cardBorder,
                       },
                     ]}>
-                    <Text style={{ fontSize: 15 }}>{item.emoji}</Text>
+                    <Text style={{ fontSize: 15 }}>{item.icon}</Text>
                     <Text
-                      style={{
-                        fontSize: compact ? 11 : 12,
-                        fontWeight: '800',
-                        color: active ? theme.primaryActionText : theme.text,
-                      }}>
+                      style={[
+                        styles.personaPillText,
+                        { color: selected ? theme.primaryActionText : theme.text },
+                      ]}>
                       {isEn ? item.label.en : item.label.vi}
                     </Text>
                   </Pressable>
@@ -1130,238 +708,417 @@ export function InteractiveGuidebookModal(
 
           <ScrollView
             style={styles.scroll}
-            contentContainerStyle={styles.body}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled">
-            <View style={styles.headline}>
-              <ThemedText
-                style={{
-                  fontSize: persona === 'seniors' ? 22 : 20,
-                  lineHeight: persona === 'seniors' ? 28 : 26,
-                  fontWeight: '900',
-                  color: theme.text,
-                  fontFamily: Fonts.rounded,
-                }}>
-                {isEn ? content.headline.en : content.headline.vi}
-              </ThemedText>
-              <ThemedText
-                style={{
-                  fontSize: 14,
-                  lineHeight: 20,
-                  color: theme.textSecondary,
-                }}>
-                {isEn ? content.subline.en : content.subline.vi}
-              </ThemedText>
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}>
+            {/* Stepper Bar: Steps 1..5 + Auto-Tour + Magnifier Zoom */}
+            <View
+              style={[
+                styles.controlBar,
+                { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder },
+              ]}>
+              <View style={styles.stepPillsRow}>
+                {STEPS.map((step) => {
+                  const active = step.id === activeStepId;
+                  return (
+                    <Pressable
+                      key={step.id}
+                      onPress={() => selectStep(step.id)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={`${isEn ? 'Step' : 'Bước'} ${step.id}: ${
+                        isEn ? step.shortLabel.en : step.shortLabel.vi
+                      }`}
+                      style={[
+                        styles.stepPill,
+                        {
+                          backgroundColor: active ? theme.primaryAction : theme.surfaceElevated,
+                          borderColor: active ? theme.primaryAction : theme.cardBorder,
+                        },
+                      ]}>
+                      <Text
+                        style={[
+                          styles.stepPillText,
+                          { color: active ? theme.primaryActionText : theme.text },
+                        ]}>
+                        {isEn ? step.shortLabel.en : step.shortLabel.vi}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.toolbarRightRow}>
+                {/* Auto-Play Tour Toggle */}
+                <Pressable
+                  onPress={() => {
+                    void hapticTap();
+                    setAutoTour((prev) => !prev);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: autoTour }}
+                  style={[
+                    styles.autoTourBtn,
+                    {
+                      backgroundColor: autoTour ? '#B45309' : theme.surfaceElevated,
+                      borderColor: autoTour ? '#B45309' : theme.cardBorder,
+                    },
+                  ]}>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: '800',
+                      color: autoTour ? '#FFFFFF' : theme.primaryAction,
+                    }}>
+                    {autoTour
+                      ? isEn
+                        ? '⏸ Pause Tour'
+                        : '⏸ Dừng tự chạy'
+                      : isEn
+                        ? '▶ Auto-Play 5 Steps'
+                        : '▶ Tự chạy 5 bước'}
+                  </Text>
+                </Pressable>
+
+                {/* Unclipped Magnifier Loupe Zoom (1.0x / 1.4x / 1.8x) */}
+                <View style={styles.zoomGroup}>
+                  <Text style={[styles.zoomLabel, { color: theme.textSecondary }]}>
+                    🔍 {isEn ? 'Magnifier:' : 'Kính lúp:'}
+                  </Text>
+                  {ZOOM_LEVELS.map((lvl) => {
+                    const active = zoom === lvl;
+                    return (
+                      <Pressable
+                        key={lvl}
+                        onPress={() => {
+                          void hapticTap();
+                          setZoom(lvl);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                        accessibilityLabel={
+                          isEn ? `Zoom ${lvl.toFixed(1)} times` : `Phóng to ${lvl.toFixed(1)} lần`
+                        }
+                        style={[
+                          styles.zoomBtn,
+                          {
+                            backgroundColor: active ? theme.primaryAction : theme.surfaceElevated,
+                            borderColor: active ? theme.primaryAction : theme.cardBorder,
+                          },
+                        ]}>
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '900',
+                            fontFamily: Fonts.mono,
+                            color: active ? theme.primaryActionText : theme.text,
+                          }}>
+                          {lvl.toFixed(1)}x
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
             </View>
 
-            <Blueprint
-              theme={theme}
-              isEn={isEn}
-              persona={persona}
-              zoom={zoom}
-              focusId={focusId}
-              onSelectZoom={(level) => {
-                setZoom(level);
-                if (level > 1 && focusId === null) setFocusId(1);
-                if (level === 1) setFocusId(null);
-              }}
-              onSelectHotspot={(id) => {
-                setFocusId(id);
-                setZoom(1.8);
-              }}
-              onStep={handleStep}
-              onReset={() => {
-                setFocusId(null);
-                setZoom(1);
-              }}
-            />
+            {/* Main 2-Column / Stacked Interactive Stage */}
+            <View style={[styles.mainGrid, isWide && styles.mainGridWide]}>
+              {/* LEFT: Unclipped Annotated Phone Screen + Pop-Out Spotlight Loupe */}
+              <View
+                style={[
+                  styles.phoneStageCard,
+                  { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder },
+                ]}>
+                <View style={styles.stageTopCaption}>
+                  <Text style={[styles.stageCaptionText, { color: theme.textSecondary }]}>
+                    {isEn
+                      ? `VISUAL SPOTLIGHT MAP · STEP ${activeStep.id} OF 5`
+                      : `BẢN ĐỒ ĐIỂM SÁNG TRỰC QUAN · BƯỚC ${activeStep.id} / 5`}
+                  </Text>
+                  <Text style={[styles.stageZoomBadge, { color: theme.primaryAction }]}>
+                    🔍 {zoom.toFixed(1)}x {isEn ? 'Loupe Active' : 'Đang phóng rõ'}
+                  </Text>
+                </View>
 
-            <View style={{ gap: 10 }}>
-              <ThemedText
-                style={{
-                  fontSize: 15,
-                  fontWeight: '900',
-                  color: theme.text,
-                  fontFamily: Fonts.rounded,
-                }}>
-                {persona === 'seniors'
-                  ? isEn
-                    ? 'The 3 rules, one at a time'
-                    : 'Ba điều, đọc từng điều'
-                  : persona === 'family'
-                    ? isEn
-                      ? 'Setup checklist'
-                      : 'Danh sách cài đặt'
-                    : isEn
-                      ? 'Verification protocol'
-                      : 'Quy trình kiểm chứng'}
-              </ThemedText>
+                {/* Miniature Phone Map where all 5 regions exist, non-active ones dim, active one pops out with circle + arrow */}
+                <View style={styles.miniPhoneFrame}>
+                  {STEPS.map((step) => {
+                    const isFocused = step.id === activeStepId;
+                    return (
+                      <Pressable
+                        key={step.id}
+                        onPress={() => selectStep(step.id)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: isFocused }}
+                        style={[
+                          styles.miniRegionRow,
+                          isFocused ? styles.miniRegionFocused : styles.miniRegionDimmed,
+                          isFocused && {
+                            borderColor: toneColors.border,
+                            backgroundColor: toneColors.bg,
+                          },
+                        ]}>
+                        <Animated.View
+                          style={[
+                            styles.miniCircleBadge,
+                            {
+                              backgroundColor: isFocused ? toneColors.badgeBg : '#E2E8F0',
+                              transform: [{ scale: isFocused ? ringScale : 1 }],
+                            },
+                          ]}>
+                          <Text
+                            style={{
+                              fontSize: 15,
+                              fontWeight: '900',
+                              color: isFocused ? toneColors.badgeText : '#334155',
+                            }}>
+                            {step.circle}
+                          </Text>
+                        </Animated.View>
 
-              {content.steps.map((step, index) => (
-                <View
-                  key={`${step.icon}-${index}`}
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              styles.miniRegionTitle,
+                              { color: isFocused ? '#0F172A' : '#475569' },
+                            ]}>
+                            {isEn ? step.shortLabel.en : step.shortLabel.vi}
+                          </Text>
+                          <Text
+                            numberOfLines={isFocused ? 2 : 1}
+                            style={[
+                              styles.miniRegionSub,
+                              { color: isFocused ? '#1E293B' : '#64748B' },
+                            ]}>
+                            {isEn ? step.targetPreviewTitle.en : step.targetPreviewTitle.vi}
+                          </Text>
+                        </View>
+
+                        {isFocused ? (
+                          <View style={[styles.activeArrowPill, { backgroundColor: toneColors.badgeBg }]}>
+                            <Text style={{ fontSize: 12, fontWeight: '900', color: toneColors.badgeText }}>
+                              {isEn ? '← ACTIVE' : '← ĐANG XEM'}
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={{ fontSize: 12, fontWeight: '700', color: '#64748B' }}>
+                            {isEn ? 'Tap' : 'Chạm'}
+                          </Text>
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {/* POP-OUT MAGNIFIED LOUPE LAYER (scales text cleanly without ever clipping edges!) */}
+                <Animated.View
                   style={[
-                    styles.stepCard,
-                    { borderColor: theme.cardBorder, backgroundColor: theme.surfaceCard },
+                    styles.loupePopoutCard,
+                    {
+                      borderColor: toneColors.border,
+                      backgroundColor: toneColors.bg,
+                      transform: [{ scale: loupeScaleAnim }],
+                    },
                   ]}>
-                  <View
-                    style={[
-                      styles.stepIcon,
-                      {
-                        backgroundColor: theme.backgroundElement,
-                        width: persona === 'seniors' ? 46 : 40,
-                        height: persona === 'seniors' ? 46 : 40,
-                      },
-                    ]}>
-                    <Ionicons
-                      name={step.icon}
-                      size={persona === 'seniors' ? 28 : 22}
-                      color={theme.primaryAction}
-                    />
+                  <View style={styles.loupeTopBar}>
+                    <View style={[styles.loupeCircleBadge, { backgroundColor: toneColors.badgeBg }]}>
+                      <Text style={{ fontSize: 17, fontWeight: '900', color: toneColors.badgeText }}>
+                        {activeStep.circle}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.loupeTagPill,
+                        { backgroundColor: toneColors.badgeBg },
+                      ]}>
+                      <Text
+                        style={{
+                          fontSize: 11 * Math.min(zoomTextScale, 1.15),
+                          fontWeight: '900',
+                          color: toneColors.badgeText,
+                        }}>
+                        {isEn
+                          ? activeStep.targetPreviewBadge.en
+                          : activeStep.targetPreviewBadge.vi}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={{ flex: 1, gap: 3 }}>
-                    <ThemedText
+
+                  <Text
+                    style={[
+                      styles.loupeTitle,
+                      { fontSize: Math.round(18 * zoomTextScale), lineHeight: Math.round(25 * zoomTextScale) },
+                    ]}>
+                    {isEn ? activeStep.targetPreviewTitle.en : activeStep.targetPreviewTitle.vi}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.loupeBody,
+                      { fontSize: Math.round(14 * zoomTextScale), lineHeight: Math.round(21 * zoomTextScale) },
+                    ]}>
+                    {isEn ? activeStep.targetPreviewSub.en : activeStep.targetPreviewSub.vi}
+                  </Text>
+
+                  {/* Annotated Directional Arrow Callout pointing straight to the target button */}
+                  <View style={styles.arrowCalloutRow}>
+                    <Text
+                      style={[
+                        styles.arrowCalloutText,
+                        { color: toneColors.border, fontSize: Math.round(13 * zoomTextScale) },
+                      ]}>
+                      {isEn ? activeStep.pointerDirection.en : activeStep.pointerDirection.vi}
+                    </Text>
+                  </View>
+
+                  <Pressable
+                    onPress={handleLiveAction}
+                    accessibilityRole="button"
+                    style={[
+                      styles.loupeMockButton,
+                      { backgroundColor: toneColors.badgeBg },
+                    ]}>
+                    <Text
                       style={{
-                        fontSize: 14 * (persona === 'seniors' ? 1.08 : 1),
+                        fontSize: Math.round(15 * zoomTextScale),
                         fontWeight: '900',
-                        color: theme.text,
+                        color: toneColors.badgeText,
+                        textAlign: 'center',
                       }}>
-                      {isEn ? step.title.en : step.title.vi}
+                      {isEn ? activeStep.targetButtonLabel.en : activeStep.targetButtonLabel.vi}
+                    </Text>
+                  </Pressable>
+                </Animated.View>
+              </View>
+
+              {/* RIGHT: Focused Step Explanation + Prev/Next + "Try Live Now" Action */}
+              <View
+                style={[
+                  styles.explanationCard,
+                  { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder },
+                ]}>
+                <View style={styles.stepHeaderRow}>
+                  <View style={[styles.stepBigBadge, { backgroundColor: theme.primaryAction }]}>
+                    <Text style={{ fontSize: 20, fontWeight: '900', color: theme.primaryActionText }}>
+                      {activeStep.circle}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <ThemedText style={[styles.stepCounterLabel, { color: theme.primaryAction }]}>
+                      {isEn
+                        ? `STEP ${activeStep.id} OF 5 · ${activePersonaInfo.label.en.toUpperCase()}`
+                        : `BƯỚC ${activeStep.id} / 5 · ${activePersonaInfo.label.vi.toUpperCase()}`}
                     </ThemedText>
-                    <ThemedText
-                      style={{
-                        fontSize: 13 * (persona === 'seniors' ? 1.08 : 1),
-                        lineHeight: 19 * (persona === 'seniors' ? 1.08 : 1),
-                        color: theme.textSecondary,
-                      }}>
-                      {isEn ? step.body.en : step.body.vi}
+                    <ThemedText style={[styles.stepMainTitle, { color: theme.text }]}>
+                      {isEn ? activeStep.title.en : activeStep.title.vi}
                     </ThemedText>
                   </View>
                 </View>
-              ))}
-            </View>
 
-            {persona === 'judges' ? (
-              <View style={{ gap: 10 }}>
-                <ThemedText
-                  style={{
-                    fontSize: 15,
-                    fontWeight: '900',
-                    color: theme.text,
-                    fontFamily: Fonts.rounded,
-                  }}>
-                  {isEn ? '5 deterministic scenarios' : '5 kịch bản cố định'}
-                </ThemedText>
-                {JUDGE_SCENARIOS.map((scenario) => {
-                  const tone = scenarioTone(scenario.tone, theme);
-                  return (
-                    <View
-                      key={scenario.id}
-                      style={[
-                        styles.scenarioRow,
-                        { borderColor: theme.cardBorder, backgroundColor: theme.surfaceCard },
-                      ]}>
-                      <Text style={{ fontSize: 18 }}>{scenario.emoji}</Text>
-                      <View style={{ flex: 1, gap: 3 }}>
-                        <View style={styles.scenarioTop}>
-                          <ThemedText
-                            style={{ flex: 1, fontSize: 13, fontWeight: '900', color: theme.text }}>
-                            {isEn ? scenario.name.en : scenario.name.vi}
-                          </ThemedText>
-                          <View
-                            style={[
-                              styles.scenarioBadge,
-                              { backgroundColor: tone.background, borderColor: tone.color },
-                            ]}>
-                            <Text style={{ fontSize: 10, fontWeight: '900', color: tone.color }}>
-                              {isEn ? scenario.badge.en : scenario.badge.vi}
-                            </Text>
-                          </View>
-                        </View>
-                        <ThemedText
-                          style={{ fontSize: 12, lineHeight: 17, color: theme.textSecondary }}>
-                          {isEn ? scenario.check.en : scenario.check.vi}
-                        </ThemedText>
-                        <Text
-                          style={{
-                            fontFamily: Fonts.mono,
-                            fontSize: 10,
-                            color: theme.textSecondary,
-                          }}>
-                          {scenario.id}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-
-                <ThemedText
-                  style={{
-                    fontSize: 15,
-                    fontWeight: '900',
-                    color: theme.text,
-                    marginTop: 2,
-                    fontFamily: Fonts.rounded,
-                  }}>
-                  {isEn ? 'PDPD 2025 privacy gates' : 'Cổng riêng tư PDPD 2025'}
-                </ThemedText>
-                {PRIVACY_GATES.map((gate, index) => (
-                  <View key={gate.en} style={styles.gateRow}>
-                    <View
-                      style={[styles.gateNumber, { backgroundColor: theme.backgroundSelected }]}>
-                      <Text
-                        style={{
-                          fontFamily: Fonts.mono,
-                          fontSize: 11,
-                          fontWeight: '900',
-                          color: theme.primaryAction,
-                        }}>
-                        {index + 1}
-                      </Text>
-                    </View>
-                    <ThemedText
-                      style={{ flex: 1, fontSize: 13, lineHeight: 19, color: theme.textSecondary }}>
-                      {isEn ? gate.en : gate.vi}
+                {/* 3 Clear, Digestible Instruction Blocks */}
+                <View style={styles.instructionStack}>
+                  <View
+                    style={[
+                      styles.instructionBox,
+                      { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
+                    ]}>
+                    <ThemedText style={[styles.instructionLabel, { color: theme.primaryAction }]}>
+                      👁 {isEn ? '1. What to look at on screen' : '1. Nhìn vào đâu trên màn hình'}
+                    </ThemedText>
+                    <ThemedText style={[styles.instructionText, { color: theme.text }]}>
+                      {isEn ? stepDetail.whatToLookAt.en : stepDetail.whatToLookAt.vi}
                     </ThemedText>
                   </View>
-                ))}
+
+                  <View
+                    style={[
+                      styles.instructionBox,
+                      { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
+                    ]}>
+                    <ThemedText style={[styles.instructionLabel, { color: '#B45309' }]}>
+                      👆 {isEn ? '2. What button to tap' : '2. Chạm vào nút nào'}
+                    </ThemedText>
+                    <ThemedText style={[styles.instructionText, { color: theme.text }]}>
+                      {isEn ? stepDetail.whatToTap.en : stepDetail.whatToTap.vi}
+                    </ThemedText>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.instructionBox,
+                      { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
+                    ]}>
+                    <ThemedText style={[styles.instructionLabel, { color: '#15803D' }]}>
+                      🧠 {isEn ? '3. Why this protects you' : '3. Vì sao bước này bảo vệ được bạn'}
+                    </ThemedText>
+                    <ThemedText style={[styles.instructionText, { color: theme.text }]}>
+                      {isEn ? stepDetail.whyItWorks.en : stepDetail.whatToLookAt && stepDetail.whyItWorks.vi}
+                    </ThemedText>
+                  </View>
+                </View>
+
+                {/* Direct "Try Step X Live" CTA */}
+                <Pressable
+                  onPress={handleLiveAction}
+                  accessibilityRole="button"
+                  style={({ pressed }) => [
+                    styles.liveActionBtn,
+                    {
+                      backgroundColor: theme.primaryAction,
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                    },
+                  ]}>
+                  <Text style={[styles.liveActionBtnText, { color: theme.primaryActionText }]}>
+                    {isEn ? activeStep.liveActionLabel.en : activeStep.liveActionLabel.vi}
+                  </Text>
+                </Pressable>
+
+                {/* Big Unmistakable Previous / Next Step Buttons */}
+                <View style={styles.prevNextRow}>
+                  <Pressable
+                    onPress={() => stepDelta(-1)}
+                    accessibilityRole="button"
+                    accessibilityLabel={isEn ? 'Previous step' : 'Bước trước'}
+                    style={[
+                      styles.navStepBtn,
+                      { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
+                    ]}>
+                    <Ionicons name="arrow-back" size={18} color={theme.text} />
+                    <ThemedText style={[styles.navStepBtnText, { color: theme.text }]}>
+                      {isEn ? 'Previous' : 'Bước trước'}
+                    </ThemedText>
+                  </Pressable>
+
+                  <ThemedText style={[styles.stepProgressIndicator, { color: theme.textSecondary }]}>
+                    {activeStep.id} / 5
+                  </ThemedText>
+
+                  <Pressable
+                    onPress={() => stepDelta(1)}
+                    accessibilityRole="button"
+                    accessibilityLabel={isEn ? 'Next step' : 'Bước tiếp theo'}
+                    style={[
+                      styles.navStepBtn,
+                      { backgroundColor: theme.surfaceElevated, borderColor: theme.primaryAction },
+                    ]}>
+                    <ThemedText style={[styles.navStepBtnText, { color: theme.primaryAction }]}>
+                      {isEn ? 'Next Step' : 'Bước tiếp'}
+                    </ThemedText>
+                    <Ionicons name="arrow-forward" size={18} color={theme.primaryAction} />
+                  </Pressable>
+                </View>
+
+                {fontScale !== 'standard' ? (
+                  <ThemedText style={{ fontSize: 12, color: theme.riskSafe, textAlign: 'center', fontWeight: '700' }}>
+                    {isEn
+                      ? `✓ Senior text magnification (${fontScale === 'large' ? '115%' : '130%'}) is active!`
+                      : `✓ Đang bật chế độ chữ ${fontScale === 'large' ? 'To (115%)' : 'Rất to (130%)'}!`}
+                  </ThemedText>
+                ) : null}
               </View>
-            ) : null}
-
-            <View
-              style={[
-                styles.footnote,
-                { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
-              ]}>
-              <Ionicons name="information-circle-outline" size={18} color={theme.primaryAction} />
-              <ThemedText
-                style={{ flex: 1, fontSize: 12, lineHeight: 17, color: theme.textSecondary }}>
-                {isEn ? content.footnote.en : content.footnote.vi}
-              </ThemedText>
             </View>
-
-            <ThemedText style={{ fontSize: 11, lineHeight: 16, color: theme.textSecondary }}>
-              {isEn
-                ? 'Guide for the ScamKill demo. Risk verdicts are signals, not legal proof.'
-                : 'Hướng dẫn cho bản demo ScamKill. Kết luận rủi ro chỉ là tín hiệu, không phải bằng chứng pháp lý.'}
-            </ThemedText>
-
-            <Pressable
-              onPress={handleClose}
-              accessibilityRole="button"
-              accessibilityLabel={isEn ? 'Close guidebook' : 'Đóng hướng dẫn'}
-              style={({ pressed }) => [
-                styles.doneButton,
-                { backgroundColor: theme.primaryAction },
-                pressed && styles.pressed,
-              ]}>
-              <Ionicons name="checkmark-circle" size={20} color={theme.primaryActionText} />
-              <ThemedText style={{ fontSize: 15, fontWeight: '900', color: theme.primaryActionText }}>
-                {isEn ? 'Got it, back to ScamKill' : 'Đã hiểu, quay lại ScamKill'}
-              </ThemedText>
-            </Pressable>
           </ScrollView>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   );
@@ -1372,7 +1129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    padding: 12,
   },
   backdrop: {
     position: 'absolute',
@@ -1380,43 +1137,56 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: 'rgba(9, 14, 13, 0.66)',
+    backgroundColor: 'rgba(9, 14, 13, 0.68)',
   },
   dialog: {
     width: '100%',
-    maxWidth: 780,
+    maxWidth: 960,
     maxHeight: '94%',
-    borderRadius: 22,
-    borderWidth: 1.5,
+    borderRadius: 24,
+    borderWidth: 2,
     overflow: 'hidden',
   },
   header: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 10,
-    gap: 10,
-    borderBottomWidth: 1,
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1.5,
+    gap: 12,
   },
-  headerRow: {
+  headerTopRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 13,
+  headerTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  headerBadge: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerText: {
-    flex: 1,
-    gap: 2,
+  headerTitle: {
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '900',
+    fontFamily: Fonts.heading,
   },
-  closeButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  headerSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  closeBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1424,283 +1194,282 @@ const styles = StyleSheet.create({
   personaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
   },
   personaPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    minHeight: 38,
-    borderRadius: 999,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
     borderWidth: 1.5,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+  },
+  personaPillText: {
+    fontSize: 13,
+    fontWeight: '800',
   },
   scroll: {
-    flexShrink: 1,
-    minHeight: 0,
+    flex: 1,
   },
-  body: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 18,
-    gap: 14,
+  scrollContent: {
+    padding: 16,
+    gap: 16,
   },
-  headline: {
-    gap: 4,
-  },
-  blueprint: {
+  controlBar: {
     borderRadius: 18,
     borderWidth: 1.5,
-    overflow: 'hidden',
+    padding: 12,
+    gap: 10,
   },
-  blueprintHead: {
+  stepPillsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  stepPill: {
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
-  zoomHudBadge: {
-    borderRadius: 9,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  zoomBar: {
-    gap: 7,
-    paddingHorizontal: 10,
     paddingVertical: 8,
-    borderBottomWidth: 1,
-  },
-  zoomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  zoomChip: {
-    minWidth: 48,
-    minHeight: 34,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 6,
-  },
-  stepButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  canvas: {
-    height: 380,
-    overflow: 'hidden',
-  },
-  canvasLayer: {
-    width: '100%',
-    height: '100%',
-  },
-  mock: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    top: 12,
-    bottom: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 9,
-    paddingTop: 8,
-    paddingBottom: 6,
-    justifyContent: 'space-between',
-  },
-  mockTopBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 6,
-  },
-  mockGuidePill: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  mockVerdict: {
-    borderRadius: 10,
-    borderWidth: 1.5,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    gap: 3,
-  },
-  mockVerdictTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  mockReason: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  mockDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-  },
-  mockBreath: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 9,
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  mockActions: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  mockAction: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    paddingVertical: 7,
-    paddingHorizontal: 4,
-  },
-  mockTabBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    paddingTop: 4,
-  },
-  mockTab: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  mockTabDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-  },
-  hotspot: {
-    position: 'absolute',
-    width: 34,
-    height: 34,
-    marginLeft: -17,
-    marginTop: -17,
-    borderRadius: 17,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hotspotArrowWrap: {
-    position: 'absolute',
-    width: 26,
-    height: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hotspotArrow: {
-    fontSize: 22,
-    lineHeight: 24,
-    fontWeight: '900',
-  },
-  calloutList: {
-    padding: 10,
-    gap: 8,
-  },
-  calloutRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 9,
     borderRadius: 12,
     borderWidth: 1.5,
-    padding: 9,
   },
-  calloutBadge: {
+  stepPillText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  toolbarRightRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  autoTourBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  zoomGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  zoomLabel: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  zoomBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1.5,
+  },
+  mainGrid: {
+    gap: 16,
+  },
+  mainGridWide: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  phoneStageCard: {
+    flex: 1,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 14,
+    gap: 12,
+  },
+  stageTopCaption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  stageCaptionText: {
+    fontSize: 11,
+    fontWeight: '800',
+    fontFamily: Fonts.mono,
+  },
+  stageZoomBadge: {
+    fontSize: 12,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  miniPhoneFrame: {
+    borderRadius: 16,
+    backgroundColor: '#F1EBDD',
+    padding: 10,
+    gap: 6,
+  },
+  miniRegionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  miniRegionFocused: {
+    borderWidth: 2.5,
+  },
+  miniRegionDimmed: {
+    backgroundColor: '#FFFDF9',
+    borderColor: '#DFD6C3',
+    opacity: 0.58,
+  },
+  miniCircleBadge: {
     width: 30,
     height: 30,
     borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    padding: 12,
+  miniRegionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
   },
-  stepIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  miniRegionSub: {
+    fontSize: 12,
   },
-  scenarioRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 9,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    padding: 11,
-  },
-  scenarioTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  scenarioBadge: {
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  gateRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 9,
-  },
-  gateNumber: {
-    width: 24,
-    height: 24,
+  activeArrowPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 8,
+  },
+  loupePopoutCard: {
+    borderRadius: 18,
+    borderWidth: 3,
+    padding: 16,
+    gap: 10,
+  },
+  loupeTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  loupeCircleBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  footnote: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 11,
+  loupeTagPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  doneButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    minHeight: 50,
+  loupeTitle: {
+    fontWeight: '900',
+    color: '#0F172A',
+    fontFamily: Fonts.heading,
+  },
+  loupeBody: {
+    color: '#1E293B',
+    fontWeight: '500',
+  },
+  arrowCalloutRow: {
+    paddingVertical: 4,
+  },
+  arrowCalloutText: {
+    fontWeight: '900',
+  },
+  loupeMockButton: {
+    minHeight: 48,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pressed: {
-    opacity: 0.8,
+  explanationCard: {
+    flex: 1,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    padding: 16,
+    gap: 14,
+  },
+  stepHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  stepBigBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepCounterLabel: {
+    fontSize: 11,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
+  },
+  stepMainTitle: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '900',
+    fontFamily: Fonts.heading,
+  },
+  instructionStack: {
+    gap: 10,
+  },
+  instructionBox: {
+    borderRadius: 14,
+    borderWidth: 1.5,
+    padding: 12,
+    gap: 4,
+  },
+  instructionLabel: {
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  instructionText: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  liveActionBtn: {
+    minHeight: 54,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  liveActionBtnText: {
+    fontSize: 15,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  prevNextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    paddingTop: 4,
+  },
+  navStepBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  navStepBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  stepProgressIndicator: {
+    fontSize: 14,
+    fontWeight: '900',
+    fontFamily: Fonts.mono,
   },
 });
+
+export default InteractiveGuidebookModal;
