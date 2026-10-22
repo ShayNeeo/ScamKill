@@ -12,6 +12,7 @@ import {
 
 import { getDefaultFamilySafeWord } from '@/api/scamkill/client';
 import { Fonts } from '@/constants/theme';
+import { hapticWarning } from '@/lib/haptics';
 
 export interface CoolingOffModalProps {
   visible: boolean;
@@ -79,6 +80,7 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
 
   React.useEffect(() => {
     if (!visible) return;
+    void hapticWarning();
     setSecondsLeft(COOLING_OFF_SECONDS);
     setLockUntil(Date.now() + COOLING_OFF_HOURS * 60 * 60 * 1000);
     setAskedSafeWord(false);

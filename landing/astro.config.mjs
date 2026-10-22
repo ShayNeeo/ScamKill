@@ -1,18 +1,19 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
+import react from '@astrojs/react';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 
-// SSR on Cloudflare Workers. The landing page opts into static prerendering
-// (`export const prerender = true`); API routes and /dashboard stay dynamic.
 export default defineConfig({
   output: 'server',
+  session: {
+    driver: 'memory',
+  },
   adapter: cloudflare({
-    imageService: 'compile',
-    platformProxy: { enabled: true, configPath: './wrangler.jsonc' },
+    imageService: 'passthrough',
   }),
-  integrations: [svelte()],
+  integrations: [react(), svelte()],
   vite: {
     plugins: [tailwindcss()],
   },

@@ -28,13 +28,16 @@ jobs:
       - name: Install App Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Typecheck ScamKill App & API
-        run: pnpm run typecheck
+      - name: Typecheck ScamKill App & API (tsrs Rust Compiler + tsc)
+        run: |
+          pnpm run typecheck:tsrs
+          pnpm run typecheck
 
-      - name: Run Unit & Integration Tests (272 tests)
+      - name: Run Unit & Integration Tests (273 tests)
         run: pnpm test
 
-      - name: Install & Build Astro Cloudflare Landing Page
+      - name: Install, Typecheck (tsrs) & Build Astro 6 Cloudflare Landing Page
         run: |
           pnpm --dir landing install --no-frozen-lockfile
+          pnpm --dir landing run typecheck:tsrs
           pnpm --dir landing run build

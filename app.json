@@ -29,17 +29,25 @@
       "favicon": "./assets/images/favicon.png",
       "name": "ScamKill — Lá chắn chống lừa đảo",
       "shortName": "ScamKill",
-      "themeColor": "#0F766E",
-      "backgroundColor": "#F8FAFC"
+      "themeColor": "#0B5D56",
+      "backgroundColor": "#FAF6EE"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "asyncRoutes": {
+            "web": true,
+            "default": false
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#FAF6EE",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 96
         }
       ],
       "expo-status-bar"

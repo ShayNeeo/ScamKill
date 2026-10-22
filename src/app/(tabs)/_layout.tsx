@@ -13,6 +13,7 @@ import type { SeniorAppearanceOverride, SeniorFontScale } from '@/hooks/use-them
 import { useLanguageDialect } from '@/i18n/regional';
 import { ThemedText } from '@/components/themed-text';
 import { t } from '@/i18n';
+import { hapticTap } from '@/lib/haptics';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -57,7 +58,10 @@ function SeniorQuickControls() {
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginRight: 10 }}>
       <Pressable
         style={chipStyle}
-        onPress={cycleSeniorFontScale}
+        onPress={() => {
+          void hapticTap();
+          cycleSeniorFontScale();
+        }}
         accessibilityRole="button"
         accessibilityLabel={
           isEn
@@ -70,7 +74,10 @@ function SeniorQuickControls() {
 
       <Pressable
         style={chipStyle}
-        onPress={cycleSeniorAppearance}
+        onPress={() => {
+          void hapticTap();
+          cycleSeniorAppearance();
+        }}
         accessibilityRole="button"
         accessibilityLabel={
           isEn
@@ -83,7 +90,10 @@ function SeniorQuickControls() {
 
       <Pressable
         style={chipStyle}
-        onPress={() => setDialect(isEn ? 'vi-north' : 'en')}
+        onPress={() => {
+          void hapticTap();
+          setDialect(isEn ? 'vi-north' : 'en');
+        }}
         accessibilityRole="button"
         accessibilityLabel={isEn ? 'Switch language. Current: English' : 'Đổi ngôn ngữ. Hiện tại: Tiếng Việt'}>
         <Ionicons name="globe-outline" size={14} color={theme.primaryAction} />

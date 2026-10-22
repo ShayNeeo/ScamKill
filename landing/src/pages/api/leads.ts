@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { createLead } from '../../lib/store';
 import { generateId } from '../../lib/auth';
 
@@ -6,7 +7,7 @@ export const prerender = false;
 
 const ROLES = ['senior', 'family', 'bank', 'telco', 'other'];
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request }) => {
   let body: unknown;
   try {
     body = await request.json();
@@ -37,7 +38,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   };
 
   try {
-    await createLead(locals.runtime?.env?.DB, row);
+    await createLead(env?.DB, row);
     return json({ ok: true, id: row.id }, 201);
   } catch (error) {
     console.error('[leads] insert failed', error);

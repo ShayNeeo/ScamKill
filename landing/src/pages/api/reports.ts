@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import { generateId } from '../../lib/auth';
 import { countReports, createReport, listReports } from '../../lib/store';
 
@@ -14,8 +15,8 @@ const CATEGORIES = [
   'unknown',
 ];
 
-export const GET: APIRoute = async ({ locals }) => {
-  const d1 = locals.runtime?.env?.DB;
+export const GET: APIRoute = async () => {
+  const d1 = env?.DB;
   const [total, recent] = await Promise.all([countReports(d1), listReports(d1, 10)]);
   return json({
     total,
@@ -23,7 +24,7 @@ export const GET: APIRoute = async ({ locals }) => {
   });
 };
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request }) => {
   let body: unknown;
   try {
     body = await request.json();
@@ -55,7 +56,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   };
 
   try {
-    await createReport(locals.runtime?.env?.DB, row);
+    await createReport(env?.DB, row);
     return json({ ok: true, id: row.id }, 201);
   } catch (error) {
     console.error('[reports] insert failed', error);

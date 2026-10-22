@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
 import {
   SESSION_COOKIE,
   SESSION_TTL_MS,
@@ -31,7 +32,7 @@ interface AuthBody {
   name?: unknown;
 }
 
-export const POST: APIRoute = async ({ request, cookies, locals }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   let body: AuthBody;
   try {
     body = (await request.json()) as AuthBody;
@@ -54,7 +55,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     return json({ error: 'Vui lòng nhập tên của bạn.' }, 400);
   }
 
-  const d1 = locals.runtime?.env?.DB;
+  const d1 = env?.DB;
   try {
     let user = await findUserByEmail(d1, email);
 
@@ -97,11 +98,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ cookies, locals }) => {
+export const DELETE: APIRoute = async ({ cookies }) => {
   const token = cookies.get(SESSION_COOKIE)?.value;
   if (token) {
     try {
-      await invalidateSession(locals.runtime?.env?.DB, token);
+      await invalidateSession(env?.DB, token);
     } catch (error) {
       console.error('[auth] logout failed', error);
     }

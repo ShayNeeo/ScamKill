@@ -1,0 +1,33 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FamilyCommandSpa from '../../components/FamilyCommandSpa';
+
+export const prerender = false;
+
+const slug = Astro.params.slug ? `/${Astro.params.slug}` : '/';
+const initialPath = ['/calls', '/bots'].includes(slug) ? slug : '/';
+---
+
+<Layout
+  title="ScamKill — Trung tâm Điều phối Gia đình (Astro 6 + TanStack Router + Hono)"
+  description="Bảng điều khiển dành cho con cháu kiểm tra số gọi lạ qua Hono Edge API, cài đặt Mã gia đình và theo dõi cảnh báo SMS, Zalo, Telegram."
+>
+  <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <a
+        href="/"
+        class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[#DFD6C3] bg-[#FFFDF9] px-4 py-2 text-sm font-bold text-[#0B5D56] hover:bg-[#F1EBDD]"
+      >
+        ← Quay về Trang chủ ScamKill
+      </a>
+      <a
+        href="https://scamkill-pwa.9ez.workers.dev/?autoinstall=1"
+        class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#0B5D56] px-5 py-2.5 text-sm font-extrabold text-[#FAF6EE]"
+      >
+        📲 Mở & Cài đặt Ứng dụng PWA cho Bố/Mẹ
+      </a>
+    </div>
+
+    <FamilyCommandSpa client:only="react" initialPath={initialPath} />
+  </main>
+</Layout>

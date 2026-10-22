@@ -17,6 +17,7 @@ import {
   getDefaultFamilySafeWord,
 } from '@/api/scamkill/client';
 import { Fonts } from '@/constants/theme';
+import { hapticWarning } from '@/lib/haptics';
 import type {
   CallCheckInput,
   CallCheckOutput,
@@ -178,6 +179,9 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
       return;
     }
     setShareConsent(false);
+    if (callOutput.status === 'high_risk' || callOutput.status === 'caution') {
+      void hapticWarning();
+    }
     setRingSeconds(0);
     const timer = setInterval(() => setRingSeconds((s) => s + 1), 1000);
     return () => {

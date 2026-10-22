@@ -2,11 +2,12 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "types": ["@cloudflare/workers-types"],
-    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [".astro/types.d.ts", "src/**/*", "drizzle.config.ts"],
-  "exclude": ["dist", ".wrangler"]
+  "exclude": ["dist", ".wrangler", "node_modules"]
 }
