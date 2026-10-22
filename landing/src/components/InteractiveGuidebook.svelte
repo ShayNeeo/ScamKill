@@ -16,6 +16,7 @@
     mockLabel: Bi;
     mockSub: Bi;
     arrowNote: Bi;
+    arrowIcon: string;
     whatToTap: Bi;
     detail: Record<Persona, Bi>;
     pwaHref: string;
@@ -24,16 +25,16 @@
   }
 
   const personas: { key: Persona; icon: string; label: Bi }[] = [
-    { key: 'senior', icon: '👵', label: { en: 'For older adults', vi: 'Dành cho người cao tuổi' } },
-    { key: 'family', icon: '👨‍👩‍👧', label: { en: 'For adult children', vi: 'Dành cho con cháu' } },
-    { key: 'judge', icon: '⚖️', label: { en: 'For competition judges', vi: 'Dành cho giám khảo' } },
+    { key: 'senior', icon: 'lucide:user-round-check', label: { en: 'For older adults', vi: 'Dành cho người cao tuổi' } },
+    { key: 'family', icon: 'lucide:users-round', label: { en: 'For adult children', vi: 'Dành cho con cháu' } },
+    { key: 'judge', icon: 'lucide:scale', label: { en: 'For competition judges', vi: 'Dành cho giám khảo' } },
   ];
 
   const hotspots: Hotspot[] = [
     {
       id: 'call',
       stepNum: 1,
-      number: '①',
+      number: '1',
       shortTab: { en: '1. Call Shield', vi: '1. Cảnh báo Gọi' },
       title: { en: 'Step 1: Check the Caller Risk Before Pickup', vi: 'Bước 1: Xem nhãn rủi ro trước khi bắt máy' },
       mockLabel: { en: 'Incoming Call: 0918 765 432 · Unverified', vi: 'Cuộc gọi đến: 0918 765 432 · Chưa xác minh' },
@@ -41,9 +42,10 @@
         en: 'Unknown number, not in contacts. If this caller asks for urgent money, pause and verify.',
         vi: 'Số lạ ngoài danh bạ. Nếu người này xin tiền gấp, hãy dừng lại xác minh.',
       },
+      arrowIcon: 'lucide:arrow-down-right',
       arrowNote: {
-        en: '↘ Look at this risk badge before answering the phone',
-        vi: '↘ Nhìn nhãn màu cảnh báo này trước khi bắt máy',
+        en: 'Look at this risk badge before answering the phone',
+        vi: 'Nhìn nhãn màu cảnh báo này trước khi bắt máy',
       },
       whatToTap: {
         en: 'If the caller demands urgent money, tap "Check & Alert Family Now".',
@@ -70,7 +72,7 @@
     {
       id: 'pause',
       stepNum: 2,
-      number: '②',
+      number: '2',
       shortTab: { en: '2. 60s Pause', vi: '2. Dừng 60 giây' },
       title: { en: 'Step 2: 60-Second Breathing Pause (Brain Reset)', vi: 'Bước 2: Khoảng dừng 60 giây (Hạ nhịp tim)' },
       mockLabel: { en: '00:59 · Breathe in 4s · out 4s', vi: '00:59 · Hít vào 4 giây · thở ra 4 giây' },
@@ -78,9 +80,10 @@
         en: 'Hold off opening your banking app while the green breathing circle paces your breath.',
         vi: 'Khoan mở ứng dụng ngân hàng trong lúc vòng tròn xanh dẫn nhịp hít thở.',
       },
+      arrowIcon: 'lucide:arrow-down-left',
       arrowNote: {
-        en: '↙ Follow the 4-second inhale / 4-second exhale ring',
-        vi: '↙ Hít thở theo vòng tròn phồng-xẹp 4 giây',
+        en: 'Follow the 4-second inhale / 4-second exhale ring',
+        vi: 'Hít thở theo vòng tròn phồng-xẹp 4 giây',
       },
       whatToTap: {
         en: 'Wait 60 seconds with the breathing circle before touching any banking app.',
@@ -107,7 +110,7 @@
     {
       id: 'safe-word',
       stepNum: 3,
-      number: '③',
+      number: '3',
       shortTab: { en: '3. Family Code', vi: '3. Mã gia đình' },
       title: { en: 'Step 3: Ask the Secret Family Safe-Word', vi: 'Bước 3: Hỏi "Mã gia đình" chống giả giọng AI' },
       mockLabel: { en: 'Family Code: "Sweet starfruit (Cây khế ngọt)"', vi: 'Mã gia đình: "Cây khế ngọt"' },
@@ -115,9 +118,10 @@
         en: '(i) Ask for the family secret phrase. (ii) Hang up and call back the number saved in contacts.',
         vi: '(i) Hỏi mật khẩu riêng của gia đình. (ii) Cúp máy và gọi lại theo số đã lưu trong danh bạ.',
       },
+      arrowIcon: 'lucide:arrow-down-right',
       arrowNote: {
-        en: '↘ Read your family phrase here and ask the caller to say it',
-        vi: '↘ Xem mật khẩu nhà mình tại đây và yêu cầu người gọi trả lời',
+        en: 'Read your family phrase here and ask the caller to say it',
+        vi: 'Xem mật khẩu nhà mình tại đây và yêu cầu người gọi trả lời',
       },
       whatToTap: {
         en: 'Ask the caller for the phrase; if they hesitate, hang up and dial their saved contact.',
@@ -144,7 +148,7 @@
     {
       id: 'alert',
       stepNum: 4,
-      number: '④',
+      number: '4',
       shortTab: { en: '4. 1-Tap SOS', vi: '4. Báo Gia đình' },
       title: { en: 'Step 4: One-Tap Multi-Bot Family Alert', vi: 'Bước 4: Báo cho con cháu 1 chạm qua SMS, Zalo, Telegram' },
       mockLabel: { en: 'Alert family in one tap (SMS · Zalo · Telegram)', vi: 'Báo gia đình 1 chạm (SMS · Zalo · Telegram)' },
@@ -152,9 +156,10 @@
         en: 'Dispatches alert type, time, and phone number immediately so a relative can call back within minutes.',
         vi: 'Bắn ngay loại cảnh báo, thời điểm và số điện thoại để con cháu gọi lại hỗ trợ trong vài phút.',
       },
+      arrowIcon: 'lucide:arrow-up-left',
       arrowNote: {
-        en: '↖ Tap this yellow button to notify your trusted relatives at once',
-        vi: '↖ Chạm nút màu vàng này để báo ngay cho con cháu',
+        en: 'Tap this yellow button to notify your trusted relatives at once',
+        vi: 'Chạm nút màu vàng này để báo ngay cho con cháu',
       },
       whatToTap: {
         en: 'Tap "Alert family in one tap" to notify SMS, Zalo, and Telegram simultaneously.',
@@ -181,7 +186,7 @@
     {
       id: 'privacy',
       stepNum: 5,
-      number: '⑤',
+      number: '5',
       shortTab: { en: '5. Privacy Gate', vi: '5. Quyền riêng tư' },
       title: { en: 'Step 5: Consent-First Privacy Gate (PDPD 2025)', vi: 'Bước 5: Cổng đồng ý bảo vệ quyền riêng tư (PDPD 2025)' },
       mockLabel: { en: '[ ] Share call content (Off by default)', vi: '[ ] Chia sẻ nội dung cuộc gọi (Tắt mặc định)' },
@@ -189,9 +194,10 @@
         en: 'By default, alerts send ONLY alert type, timestamp, and phone number. Content is shared only if ticked.',
         vi: 'Mặc định chỉ gửi loại cảnh báo, thời điểm và SĐT. Nội dung tin nhắn chỉ gửi khi người cao tuổi đồng ý.',
       },
+      arrowIcon: 'lucide:arrow-up-right',
       arrowNote: {
-        en: '↗ Unchecked by default to protect the senior’s dignity and privacy',
-        vi: '↗ Mặc định không tích chọn để tôn trọng quyền riêng tư của Bố/Mẹ',
+        en: 'Unchecked by default to protect the senior’s dignity and privacy',
+        vi: 'Mặc định không tích chọn để tôn trọng quyền riêng tư của Bố/Mẹ',
       },
       whatToTap: {
         en: 'Leave unchecked for metadata-only alerts, or tick only when you want family to read the message.',
@@ -383,8 +389,8 @@
       </h3>
       <p class="mt-1.5 text-base leading-relaxed text-ink-600">
         {lang === 'en'
-          ? 'Click Steps ① to ⑤ (or press Auto-Play) to follow the arrows, inspect the Magnifier Loupe, and launch each feature live.'
-          : 'Chạm Bước ① đến ⑤ (hoặc bấm Tự chạy) để theo dõi mũi tên chỉ dẫn, xem kính lúp phóng to và mở thử trực tiếp từng tính năng.'}
+          ? 'Click Steps 1 to 5 (or press Auto-Play) to follow the arrows, inspect the Magnifier Loupe, and launch each feature live.'
+          : 'Chạm Bước 1 đến 5 (hoặc bấm Tự chạy) để theo dõi mũi tên chỉ dẫn, xem kính lúp phóng to và mở thử trực tiếp từng tính năng.'}
       </p>
     </div>
 
@@ -405,7 +411,7 @@
               : 'text-ink-700 hover:bg-white'
           }`}
         >
-          <span>{item.icon}</span>
+          <iconify-icon icon={item.icon} width="16" height="16"></iconify-icon>
           <span>{item.label[lang]}</span>
         </button>
       {/each}
@@ -436,24 +442,31 @@
         type="button"
         onclick={() => (autoTour = !autoTour)}
         aria-pressed={autoTour}
-        class={`min-h-10 rounded-xl px-3.5 py-2 text-xs font-extrabold transition active:scale-[0.97] ${
+        class={`inline-flex min-h-10 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-extrabold transition active:scale-[0.97] ${
           autoTour
             ? 'bg-amber-500 text-ink-950'
             : 'bg-white text-jade-700 border border-jade-600/30 hover:bg-jade-600/10'
         }`}
       >
+        <iconify-icon
+          icon={autoTour ? 'lucide:pause' : 'lucide:play'}
+          width="14"
+          height="14"
+          aria-hidden="true"
+        ></iconify-icon>
         {autoTour
           ? lang === 'en'
-            ? '⏸ Pause Auto-Tour'
-            : '⏸ Dừng tự chạy'
+            ? 'Pause Auto-Tour'
+            : 'Dừng tự chạy'
           : lang === 'en'
-            ? '▶ Auto-Play 5 Steps'
-            : '▶ Tự chạy 5 bước'}
+            ? 'Auto-Play 5 Steps'
+            : 'Tự chạy 5 bước'}
       </button>
 
       <div class="inline-flex items-center gap-1 rounded-xl border border-ink-900/10 bg-white p-1" role="group" aria-label="Magnifier zoom">
-        <span class="px-2 text-xs font-bold text-ink-600">
-          🔍 {lang === 'en' ? 'Loupe:' : 'Kính lúp:'}
+        <span class="inline-flex items-center gap-1 px-2 text-xs font-bold text-ink-600">
+          <iconify-icon icon="lucide:zoom-in" width="15" height="15"></iconify-icon>
+          {lang === 'en' ? 'Loupe:' : 'Kính lúp:'}
         </span>
         {#each [1, 1.5, 2] as level}
           <button
@@ -488,7 +501,7 @@
             <span class="font-mono">14:31</span>
           </div>
 
-          <!-- ① Pre-Call Risk Shield -->
+          <!-- 1 Pre-Call Risk Shield -->
           <button
             type="button"
             data-feature="call"
@@ -502,7 +515,7 @@
             <div class="flex items-center justify-between gap-2">
               <span class="font-mono text-base font-bold text-cream-50">0918 765 432</span>
               <span class="rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-extrabold text-ink-950">
-                {lang === 'en' ? '① Unverified' : '① Chưa xác minh'}
+                {lang === 'en' ? '1 Unverified' : '1 Chưa xác minh'}
               </span>
             </div>
             <p class="mt-1 text-xs text-cream-50/85">
@@ -510,7 +523,7 @@
             </p>
           </button>
 
-          <!-- ② 60-Second Breathing Pause -->
+          <!-- 2 60-Second Breathing Pause -->
           <button
             type="button"
             data-feature="pause"
@@ -526,7 +539,7 @@
             </span>
             <div>
               <p class="text-sm font-bold text-cream-50">
-                {lang === 'en' ? '② Pause for 60 seconds' : '② Dừng lại 60 giây'}
+                {lang === 'en' ? '2 Pause for 60 seconds' : '2 Dừng lại 60 giây'}
               </p>
               <p class="text-xs text-cream-50/75">
                 {lang === 'en' ? 'Breathe in 4s · out 4s' : 'Hít vào 4s · thở ra 4s'}
@@ -534,7 +547,7 @@
             </div>
           </button>
 
-          <!-- ③ Family Safe-Word -->
+          <!-- 3 Family Safe-Word -->
           <button
             type="button"
             data-feature="safe-word"
@@ -546,14 +559,14 @@
             }`}
           >
             <p class="font-mono text-[11px] font-bold uppercase tracking-wider text-cream-50/70">
-              {lang === 'en' ? '③ FAMILY CODE ON FILE' : '③ MÃ GIA ĐÌNH ĐÃ LƯU'}
+              {lang === 'en' ? '3 FAMILY CODE ON FILE' : '3 MÃ GIA ĐÌNH ĐÃ LƯU'}
             </p>
             <p class="mt-1 font-display text-lg font-bold text-amber-300">
               {lang === 'en' ? '“Sweet starfruit (Cây khế ngọt)”' : '“Cây khế ngọt”'}
             </p>
           </button>
 
-          <!-- ④ 1-Tap Family Alert -->
+          <!-- 4 1-Tap Family Alert -->
           <button
             type="button"
             data-feature="alert"
@@ -565,14 +578,14 @@
             }`}
           >
             <p class="text-sm font-extrabold">
-              {lang === 'en' ? '④ Alert family in one tap' : '④ Báo gia đình trong một chạm'}
+              {lang === 'en' ? '4 Alert family in one tap' : '4 Báo gia đình trong một chạm'}
             </p>
             <p class="mt-0.5 font-mono text-xs font-bold text-ink-900/80">
               SMS · Zalo · Telegram
             </p>
           </button>
 
-          <!-- ⑤ Consent Gate -->
+          <!-- 5 Consent Gate -->
           <button
             type="button"
             data-feature="privacy"
@@ -586,8 +599,8 @@
             <span class="inline-block size-4 shrink-0 rounded border border-cream-50/60 bg-white"></span>
             <span>
               {lang === 'en'
-                ? '⑤ Share call content (off by default)'
-                : '⑤ Chia sẻ nội dung cuộc gọi (tắt mặc định)'}
+                ? '5 Share call content (off by default)'
+                : '5 Chia sẻ nội dung cuộc gọi (tắt mặc định)'}
             </span>
           </button>
         </div>
@@ -624,7 +637,7 @@
           {/each}
         </svg>
 
-        <!-- Numbered Callout Circles ①..⑤ -->
+        <!-- Numbered Callout Circles 1..5 -->
         {#each hotspots as hotspot (hotspot.id)}
           <button
             type="button"
@@ -670,8 +683,9 @@
             {active.number}
             {lang === 'en' ? `STEP ${active.stepNum} OF 5` : `BƯỚC ${active.stepNum} / 5`}
           </span>
-          <span class="font-mono text-xs font-bold text-jade-700">
-            🔍 {zoom.toFixed(1)}x {lang === 'en' ? 'Magnifier' : 'Kính lúp'}
+          <span class="inline-flex items-center gap-1 font-mono text-xs font-bold text-jade-700">
+            <iconify-icon icon="lucide:zoom-in" width="15" height="15"></iconify-icon>
+            {zoom.toFixed(1)}x {lang === 'en' ? 'Magnifier' : 'Kính lúp'}
           </span>
         </div>
 
@@ -685,7 +699,8 @@
           style={zoomScaleStyle}
           class="mt-4 rounded-2xl border-2 border-jade-600 bg-white p-4 shadow-md"
         >
-          <p class="font-mono text-[0.72em] font-extrabold uppercase tracking-wider text-jade-700">
+          <p class="flex items-center gap-1.5 font-mono text-[0.72em] font-extrabold uppercase tracking-wider text-jade-700">
+            <iconify-icon icon={active.arrowIcon} width="15" height="15"></iconify-icon>
             {active.arrowNote[lang]}
           </p>
           <p class="mt-1.5 font-display text-[1.1em] font-extrabold text-ink-950">
@@ -699,8 +714,9 @@
         <!-- What to Tap + Persona-Specific Explanation -->
         <div class="mt-4 space-y-3">
           <div class="rounded-xl border border-amber-500/30 bg-amber-50/80 p-3.5">
-            <p class="text-xs font-extrabold uppercase tracking-wider text-amber-900">
-              👆 {lang === 'en' ? 'What to tap' : 'Thao tác cần bấm'}
+            <p class="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-amber-900">
+              <iconify-icon icon="lucide:pointer" width="15" height="15"></iconify-icon>
+              {lang === 'en' ? 'What to tap' : 'Thao tác cần bấm'}
             </p>
             <p class="mt-1 text-sm font-semibold leading-relaxed text-ink-900">
               {active.whatToTap[lang]}
@@ -708,8 +724,9 @@
           </div>
 
           <div class="rounded-xl border border-ink-900/10 bg-white p-3.5">
-            <p class="text-xs font-extrabold uppercase tracking-wider text-jade-700">
-              🧠 {personas.find((p) => p.key === persona)?.label[lang]}
+            <p class="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-jade-700">
+              <iconify-icon icon="lucide:brain" width="15" height="15"></iconify-icon>
+              {personas.find((p) => p.key === persona)?.label[lang]}
             </p>
             <p class="mt-1 text-sm leading-relaxed text-ink-800">
               {active.detail[persona][lang]}
@@ -726,12 +743,13 @@
           rel="noopener"
           class="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-jade-600 px-4 py-3 text-center text-sm font-extrabold text-white shadow-sm transition hover:bg-jade-700 active:scale-[0.99]"
         >
-          <span>⚡</span>
+          <iconify-icon icon="lucide:zap" width="16" height="16"></iconify-icon>
           <span>
             {lang === 'en'
-              ? `Try Step ${active.stepNum} Live in the PWA App →`
-              : `Mở thử trực tiếp Bước ${active.stepNum} trong PWA →`}
+              ? `Try Step ${active.stepNum} Live in the PWA App`
+              : `Mở thử trực tiếp Bước ${active.stepNum} trong PWA`}
           </span>
+          <iconify-icon icon="lucide:arrow-right" width="16" height="16"></iconify-icon>
         </a>
 
         <div class="flex items-center justify-between gap-2">
@@ -740,7 +758,8 @@
             onclick={() => stepBy(-1)}
             class="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-ink-900/15 bg-white px-3.5 py-2 text-xs font-extrabold text-ink-800 transition hover:border-jade-600"
           >
-            ← {lang === 'en' ? 'Previous' : 'Bước trước'}
+            <iconify-icon icon="lucide:arrow-left" width="15" height="15"></iconify-icon>
+            {lang === 'en' ? 'Previous' : 'Bước trước'}
           </button>
 
           <span class="font-mono text-xs font-extrabold text-ink-600">
@@ -752,7 +771,8 @@
             onclick={() => stepBy(1)}
             class="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-jade-600 bg-white px-3.5 py-2 text-xs font-extrabold text-jade-700 transition hover:bg-jade-600 hover:text-white"
           >
-            {lang === 'en' ? 'Next Step' : 'Bước tiếp'} →
+            {lang === 'en' ? 'Next Step' : 'Bước tiếp'}
+            <iconify-icon icon="lucide:arrow-right" width="15" height="15"></iconify-icon>
           </button>
         </div>
       </div>

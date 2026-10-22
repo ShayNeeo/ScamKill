@@ -549,7 +549,8 @@
             </svg>
             {t.stopAuto}
           {:else}
-            ▶ {t.startAuto}
+            <iconify-icon icon="lucide:play" width="14" height="14"></iconify-icon>
+            {t.startAuto}
           {/if}
         </button>
       </div>

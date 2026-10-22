@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import { CdnIcon, type CdnIconProps } from '@/components/scamkill/CdnIcon';
 import { ThemedText } from '@/components/themed-text';
 import { Fonts } from '@/constants/theme';
 import {
@@ -61,10 +62,17 @@ interface GuideStep {
   liveRoute: '/call_shield' | '/' | '/trusted_circle' | 'toggle_font';
 }
 
-const PERSONAS: { id: PersonaId; icon: string; label: Bilingual; tagline: Bilingual }[] = [
+const PERSONAS: {
+  id: PersonaId;
+  icon: string;
+  fallback: NonNullable<CdnIconProps['fallback']>;
+  label: Bilingual;
+  tagline: Bilingual;
+}[] = [
   {
     id: 'seniors',
-    icon: '👵',
+    icon: 'lucide:user-round-check',
+    fallback: 'person-outline',
     label: { en: 'For Older Adults', vi: 'Dành cho Bố Mẹ' },
     tagline: {
       en: 'Simple, big-letter steps. One action at a time.',
@@ -73,7 +81,8 @@ const PERSONAS: { id: PersonaId; icon: string; label: Bilingual; tagline: Biling
   },
   {
     id: 'family',
-    icon: '👨‍👩‍👧',
+    icon: 'lucide:users-round',
+    fallback: 'people-outline',
     label: { en: 'For Adult Children', vi: 'Dành cho Con Cháu' },
     tagline: {
       en: 'How to set up the Family Code and receive instant alerts.',
@@ -82,7 +91,8 @@ const PERSONAS: { id: PersonaId; icon: string; label: Bilingual; tagline: Biling
   },
   {
     id: 'judges',
-    icon: '⚖️',
+    icon: 'lucide:scale',
+    fallback: 'shield-checkmark-outline',
     label: { en: 'For Competition Judges', vi: 'Dành cho Giám khảo' },
     tagline: {
       en: 'Architecture, behavioral science, and PDPD 2025 privacy gates.',
@@ -94,7 +104,7 @@ const PERSONAS: { id: PersonaId; icon: string; label: Bilingual; tagline: Biling
 const STEPS: GuideStep[] = [
   {
     id: 1,
-    circle: '①',
+    circle: '1',
     shortLabel: { en: '1. Call Shield', vi: '1. Cảnh báo Gọi' },
     title: {
       en: 'Step 1: Check the Caller Risk Before You Pick Up',
@@ -113,13 +123,13 @@ const STEPS: GuideStep[] = [
       vi: '"Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, hãy xác minh." (Hiển thị "Chưa xác minh" khi chưa đủ dữ liệu.)',
     },
     targetButtonLabel: {
-      en: '🛡 CHECK & ALERT FAMILY NOW',
-      vi: '🛡 KIỂM TRA & BÁO NGƯỜI THÂN NGAY',
+      en: 'CHECK & ALERT FAMILY NOW',
+      vi: 'KIỂM TRA & BÁO NGƯỜI THÂN NGAY',
     },
     tone: 'caution',
     pointerDirection: {
-      en: '↘ Look at the color badge first, then tap this button',
-      vi: '↘ Nhìn nhãn màu phía trên, rồi bấm nút lớn này',
+      en: 'Look at the color badge first, then tap this button',
+      vi: 'Nhìn nhãn màu phía trên, rồi bấm nút lớn này',
     },
     personaCopy: {
       seniors: {
@@ -166,14 +176,14 @@ const STEPS: GuideStep[] = [
       },
     },
     liveActionLabel: {
-      en: '⚡ Try Step 1 Live: Open Call Shield',
-      vi: '⚡ Thử Bước 1 ngay: Mở Cảnh báo Gọi đến',
+      en: 'Try Step 1 Live: Open Call Shield',
+      vi: 'Thử Bước 1 ngay: Mở Cảnh báo Gọi đến',
     },
     liveRoute: '/call_shield',
   },
   {
     id: 2,
-    circle: '②',
+    circle: '2',
     shortLabel: { en: '2. 60s Pause', vi: '2. Dừng 60 giây' },
     title: {
       en: 'Step 2: Slow Down with the 60-Second Breathing Pause',
@@ -192,13 +202,13 @@ const STEPS: GuideStep[] = [
       vi: '"Khoan mở ứng dụng ngân hàng. Hãy hít thở chậm theo vòng tròn xanh trong 60 giây."',
     },
     targetButtonLabel: {
-      en: '⏸ Pause 60s & Check Family Code',
-      vi: '⏸ Dừng 60 giây & Kiểm tra Mã gia đình',
+      en: 'Pause 60s & Check Family Code',
+      vi: 'Dừng 60 giây & Kiểm tra Mã gia đình',
     },
     tone: 'jade',
     pointerDirection: {
-      en: '↘ Follow the expanding breathing ring for 60 seconds',
-      vi: '↘ Nhìn vòng tròn nhịp thở phồng-xẹp trong 60 giây',
+      en: 'Follow the expanding breathing ring for 60 seconds',
+      vi: 'Nhìn vòng tròn nhịp thở phồng-xẹp trong 60 giây',
     },
     personaCopy: {
       seniors: {
@@ -245,14 +255,14 @@ const STEPS: GuideStep[] = [
       },
     },
     liveActionLabel: {
-      en: '⚡ Try Step 2 Live: Test Call & Breathing Pause',
-      vi: '⚡ Thử Bước 2 ngay: Mở Khoảng dừng 60 giây',
+      en: 'Try Step 2 Live: Test Call & Breathing Pause',
+      vi: 'Thử Bước 2 ngay: Mở Khoảng dừng 60 giây',
     },
     liveRoute: '/call_shield',
   },
   {
     id: 3,
-    circle: '③',
+    circle: '3',
     shortLabel: { en: '3. Message Scan', vi: '3. Quét Tin nhắn' },
     title: {
       en: 'Step 3: Analyze Suspicious Messages & Links in Plain Language',
@@ -271,13 +281,13 @@ const STEPS: GuideStep[] = [
       vi: '1. Giả danh ngân hàng/cơ quan. 2. Ép phải làm trong 24 giờ. 3. Có đường dẫn lạ. Việc cần làm: Đừng bấm liên kết. Hỏi người thân trước.',
     },
     targetButtonLabel: {
-      en: '🔊 Listen at 0.85x Slow Voice Readback',
-      vi: '🔊 Nghe đọc giọng nói chậm 0.85x',
+      en: 'Listen at 0.85x Slow Voice Readback',
+      vi: 'Nghe đọc giọng nói chậm 0.85x',
     },
     tone: 'high',
     pointerDirection: {
-      en: '↘ Read the 1-3 short reasons or tap Listen to hear them',
-      vi: '↘ Đọc 1-3 lý do ngắn gọn hoặc bấm Nghe đọc thành tiếng',
+      en: 'Read the 1-3 short reasons or tap Listen to hear them',
+      vi: 'Đọc 1-3 lý do ngắn gọn hoặc bấm Nghe đọc thành tiếng',
     },
     personaCopy: {
       seniors: {
@@ -324,14 +334,14 @@ const STEPS: GuideStep[] = [
       },
     },
     liveActionLabel: {
-      en: '⚡ Try Step 3 Live: Open Message Scanner',
-      vi: '⚡ Thử Bước 3 ngay: Mở Phân tích Tin nhắn',
+      en: 'Try Step 3 Live: Open Message Scanner',
+      vi: 'Thử Bước 3 ngay: Mở Phân tích Tin nhắn',
     },
     liveRoute: '/',
   },
   {
     id: 4,
-    circle: '④',
+    circle: '4',
     shortLabel: { en: '4. Family & Bots', vi: '4. Mã & Báo tin' },
     title: {
       en: 'Step 4: Ask the Family Safe-Word & Alert Relatives in 1 Tap',
@@ -350,13 +360,13 @@ const STEPS: GuideStep[] = [
       vi: '(i) Hỏi mật khẩu gia đình. (ii) Cúp máy gọi lại số lưu sẵn. Mặc định chỉ gửi loại cảnh báo, giờ và SĐT; nội dung chỉ gửi khi đồng ý.',
     },
     targetButtonLabel: {
-      en: '📨 Send Alert to SMS + Zalo + Telegram',
-      vi: '📨 Gửi cảnh báo qua SMS + Zalo + Telegram',
+      en: 'Send Alert to SMS + Zalo + Telegram',
+      vi: 'Gửi cảnh báo qua SMS + Zalo + Telegram',
     },
     tone: 'jade',
     pointerDirection: {
-      en: '↘ Check the Family Code, then tap to alert your children',
-      vi: '↘ Xem Mã gia đình, rồi bấm nút này để gọi con cháu hỗ trợ',
+      en: 'Check the Family Code, then tap to alert your children',
+      vi: 'Xem Mã gia đình, rồi bấm nút này để gọi con cháu hỗ trợ',
     },
     personaCopy: {
       seniors: {
@@ -403,22 +413,22 @@ const STEPS: GuideStep[] = [
       },
     },
     liveActionLabel: {
-      en: '⚡ Try Step 4 Live: Open Family & Bot Hub',
-      vi: '⚡ Thử Bước 4 ngay: Mở Gia đình & Hộp thư Bot',
+      en: 'Try Step 4 Live: Open Family & Bot Hub',
+      vi: 'Thử Bước 4 ngay: Mở Gia đình & Hộp thư Bot',
     },
     liveRoute: '/trusted_circle',
   },
   {
     id: 5,
-    circle: '⑤',
+    circle: '5',
     shortLabel: { en: '5. Senior Zoom', vi: '5. Chữ To & Màu' },
     title: {
       en: 'Step 5: Adjust Text Size (A+), High-Contrast & Language Anytime',
       vi: 'Bước 5: Đổi Cỡ chữ (A+), Nền Vàng-Đen và Ngôn ngữ chỉ với 1 chạm',
     },
     targetPreviewTitle: {
-      en: '[📖 Guide]  [A+ Text: 130%]  [◐ Hi-Contrast]  [🌐 EN/VN]',
-      vi: '[📖 Hướng dẫn]  [A+ Chữ: Rất to]  [◐ Vàng-Đen]  [🌐 VN/EN]',
+      en: '[Guide]  [A+ Text: 130%]  [High-Contrast]  [EN/VN]',
+      vi: '[Hướng dẫn]  [A+ Chữ: Rất to]  [Vàng-Đen]  [VN/EN]',
     },
     targetPreviewBadge: {
       en: 'TOP HEADER BAR · ALWAYS REACHABLE',
@@ -429,13 +439,13 @@ const STEPS: GuideStep[] = [
       vi: 'Bấm "A+" để phóng to toàn bộ chữ (100% -> 115% -> 130%). Bấm "Sáng ấm" để chuyển sang nền Vàng-Đen chống chói cho mắt lão thị.',
     },
     targetButtonLabel: {
-      en: '🔍 Tap A+ to Enlarge All App Letters Now',
-      vi: '🔍 Bấm A+ để phóng to chữ toàn ứng dụng ngay',
+      en: 'Tap A+ to Enlarge All App Letters Now',
+      vi: 'Bấm A+ để phóng to chữ toàn ứng dụng ngay',
     },
     tone: 'jade',
     pointerDirection: {
-      en: '↗ These 4 quick buttons stay at the top-right of every screen',
-      vi: '↗ 4 nút tiện ích này luôn nằm ở góc trên bên phải mọi màn hình',
+      en: 'These 4 quick buttons stay at the top-right of every screen',
+      vi: '4 nút tiện ích này luôn nằm ở góc trên bên phải mọi màn hình',
     },
     personaCopy: {
       seniors: {
@@ -482,8 +492,8 @@ const STEPS: GuideStep[] = [
       },
     },
     liveActionLabel: {
-      en: '⚡ Try Step 5 Live: Enlarge App Text (A+) Now',
-      vi: '⚡ Thử Bước 5 ngay: Phóng to cỡ chữ (A+)',
+      en: 'Try Step 5 Live: Enlarge App Text (A+) Now',
+      vi: 'Thử Bước 5 ngay: Phóng to cỡ chữ (A+)',
     },
     liveRoute: 'toggle_font',
   },
@@ -641,7 +651,12 @@ export function InteractiveGuidebookModal(
             <View style={styles.headerTopRow}>
               <View style={styles.headerTitleWrap}>
                 <View style={[styles.headerBadge, { backgroundColor: theme.primaryAction }]}>
-                  <Text style={{ fontSize: 18 }}>📖</Text>
+                  <CdnIcon
+                    icon="lucide:book-open"
+                    fallback="book-outline"
+                    size={18}
+                    color={theme.primaryActionText}
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
                   <ThemedText style={[styles.headerTitle, { color: theme.text }]}>
@@ -692,7 +707,12 @@ export function InteractiveGuidebookModal(
                         borderColor: selected ? theme.primaryAction : theme.cardBorder,
                       },
                     ]}>
-                    <Text style={{ fontSize: 15 }}>{item.icon}</Text>
+                    <CdnIcon
+                      icon={item.icon}
+                      fallback={item.fallback}
+                      size={15}
+                      color={selected ? theme.primaryActionText : theme.text}
+                    />
                     <Text
                       style={[
                         styles.personaPillText,
@@ -763,27 +783,43 @@ export function InteractiveGuidebookModal(
                       borderColor: autoTour ? '#B45309' : theme.cardBorder,
                     },
                   ]}>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: '800',
-                      color: autoTour ? '#FFFFFF' : theme.primaryAction,
-                    }}>
-                    {autoTour
-                      ? isEn
-                        ? '⏸ Pause Tour'
-                        : '⏸ Dừng tự chạy'
-                      : isEn
-                        ? '▶ Auto-Play 5 Steps'
-                        : '▶ Tự chạy 5 bước'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <CdnIcon
+                      icon={autoTour ? 'lucide:pause' : 'lucide:play'}
+                      fallback={autoTour ? 'pause' : 'play'}
+                      size={13}
+                      color={autoTour ? '#FFFFFF' : theme.primaryAction}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: '800',
+                        color: autoTour ? '#FFFFFF' : theme.primaryAction,
+                      }}>
+                      {autoTour
+                        ? isEn
+                          ? 'Pause Tour'
+                          : 'Dừng tự chạy'
+                        : isEn
+                          ? 'Auto-Play 5 Steps'
+                          : 'Tự chạy 5 bước'}
+                    </Text>
+                  </View>
                 </Pressable>
 
                 {/* Unclipped Magnifier Loupe Zoom (1.0x / 1.4x / 1.8x) */}
                 <View style={styles.zoomGroup}>
-                  <Text style={[styles.zoomLabel, { color: theme.textSecondary }]}>
-                    🔍 {isEn ? 'Magnifier:' : 'Kính lúp:'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <CdnIcon
+                      icon="lucide:search"
+                      fallback="search-outline"
+                      size={13}
+                      color={theme.textSecondary}
+                    />
+                    <Text style={[styles.zoomLabel, { color: theme.textSecondary }]}>
+                      {isEn ? 'Magnifier:' : 'Kính lúp:'}
+                    </Text>
+                  </View>
                   {ZOOM_LEVELS.map((lvl) => {
                     const active = zoom === lvl;
                     return (
@@ -835,9 +871,17 @@ export function InteractiveGuidebookModal(
                       ? `VISUAL SPOTLIGHT MAP · STEP ${activeStep.id} OF 5`
                       : `BẢN ĐỒ ĐIỂM SÁNG TRỰC QUAN · BƯỚC ${activeStep.id} / 5`}
                   </Text>
-                  <Text style={[styles.stageZoomBadge, { color: theme.primaryAction }]}>
-                    🔍 {zoom.toFixed(1)}x {isEn ? 'Loupe Active' : 'Đang phóng rõ'}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <CdnIcon
+                      icon="lucide:search"
+                      fallback="search-outline"
+                      size={12}
+                      color={theme.primaryAction}
+                    />
+                    <Text style={[styles.stageZoomBadge, { color: theme.primaryAction }]}>
+                      {zoom.toFixed(1)}x {isEn ? 'Loupe Active' : 'Đang phóng rõ'}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Miniature Phone Map where all 5 regions exist, non-active ones dim, active one pops out with circle + arrow */}
@@ -895,9 +939,19 @@ export function InteractiveGuidebookModal(
                         </View>
 
                         {isFocused ? (
-                          <View style={[styles.activeArrowPill, { backgroundColor: toneColors.badgeBg }]}>
+                          <View
+                            style={[
+                              styles.activeArrowPill,
+                              { backgroundColor: toneColors.badgeBg, flexDirection: 'row', alignItems: 'center', gap: 3 },
+                            ]}>
+                            <CdnIcon
+                              icon="lucide:arrow-left"
+                              fallback="arrow-back"
+                              size={12}
+                              color={toneColors.badgeText}
+                            />
                             <Text style={{ fontSize: 12, fontWeight: '900', color: toneColors.badgeText }}>
-                              {isEn ? '← ACTIVE' : '← ĐANG XEM'}
+                              {isEn ? 'ACTIVE' : 'ĐANG XEM'}
                             </Text>
                           </View>
                         ) : (
@@ -1022,9 +1076,17 @@ export function InteractiveGuidebookModal(
                       styles.instructionBox,
                       { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
                     ]}>
-                    <ThemedText style={[styles.instructionLabel, { color: theme.primaryAction }]}>
-                      👁 {isEn ? '1. What to look at on screen' : '1. Nhìn vào đâu trên màn hình'}
-                    </ThemedText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <CdnIcon
+                        icon="lucide:eye"
+                        fallback="eye-outline"
+                        size={14}
+                        color={theme.primaryAction}
+                      />
+                      <ThemedText style={[styles.instructionLabel, { color: theme.primaryAction }]}>
+                        {isEn ? '1. What to look at on screen' : '1. Nhìn vào đâu trên màn hình'}
+                      </ThemedText>
+                    </View>
                     <ThemedText style={[styles.instructionText, { color: theme.text }]}>
                       {isEn ? stepDetail.whatToLookAt.en : stepDetail.whatToLookAt.vi}
                     </ThemedText>
@@ -1035,9 +1097,17 @@ export function InteractiveGuidebookModal(
                       styles.instructionBox,
                       { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
                     ]}>
-                    <ThemedText style={[styles.instructionLabel, { color: '#B45309' }]}>
-                      👆 {isEn ? '2. What button to tap' : '2. Chạm vào nút nào'}
-                    </ThemedText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <CdnIcon
+                        icon="lucide:hand-pointer"
+                        fallback="hand-left-outline"
+                        size={14}
+                        color="#B45309"
+                      />
+                      <ThemedText style={[styles.instructionLabel, { color: '#B45309' }]}>
+                        {isEn ? '2. What button to tap' : '2. Chạm vào nút nào'}
+                      </ThemedText>
+                    </View>
                     <ThemedText style={[styles.instructionText, { color: theme.text }]}>
                       {isEn ? stepDetail.whatToTap.en : stepDetail.whatToTap.vi}
                     </ThemedText>
@@ -1048,9 +1118,17 @@ export function InteractiveGuidebookModal(
                       styles.instructionBox,
                       { backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder },
                     ]}>
-                    <ThemedText style={[styles.instructionLabel, { color: '#15803D' }]}>
-                      🧠 {isEn ? '3. Why this protects you' : '3. Vì sao bước này bảo vệ được bạn'}
-                    </ThemedText>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                      <CdnIcon
+                        icon="lucide:brain"
+                        fallback="bulb-outline"
+                        size={14}
+                        color="#15803D"
+                      />
+                      <ThemedText style={[styles.instructionLabel, { color: '#15803D' }]}>
+                        {isEn ? '3. Why this protects you' : '3. Vì sao bước này bảo vệ được bạn'}
+                      </ThemedText>
+                    </View>
                     <ThemedText style={[styles.instructionText, { color: theme.text }]}>
                       {isEn ? stepDetail.whyItWorks.en : stepDetail.whatToLookAt && stepDetail.whyItWorks.vi}
                     </ThemedText>
@@ -1109,11 +1187,26 @@ export function InteractiveGuidebookModal(
                 </View>
 
                 {fontScale !== 'standard' ? (
-                  <ThemedText style={{ fontSize: 12, color: theme.riskSafe, textAlign: 'center', fontWeight: '700' }}>
-                    {isEn
-                      ? `✓ Senior text magnification (${fontScale === 'large' ? '115%' : '130%'}) is active!`
-                      : `✓ Đang bật chế độ chữ ${fontScale === 'large' ? 'To (115%)' : 'Rất to (130%)'}!`}
-                  </ThemedText>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 5,
+                    }}>
+                    <CdnIcon icon="lucide:check" fallback="checkmark" size={13} color={theme.riskSafe} />
+                    <ThemedText
+                      style={{
+                        fontSize: 12,
+                        color: theme.riskSafe,
+                        textAlign: 'center',
+                        fontWeight: '700',
+                      }}>
+                      {isEn
+                        ? `Senior text magnification (${fontScale === 'large' ? '115%' : '130%'}) is active!`
+                        : `Đang bật chế độ chữ ${fontScale === 'large' ? 'To (115%)' : 'Rất to (130%)'}!`}
+                    </ThemedText>
+                  </View>
                 ) : null}
               </View>
             </View>

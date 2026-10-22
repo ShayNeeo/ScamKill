@@ -13,6 +13,7 @@ import { IncomingCallModal } from '@/components/scamkill/IncomingCallModal';
 import { CoolingOffModal } from '@/components/scamkill/CoolingOffModal';
 import { SafeWordCard } from '@/components/scamkill/SafeWordCard';
 import { ScenarioDrawer, getScenarioCopy } from '@/components/scamkill/ScenarioDrawer';
+import { CdnIcon } from '@/components/scamkill/CdnIcon';
 import {
   checkIncomingCallSync,
   dispatchFamilyAlert,
@@ -66,10 +67,10 @@ const DELIVERY_LABELS_VI: Record<string, string> = {
 };
 
 const PRESETS = [
-  { label: '👵 Bà Lan · 0918 765 432', labelEn: '👵 Grandma Lan · 0918 765 432', phone: '0918765432', inContacts: false },
-  { label: '🚨 +855 12 345 678', labelEn: '🚨 +855 12 345 678', phone: '+85512345678', inContacts: false },
-  { label: '🏦 1900 5555 55', labelEn: '🏦 1900 5555 55', phone: '19005555555', inContacts: false },
-  { label: '👩 Con gái · 0901 234 567', labelEn: '👩 Daughter · 0901 234 567', phone: '0901234567', inContacts: true },
+  { label: 'Bà Lan · 0918 765 432', labelEn: 'Grandma Lan · 0918 765 432', phone: '0918765432', inContacts: false },
+  { label: '+855 12 345 678', labelEn: '+855 12 345 678', phone: '+85512345678', inContacts: false },
+  { label: '1900 5555 55', labelEn: '1900 5555 55', phone: '19005555555', inContacts: false },
+  { label: 'Con gái · 0901 234 567', labelEn: 'Daughter · 0901 234 567', phone: '0901234567', inContacts: true },
 ];
 
 function pickAlertType(
@@ -201,7 +202,7 @@ export default function CallShieldScreen() {
         showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.text }]}>
-            {isEn ? '🛡 Call warning for risky numbers' : '🛡 Cảnh báo cuộc gọi từ số có nguy cơ'}
+            {isEn ? 'Call warning for risky numbers' : 'Cảnh báo cuộc gọi từ số có nguy cơ'}
           </Text>
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
             {isEn
@@ -256,7 +257,9 @@ export default function CallShieldScreen() {
               accessibilityLabel={isEn ? 'Number is in contacts' : 'Số có trong danh bạ'}
               style={({ pressed }) => [styles.toggleRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, inContacts && styles.checkboxChecked]}>
-                {inContacts ? <Text style={styles.checkTick}>✓</Text> : null}
+                {inContacts ? (
+                  <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+                ) : null}
               </View>
               <Text style={[styles.toggleText, { color: theme.text }]}>
                 {isEn ? 'Number is in my contacts' : 'Số có trong danh bạ'}
@@ -270,7 +273,9 @@ export default function CallShieldScreen() {
               accessibilityLabel={isEn ? 'Calling repeatedly in a burst' : 'Gọi dồn dập nhiều lần'}
               style={({ pressed }) => [styles.toggleRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, burstCallCount > 1 && styles.checkboxChecked]}>
-                {burstCallCount > 1 ? <Text style={styles.checkTick}>✓</Text> : null}
+                {burstCallCount > 1 ? (
+                  <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+                ) : null}
               </View>
               <Text style={[styles.toggleText, { color: theme.text }]}>
                 {isEn ? 'Calling repeatedly in a burst' : 'Gọi dồn dập nhiều lần'}
@@ -284,7 +289,9 @@ export default function CallShieldScreen() {
               accessibilityLabel={isEn ? 'Asks for urgent money' : 'Xin chuyển tiền khẩn cấp'}
               style={({ pressed }) => [styles.toggleRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, urgentMoney && styles.checkboxChecked]}>
-                {urgentMoney ? <Text style={styles.checkTick}>✓</Text> : null}
+                {urgentMoney ? (
+                  <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+                ) : null}
               </View>
               <Text style={[styles.toggleText, { color: theme.text }]}>
                 {isEn ? 'Asks for urgent money' : 'Xin chuyển tiền khẩn cấp'}
@@ -348,7 +355,7 @@ export default function CallShieldScreen() {
                 accessibilityLabel={isEn ? 'Simulate an incoming call' : 'Mô phỏng cuộc gọi đến'}
                 style={({ pressed }) => [styles.callButton, pressed && styles.pressed]}>
                 <Text style={styles.callButtonText}>
-                  {isEn ? '📞 Simulate incoming call' : '📞 Mô phỏng cuộc gọi đến'}
+                  {isEn ? 'Simulate incoming call' : 'Mô phỏng cuộc gọi đến'}
                 </Text>
               </Pressable>
 
@@ -359,8 +366,8 @@ export default function CallShieldScreen() {
                 style={({ pressed }) => [styles.coolingButton, pressed && styles.pressed]}>
                 <Text style={styles.coolingButtonText}>
                   {isEn
-                    ? '⏸ 60 second safety pause (48h lock)'
-                    : '⏸ Khoảng dừng an toàn 60 giây (Khoá 48h)'}
+                    ? '60 second safety pause (48h lock)'
+                    : 'Khoảng dừng an toàn 60 giây (Khoá 48h)'}
                 </Text>
               </Pressable>
 
@@ -375,7 +382,9 @@ export default function CallShieldScreen() {
                 }
                 style={({ pressed }) => [styles.consentRow, pressed && styles.pressed]}>
                 <View style={[styles.checkbox, shareContent && styles.checkboxChecked]}>
-                  {shareContent ? <Text style={styles.checkTick}>✓</Text> : null}
+                  {shareContent ? (
+                    <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+                  ) : null}
                 </View>
                 <Text style={styles.consentText}>
                   {isEn
@@ -405,8 +414,8 @@ export default function CallShieldScreen() {
                       ? 'Sending alert...'
                       : 'Đang gửi cảnh báo…'
                     : isEn
-                      ? '📨 Send alert now (SMS · Zalo · Telegram)'
-                      : '📨 Gửi cảnh báo ngay (SMS · Zalo · Telegram)'}
+                      ? 'Send alert now (SMS · Zalo · Telegram)'
+                      : 'Gửi cảnh báo ngay (SMS · Zalo · Telegram)'}
                 </Text>
               </Pressable>
             </View>
@@ -434,7 +443,7 @@ export default function CallShieldScreen() {
         {receipt ? (
           <View style={styles.receiptCard}>
             <Text style={styles.receiptTitle}>
-              {isEn ? '✅ Alert sent to your family' : '✅ Đã gửi cảnh báo cho người thân'}
+              {isEn ? 'Alert sent to your family' : 'Đã gửi cảnh báo cho người thân'}
             </Text>
             <Text style={styles.receiptSummary}>
               {alertReceiptSummary(receipt, isEn)}
@@ -608,12 +617,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: '#0F766E',
     borderColor: '#0F766E',
-  },
-  checkTick: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 26,
   },
   toggleText: {
     flex: 1,

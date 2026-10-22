@@ -12,6 +12,7 @@ import {
 import type { SeniorAppearanceOverride, SeniorFontScale } from '@/hooks/use-theme';
 import { useLanguageDialect } from '@/i18n/regional';
 import { ThemedText } from '@/components/themed-text';
+import { CdnIcon } from '@/components/scamkill/CdnIcon';
 import { InteractiveGuidebookModal } from '@/components/scamkill/InteractiveGuidebookModal';
 import { t } from '@/i18n';
 import { hapticTap } from '@/lib/haptics';
@@ -78,7 +79,12 @@ function SeniorQuickControls() {
           accessibilityLabel={
             isEn ? 'Open the interactive visual guidebook' : 'Mở hướng dẫn trực quan tương tác'
           }>
-          <ThemedText style={[chipText, { color: theme.primaryActionText }]}>📖</ThemedText>
+          <CdnIcon
+            icon="lucide:book-open"
+            fallback="book-outline"
+            size={14}
+            color={theme.primaryActionText}
+          />
           <ThemedText style={[chipText, { color: theme.primaryActionText }]}>
             {isEn ? 'Guide' : 'Hướng dẫn'}
           </ThemedText>

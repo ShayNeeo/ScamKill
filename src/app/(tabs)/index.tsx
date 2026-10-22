@@ -476,7 +476,7 @@ function ResultCard({ result, scenario, familySafeWord }: { result: AnalyzeOutpu
           accessibilityRole="button"
           accessibilityLabel={t('home.slowDownButton')}>
           <ThemedText style={[styles.slowButtonText, { color: theme.primaryAction }]}>
-            {isEn ? '⏸ Slow down & ask Family Code' : '⏸ Làm chậm & Hỏi Mã Gia Đình'}
+            {isEn ? 'Slow down & ask Family Code' : 'Làm chậm & Hỏi Mã Gia Đình'}
           </ThemedText>
         </Pressable>
 
@@ -506,8 +506,8 @@ function ResultCard({ result, scenario, familySafeWord }: { result: AnalyzeOutpu
             {dispatching
               ? t('common.loading')
               : isEn
-                ? "🚨 I'm suspicious: Alert family (SMS / Zalo / Telegram)"
-                : '🚨 Tôi nghi ngờ: Báo người thân (SMS / Zalo / Telegram)'}
+                ? "I'm suspicious: Alert family (SMS / Zalo / Telegram)"
+                : 'Tôi nghi ngờ: Báo người thân (SMS / Zalo / Telegram)'}
           </ThemedText>
         </Pressable>
 

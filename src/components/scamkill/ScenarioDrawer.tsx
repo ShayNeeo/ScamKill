@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { SCAMKILL_SCENARIOS } from '@/api/scamkill/client';
 import type { ScamKillScenario } from '@/api/scamkill/types';
+import { CdnIcon, type CdnIconProps } from '@/components/scamkill/CdnIcon';
 import { Fonts } from '@/constants/theme';
 import { useLanguageDialect } from '@/i18n/regional';
 
@@ -15,7 +16,8 @@ export interface ScenarioCopy {
   subtitle: string;
   callerClaim?: string;
   transcript?: string;
-  emoji: string;
+  icon: string;
+  fallback: NonNullable<CdnIconProps['fallback']>;
 }
 
 const SCENARIO_COPY: Record<ScamKillScenario['id'], { en: ScenarioCopy; vi: ScenarioCopy }> = {
@@ -25,14 +27,16 @@ const SCENARIO_COPY: Record<ScamKillScenario['id'], { en: ScenarioCopy; vi: Scen
       subtitle: 'Unknown number mimics her daughter: "Mom, I had an accident, send 30 million now."',
       callerClaim: 'Daughter (voice clone)',
       transcript: 'Mom, I had an accident, please send 30 million right away, do not tell anyone.',
-      emoji: '👵',
+      icon: 'lucide:phone-incoming',
+      fallback: 'call-outline',
     },
     vi: {
       title: 'Kịch bản Bà Lan: 30 triệu gấp',
       subtitle: 'Số lạ giả giọng con gái: "Mẹ ơi con bị tai nạn, chuyển giúp con 30 triệu gấp".',
       callerClaim: 'Con gái (giả giọng)',
       transcript: 'Mẹ ơi con bị tai nạn, chuyển giúp con 30 triệu gấp, đừng nói với ai nhé',
-      emoji: '👵',
+      icon: 'lucide:phone-incoming',
+      fallback: 'call-outline',
     },
   },
   'fake-police-call': {
@@ -41,26 +45,30 @@ const SCENARIO_COPY: Record<ScamKillScenario['id'], { en: ScenarioCopy; vi: Scen
       subtitle: 'A +855 number calls 4 times, threatens to freeze the account and issue an arrest order.',
       callerClaim: 'Police / Prosecutor',
       transcript: 'We are the police. Your account is linked to a case. Transfer money now to avoid arrest.',
-      emoji: '🚨',
+      icon: 'lucide:siren',
+      fallback: 'warning-outline',
     },
     vi: {
       title: 'Giả danh Công an / Viện kiểm sát',
       subtitle: 'Đầu số +855 gọi 4 lần, đe dọa khóa tài khoản và lệnh bắt tạm giam.',
       callerClaim: 'Công an / Viện kiểm sát',
       transcript: 'Chúng tôi là Công an, tài khoản của bà liên quan vụ án. Yêu cầu chuyển tiền ngay để tránh lệnh bắt tạm giam.',
-      emoji: '🚨',
+      icon: 'lucide:siren',
+      fallback: 'warning-outline',
     },
   },
   'unverified-number': {
     en: {
       title: 'Unknown number, no data',
       subtitle: 'Honest limit: the app shows "Unverified" instead of guessing.',
-      emoji: '❓',
+      icon: 'lucide:circle-help',
+      fallback: 'help-circle-outline',
     },
     vi: {
       title: 'Số lạ chưa có dữ liệu',
       subtitle: 'Minh hoạ giới hạn trung thực: hệ thống hiển thị "Chưa xác minh" thay vì đoán bừa.',
-      emoji: '❓',
+      icon: 'lucide:circle-help',
+      fallback: 'help-circle-outline',
     },
   },
   'fake-bank-otp-sms': {
@@ -69,14 +77,16 @@ const SCENARIO_COPY: Record<ScamKillScenario['id'], { en: ScenarioCopy; vi: Scen
       subtitle: 'Threatens to freeze the account in 24 hours and lures you into typing an OTP on a fake domain.',
       callerClaim: 'Bank (fake)',
       transcript: 'Your account will be locked in 24 hours. Visit http://vcb-xacminh-otp.xyz to enter your OTP.',
-      emoji: '💬',
+      icon: 'lucide:message-square-warning',
+      fallback: 'chatbubble-ellipses-outline',
     },
     vi: {
       title: 'Tin nhắn giả danh ngân hàng',
       subtitle: 'Đe dọa khóa tài khoản trong 24 giờ và dụ nhập OTP vào tên miền lạ.',
       callerClaim: 'Ngân hàng (giả danh)',
       transcript: 'Tài khoản của quý khách sẽ bị khóa trong 24 giờ. Truy cập http://vcb-xacminh-otp.xyz để nhập mã OTP.',
-      emoji: '💬',
+      icon: 'lucide:message-square-warning',
+      fallback: 'chatbubble-ellipses-outline',
     },
   },
   'zalo-voice-clone': {
@@ -85,14 +95,16 @@ const SCENARIO_COPY: Record<ScamKillScenario['id'], { en: ScenarioCopy; vi: Scen
       subtitle: 'A Zalo video or voice note asks for 15 million for a hospital deposit and demands secrecy.',
       callerClaim: 'Grandchild (voice clone)',
       transcript: 'Grandma, I had an accident, I need 15 million for a hospital deposit, please do not tell anyone.',
-      emoji: '🎙',
+      icon: 'lucide:mic',
+      fallback: 'mic-outline',
     },
     vi: {
       title: 'Zalo giả giọng cháu ngoại',
       subtitle: 'Video / ghi âm Zalo mượn 15 triệu đặt cọc viện phí, yêu cầu giữ bí mật.',
       callerClaim: 'Cháu ngoại (giả giọng)',
       transcript: 'Bà ơi cháu bị tai nạn, cần 15 triệu đặt cọc viện phí gấp, bà đừng nói với ai.',
-      emoji: '🎙',
+      icon: 'lucide:mic',
+      fallback: 'mic-outline',
     },
   },
 };
@@ -117,16 +129,24 @@ export function ScenarioDrawer(props: ScenarioDrawerProps): React.JSX.Element {
         accessibilityLabel={isEn ? 'Demo scenarios, tap to open or collapse' : 'Kịch bản Demo, chạm để mở hoặc thu gọn'}
         style={({ pressed }) => [styles.header, pressed && styles.pressed]}>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>
-            {isEn ? '🎬 Demo scenarios (tap to run)' : '🎬 Kịch bản Demo (Chạm để chạy thử)'}
-          </Text>
+          <View style={styles.headerTitleRow}>
+            <CdnIcon icon="lucide:clapperboard" fallback="film-outline" size={20} color="#38BDF8" />
+            <Text style={styles.headerTitle}>
+              {isEn ? 'Demo scenarios (tap to run)' : 'Kịch bản Demo (Chạm để chạy thử)'}
+            </Text>
+          </View>
           <Text style={styles.headerSub}>
             {isEn
               ? 'Live demo of 3 features for the pitch, not real user data.'
               : 'Minh hoạ trực tiếp 3 tính năng cho buổi pitch, không phải dữ liệu thật.'}
           </Text>
         </View>
-        <Text style={styles.chevron}>{expanded ? '▾' : '▸'}</Text>
+        <CdnIcon
+          icon={expanded ? 'lucide:chevron-down' : 'lucide:chevron-right'}
+          fallback={expanded ? 'chevron-down' : 'chevron-forward'}
+          size={22}
+          color="#FFFFFF"
+        />
       </Pressable>
 
       {expanded ? (
@@ -141,9 +161,15 @@ export function ScenarioDrawer(props: ScenarioDrawerProps): React.JSX.Element {
                 accessibilityLabel={isEn ? `Run demo: ${copy.title}` : `Chạy thử: ${copy.title}`}
                 style={({ pressed }) => [styles.pill, pressed && styles.pressed]}>
                 <View style={styles.pillTopRow}>
-                  <Text style={styles.pillLabel}>
-                    {copy.emoji} {copy.title}
-                  </Text>
+                  <View style={styles.pillIconBadge}>
+                    <CdnIcon
+                      icon={copy.icon}
+                      fallback={copy.fallback}
+                      size={18}
+                      color="#075985"
+                    />
+                  </View>
+                  <Text style={styles.pillLabel}>{copy.title}</Text>
                   <View style={styles.layerBadge}>
                     <Text style={styles.layerBadgeText}>
                       {isEn ? `Layer ${scenario.layer}` : `Lớp ${scenario.layer}`}
@@ -178,6 +204,11 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   headerTitle: {
     fontSize: 19,
     fontWeight: '900',
@@ -188,11 +219,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     color: '#CBD5E1',
-  },
-  chevron: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#FFFFFF',
   },
   list: {
     paddingHorizontal: 14,
@@ -214,6 +240,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  pillIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pillLabel: {
     flex: 1,

@@ -1,8 +1,8 @@
 /**
- * WP2 — Pre-processing Layer
+ * Pre-processing Layer
  *
  * ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
- * │ InputBag │────▶│  Normaliser  │────▶│   Entities   │────▶│     Redact       │──▶ WP3
+ * │ InputBag │---->│  Normaliser  │---->│   Entities   │---->│     Redact       │--> Risk
  * └──────────┘     └──────────────┘     └──────────────┘     └──────────────────┘
  *
  * @module api/preprocess

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { CdnIcon } from '@/components/scamkill/CdnIcon';
 import { ThemedText } from './themed-text';
 import { getGlossary, GlossaryTerm, useLanguageDialect } from '@/i18n/regional';
 import { useTheme } from '@/hooks/use-theme';
@@ -59,12 +60,21 @@ export function SimplifiedGlossary() {
 
       {selectedTerm && (
         <View style={[styles.detailBox, { backgroundColor: theme.riskSafeBg, borderColor: theme.riskSafe }]}>
-          <ThemedText style={[styles.termTitle, { color: theme.riskSafe }]}>
-            {selectedTerm.term} ➔ {selectedTerm.simpleTranslation}
-          </ThemedText>
-          <ThemedText style={styles.analogyText}>
-            💡 {isEn ? 'Simple Analogy:' : 'Ví dụ dễ hiểu:'} {selectedTerm.analogy}
-          </ThemedText>
+          <View style={styles.termTitleRow}>
+            <ThemedText style={[styles.termTitle, { color: theme.riskSafe }]}>
+              {selectedTerm.term}
+            </ThemedText>
+            <CdnIcon icon="lucide:arrow-right" fallback="arrow-forward" size={14} color={theme.riskSafe} />
+            <ThemedText style={[styles.termTitle, { color: theme.riskSafe }]}>
+              {selectedTerm.simpleTranslation}
+            </ThemedText>
+          </View>
+          <View style={styles.analogyRow}>
+            <CdnIcon icon="lucide:lightbulb" fallback="bulb-outline" size={14} color={theme.riskSafe} />
+            <ThemedText style={styles.analogyText}>
+              {isEn ? 'Simple Analogy:' : 'Ví dụ dễ hiểu:'} {selectedTerm.analogy}
+            </ThemedText>
+          </View>
         </View>
       )}
     </View>
@@ -118,11 +128,23 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
     marginTop: Spacing.one,
   },
+  termTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
   termTitle: {
     fontSize: Accessibility.fontSize.normal,
     fontWeight: '700',
   },
+  analogyRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+  },
   analogyText: {
+    flex: 1,
     fontSize: Accessibility.fontSize.normal,
     lineHeight: 24,
   },

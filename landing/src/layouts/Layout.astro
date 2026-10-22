@@ -47,6 +47,9 @@ const ogImage = canonical ? new URL('/favicon.svg', canonical).toString() : unde
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap"
     />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://api.iconify.design" crossorigin />
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.3.0/dist/iconify-icon.min.js" defer></script>
     <script is:inline>
       try {
         document.documentElement.lang = localStorage.getItem('scamkill.lang') === 'vi' ? 'vi' : 'en';

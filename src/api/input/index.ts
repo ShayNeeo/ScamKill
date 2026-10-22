@@ -1,10 +1,10 @@
 /**
- * WP1 — Input Layer
+ * Input Layer
  *
  * Unified input ingestion for the Decision Companion.
  *
  * ┌─────────────┐     ┌──────────────┐     ┌─────────┐
- * │   RawInput   │────▶│ InputProcessor │────▶│ InputBag │──▶ WP2
+ * │   RawInput   │---->│ InputProcessor │---->│ InputBag │--> Risk
  * └─────────────┘     └──────────────┘     └─────────┘
  *
  * @module api/input

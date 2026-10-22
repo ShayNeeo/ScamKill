@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { getDefaultFamilySafeWord } from '@/api/scamkill/client';
+import { CdnIcon } from '@/components/scamkill/CdnIcon';
 import { Fonts } from '@/constants/theme';
 import { useLanguageDialect } from '@/i18n/regional';
 import { hapticWarning } from '@/lib/haptics';
@@ -223,7 +224,7 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
                 }
                 style={({ pressed }) => [styles.restartButton, pressed && styles.pressed]}>
                 <Text style={styles.restartText}>
-                  {isEn ? '↻ Breathe with me for another 60 seconds' : '↻ Mình thở lại 60 giây nhé'}
+                  {isEn ? 'Breathe with me for another 60 seconds' : 'Mình thở lại 60 giây nhé'}
                 </Text>
               </Pressable>
             ) : null}
@@ -232,8 +233,8 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
           <View style={styles.brainCard} ref={brainCardRef}>
             <Text style={styles.brainTitle}>
               {isEn
-                ? '🧠 Why this 60s pause works (Brain Science)'
-                : '🧠 Vì sao 60 giây này hiệu quả (Khoa học não bộ)'}
+                ? 'Why this 60s pause works (Brain Science)'
+                : 'Vì sao 60 giây này hiệu quả (Khoa học não bộ)'}
             </Text>
             <Text style={styles.brainText}>
               {isEn
@@ -245,8 +246,8 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
           <View style={styles.lockCard}>
             <Text style={styles.lockTitle}>
               {isEn
-                ? '🔒 High-risk transactions paused for 48 hours'
-                : '🔒 Mình tạm khoá giao dịch nguy cơ cao · 48 giờ'}
+                ? 'High-risk transactions paused for 48 hours'
+                : 'Mình tạm khoá giao dịch nguy cơ cao · 48 giờ'}
             </Text>
             <Text style={styles.lockUntil}>
               {isEn ? 'Reminder set until: ' : 'Mình ghi nhớ đến: '}
@@ -273,7 +274,9 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
               accessibilityLabel={isEn ? 'Step 1: Ask for the family code' : 'Bước 1: Hỏi "Mã gia đình"'}
               style={({ pressed }) => [styles.checkRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, askedSafeWord && styles.checkboxChecked]}>
-                {askedSafeWord ? <Text style={styles.checkTick}>✓</Text> : null}
+                {askedSafeWord ? (
+                  <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+                ) : null}
               </View>
               <View style={styles.checkBody}>
                 <Text style={styles.checkTitle}>
@@ -310,7 +313,9 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
               }
               style={({ pressed }) => [styles.checkRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, calledBack && styles.checkboxChecked]}>
-                {calledBack ? <Text style={styles.checkTick}>✓</Text> : null}
+                {calledBack ? (
+                  <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+                ) : null}
               </View>
               <View style={styles.checkBody}>
                 <Text style={styles.checkTitle}>
@@ -348,8 +353,8 @@ export function CoolingOffModal(props: CoolingOffModalProps): React.JSX.Element 
             style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
             <Text style={styles.primaryButtonText}>
               {isEn
-                ? '📨 Alert family via SMS / Zalo / Telegram'
-                : '📨 Báo cho con cháu qua SMS / Zalo / Telegram'}
+                ? 'Alert family via SMS / Zalo / Telegram'
+                : 'Báo cho con cháu qua SMS / Zalo / Telegram'}
             </Text>
           </Pressable>
           <Pressable
@@ -558,12 +563,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: '#0F766E',
     borderColor: '#0F766E',
-  },
-  checkTick: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 26,
   },
   checkBody: {
     flex: 1,

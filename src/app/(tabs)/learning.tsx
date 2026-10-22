@@ -52,7 +52,7 @@ export default function LearningScreen() {
         setCompletedLessons((prev) => [...prev, lessonId]);
       }
       Alert.alert(
-        isEn ? 'Correct! 🎉' : 'Chính xác! 🎉',
+        isEn ? 'Correct!' : 'Chính xác!',
         t('learning.quizCorrect')
       );
     } else {

@@ -17,6 +17,7 @@ import {
   checkIncomingCallSync,
   getDefaultFamilySafeWord,
 } from '@/api/scamkill/client';
+import { CdnIcon } from '@/components/scamkill/CdnIcon';
 import { Fonts } from '@/constants/theme';
 import { callSignalLabel, callStatusLabel, localizeCallOutput } from '@/i18n';
 import { useLanguageDialect } from '@/i18n/regional';
@@ -255,11 +256,19 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
           contentContainerStyle={styles.scrollBody}
           showsVerticalScrollIndicator={false}>
           <View style={styles.callHeader} ref={headerRef}>
-            <Text style={styles.callLabel}>
-              {isEn
-                ? '📞 Incoming call · ScamKill is watching'
-                : '📞 Có cuộc gọi đến · ScamKill đang canh chừng'}
-            </Text>
+            <View style={styles.callHeaderRow}>
+              <CdnIcon
+                icon="lucide:phone-incoming"
+                fallback="call-outline"
+                size={16}
+                color="#475569"
+              />
+              <Text style={styles.callLabel}>
+                {isEn
+                  ? 'Incoming call · ScamKill is watching'
+                  : 'Có cuộc gọi đến · ScamKill đang canh chừng'}
+              </Text>
+            </View>
             <Text style={styles.callSource}>
               {scenario?.id === 'zalo-voice-clone'
                 ? isEn
@@ -341,7 +350,7 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
 
           <View style={styles.claimCard}>
             <Text style={styles.sectionLabel}>
-              {isEn ? '🗣 The caller is saying (simulated):' : '🗣 Người gọi đang nói (mô phỏng):'}
+              {isEn ? 'The caller is saying (simulated):' : 'Người gọi đang nói (mô phỏng):'}
             </Text>
             <Text style={styles.claimText}>“{callerClaim}”</Text>
             <Pressable
@@ -360,18 +369,18 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
               <Text style={styles.audioButtonText}>
                 {speaking
                   ? isEn
-                    ? '⏹ Stop preview'
-                    : '⏹ Dừng phát thử'
+                    ? 'Stop preview'
+                    : 'Dừng phát thử'
                   : isEn
-                    ? '▶ Listen to the voice preview (simulated)'
-                    : '▶ Nghe thử giọng nói (mô phỏng)'}
+                    ? 'Listen to the voice preview (simulated)'
+                    : 'Nghe thử giọng nói (mô phỏng)'}
               </Text>
             </Pressable>
             <View style={styles.rndTag}>
               <Text style={styles.rndTagText}>
                 {isEn
-                  ? '🧪 R&D note: AI voice detection is a hint only. Still ask for the family code and call back the saved number.'
-                  : '🧪 Lưu ý R&D: Cảnh báo giọng AI chỉ để tham khảo. Mình vẫn hỏi “Mã gia đình” và gọi lại số đã lưu nhé.'}
+                  ? 'R&D note: AI voice detection is a hint only. Still ask for the family code and call back the saved number.'
+                  : 'Lưu ý R&D: Cảnh báo giọng AI chỉ để tham khảo. Mình vẫn hỏi “Mã gia đình” và gọi lại số đã lưu nhé.'}
               </Text>
             </View>
           </View>
@@ -420,7 +429,9 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             }
             style={({ pressed }) => [styles.consentRow, pressed && styles.pressed]}>
             <View style={[styles.checkbox, shareConsent && styles.checkboxChecked]}>
-              {shareConsent ? <Text style={styles.checkboxTick}>✓</Text> : null}
+              {shareConsent ? (
+                <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#FFFFFF" />
+              ) : null}
             </View>
             <View style={styles.consentBody}>
               <Text style={styles.consentText}>
@@ -446,7 +457,7 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             }
             style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
             <Text style={styles.primaryButtonText}>
-              {isEn ? '🛡 CHECK & ALERT FAMILY NOW' : '🛡 KIỂM TRA & BÁO CON CHÁU NGAY'}
+              {isEn ? 'CHECK & ALERT FAMILY NOW' : 'KIỂM TRA & BÁO CON CHÁU NGAY'}
             </Text>
           </Pressable>
           <Pressable
@@ -455,7 +466,7 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             accessibilityLabel={isEn ? 'Hang up safely' : 'Cúp máy an toàn'}
             style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
             <Text style={styles.secondaryButtonText}>
-              {isEn ? '📵 Hang up and stay safe' : '📵 Cúp máy cho an toàn'}
+              {isEn ? 'Hang up and stay safe' : 'Cúp máy cho an toàn'}
             </Text>
           </Pressable>
         </View>
@@ -478,6 +489,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingVertical: 8,
+  },
+  callHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   callLabel: {
     fontSize: 18,
@@ -681,12 +697,6 @@ const styles = StyleSheet.create({
   checkboxChecked: {
     backgroundColor: '#0F766E',
     borderColor: '#0F766E',
-  },
-  checkboxTick: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 26,
   },
   consentText: {
     fontSize: 18,

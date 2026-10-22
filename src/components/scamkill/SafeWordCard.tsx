@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { getDefaultFamilySafeWord } from '@/api/scamkill/client';
+import { CdnIcon } from '@/components/scamkill/CdnIcon';
 import { Fonts } from '@/constants/theme';
 import { useLanguageDialect } from '@/i18n/regional';
 
@@ -101,9 +102,12 @@ export function SafeWordCard(props: SafeWordCardProps): React.JSX.Element {
         </Text>
       </Pressable>
       {savedFlash ? (
-        <Text style={styles.savedText} accessibilityRole="alert">
-          {isEn ? '✓ New family code saved.' : '✓ Đã lưu mã gia đình mới.'}
-        </Text>
+        <View style={styles.savedRow} accessibilityRole="alert">
+          <CdnIcon icon="lucide:check" fallback="checkmark" size={15} color="#15803D" />
+          <Text style={styles.savedText}>
+            {isEn ? 'New family code saved.' : 'Đã lưu mã gia đình mới.'}
+          </Text>
+        </View>
       ) : null}
 
       {onOpenCoolingOff ? (
@@ -116,11 +120,14 @@ export function SafeWordCard(props: SafeWordCardProps): React.JSX.Element {
               : 'Thử quy trình xác minh với khoảng dừng 60 giây'
           }
           style={({ pressed }) => [styles.testButton, pressed && styles.pressed]}>
-          <Text style={styles.testButtonText}>
-            {isEn
-              ? '▶ Try the verification flow (60 second pause)'
-              : '▶ Thử quy trình xác minh (Khoảng dừng 60 giây)'}
-          </Text>
+          <View style={styles.testButtonRow}>
+            <CdnIcon icon="lucide:play" fallback="play" size={16} color="#1D4ED8" />
+            <Text style={styles.testButtonText}>
+              {isEn
+                ? 'Try the verification flow (60 second pause)'
+                : 'Thử quy trình xác minh (Khoảng dừng 60 giây)'}
+            </Text>
+          </View>
         </Pressable>
       ) : null}
     </View>
@@ -200,6 +207,11 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#94A3B8',
   },
+  savedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
   savedText: {
     fontSize: 17,
     fontWeight: '700',
@@ -214,6 +226,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
+  },
+  testButtonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   testButtonText: {
     color: '#1D4ED8',

@@ -24,6 +24,13 @@ export default function Root({ children }: { children: React.ReactNode }) {
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Azeret+Mono:wght@500;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap"
         />
+        {/* CDN-Optimized Iconify Vector Engine (Cloudflare + jsDelivr CDN) */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api.iconify.design" crossOrigin="anonymous" />
+        <script
+          src="https://cdn.jsdelivr.net/npm/iconify-icon@2.3.0/dist/iconify-icon.min.js"
+          defer
+        />
 
         {/* PWA & iOS/Android Home Screen Metadata */}
         <link rel="manifest" href="/manifest.json" />

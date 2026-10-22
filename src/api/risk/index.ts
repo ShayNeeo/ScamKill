@@ -1,11 +1,11 @@
 /**
- * WP3 — Risk Reasoning Layer
+ * Risk Reasoning Layer
  *
  * Core intelligence: rules + LLM explanation + RAG.
  *
  * ┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
- * │ Preprocessed  │────▶│  Rule Engine  │────▶│   LLM       │────▶│ AnalyzeOutput │
- * │ Input (WP2)    │     │  (rules.ts)   │     │ (llm.ts)    │     │ (contract.ts) │
+ * │ Preprocessed  │---->│  Rule Engine  │---->│   LLM       │---->│ AnalyzeOutput │
+ * │ Input         │     │  (rules.ts)   │     │ (llm.ts)    │     │ (contract.ts) │
  * └──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
  *                                      │                              ▲
  *                                      ▼                              │
