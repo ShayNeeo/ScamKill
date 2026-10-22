@@ -8,6 +8,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router';
+import { subscribeLang, type Lang } from '../lib/i18n';
 
 interface CallCheckResponse {
   phoneNumber: string;
@@ -19,44 +20,123 @@ interface CallCheckResponse {
   verificationSteps: string[];
 }
 
+const copy = {
+  en: {
+    badge: 'TanStack Router SPA island · Hono edge API · Astro 6 Actions · tsrs',
+    title: 'ScamKill Family Command Center',
+    subtitle: 'Switch pages instantly inside a React island without reloading the Astro page',
+    navLabel: 'Family command center navigation',
+    navOverview: '1. Safety loop & family code',
+    navCalls: '2. Number lookup (Hono edge)',
+    navBots: '3. Bot log (SMS / Zalo / Telegram)',
+    protectedTitle: 'Protected older adults',
+    lanName: 'Mrs. Nguyen Thi Lan (68 years old)',
+    lanState: 'PWA installed · Slow Down 60s on by default',
+    lanBadge: 'Protected',
+    huongName: 'Ms. Huong (Daughter - alert recipient)',
+    huongState: 'Channels: Telegram · Zalo · SMS',
+    huongBadge: 'Connected',
+    safeTitle: 'Family code against AI voice cloning (deepfake)',
+    safeBody:
+      'When a stranger calls claiming to be a child who urgently needs money, ScamKill asks Mrs. Lan for this phrase first.',
+    safeLabel: 'The family private phrase:',
+    saveSafe: 'Save family code',
+    savedSafe: (word: string) => `Family code "${word}" updated for Mom/Dad.`,
+    presetLan: 'Mrs. Lan scenario (0918 765 432)',
+    presetPolice: 'Fake police (024 7777 8888)',
+    presetUnknown: 'Unknown number, unverified (0939 404 505)',
+    phoneLabel: 'Incoming phone number:',
+    urgentLabel: 'Caller pushes for an urgent transfer',
+    checkIdle: 'Check via Hono API (/api/v1/call-check)',
+    checkBusy: 'Checking on the Hono edge...',
+    resultLabel: (status: string, count: number) => `${status} · ${count} reports`,
+    botTag: 'TELEGRAM + ZALO + SMS',
+    botTime: 'Just now · Mrs. Lan scenario',
+    botMessage: '[ScamKill] Alert: suspected family-voice scam asking for urgent money · Unknown number: 0918 765 432',
+    botPrivacy:
+      'Privacy (PDPD 2025): only the alert type, time, and phone number are sent. Detailed content appears only when Mrs. Lan taps consent to share.',
+  },
+  vi: {
+    badge: 'TanStack Router SPA island · Hono edge API · Astro 6 Actions · tsrs',
+    title: 'Trung tâm Điều phối Gia đình ScamKill',
+    subtitle: 'Chuyển trang tức thì ngay trong React Island mà không tải lại trang Astro',
+    navLabel: 'Điều hướng trung tâm gia đình',
+    navOverview: '1. Vòng bảo vệ & Mã gia đình',
+    navCalls: '2. Tra cứu Số gọi (Hono Edge)',
+    navBots: '3. Nhật ký Bot (SMS / Zalo / Telegram)',
+    protectedTitle: 'Trạng thái người cao tuổi được bảo vệ',
+    lanName: 'Bà Nguyễn Thị Lan (68 tuổi)',
+    lanState: 'Đã cài PWA · Tự động bật Làm chậm 60s',
+    lanBadge: 'Đang bảo vệ',
+    huongName: 'Chị Hương (Con gái - Người nhận cảnh báo)',
+    huongState: 'Kênh nhận: Telegram · Zalo · SMS',
+    huongBadge: 'Đã kết nối',
+    safeTitle: 'Mã gia đình chống giả giọng AI (Deepfake)',
+    safeBody:
+      'Khi có người lạ gọi tự xưng là con cháu mượn tiền gấp, ScamKill nhắc Bà Lan hỏi mật khẩu này trước tiên.',
+    safeLabel: 'Từ khóa bí mật của gia đình:',
+    saveSafe: 'Lưu Mã gia đình',
+    savedSafe: (word: string) => `Đã cập nhật Mã gia đình "${word}" cho Bố/Mẹ.`,
+    presetLan: 'Kịch bản Bà Lan (0918 765 432)',
+    presetPolice: 'Giả Công an (024 7777 8888)',
+    presetUnknown: 'Số lạ Chưa xác minh (0939 404 505)',
+    phoneLabel: 'Số điện thoại gọi đến:',
+    urgentLabel: 'Người gọi thúc ép chuyển tiền gấp',
+    checkIdle: 'Kiểm tra qua Hono API (/api/v1/call-check)',
+    checkBusy: 'Đang kiểm tra trên Hono Edge...',
+    resultLabel: (status: string, count: number) => `${status} · ${count} báo cáo`,
+    botTag: 'TELEGRAM + ZALO + SMS',
+    botTime: 'Vừa xong · Kịch bản Bà Lan',
+    botMessage:
+      '[ScamKill] Cảnh báo Nghi giả giọng người thân mượn tiền gấp · SĐT lạ: 0918 765 432',
+    botPrivacy:
+      'Quyền riêng tư (PDPD 2025): Chỉ gửi loại cảnh báo, thời điểm và số điện thoại. Nội dung chi tiết chỉ hiển thị khi Bà Lan bấm đồng ý chia sẻ.',
+  },
+};
+
+function useLang(): Lang {
+  const [lang, setLangState] = useState<Lang>('en');
+  useEffect(() => subscribeLang(setLangState), []);
+  return lang;
+}
+
 function RootLayout() {
+  const lang = useLang();
+  const t = copy[lang];
+
   return (
     <div className="rounded-3xl border-2 border-[#0B5D56]/25 bg-[#FFFDF9] p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#DFD6C3] pb-5">
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#0B5D56]/10 px-3 py-1 text-xs font-bold text-[#0B5D56]">
-            ⚡ TanStack Router SPA Island · Hono Edge API · Astro 6 Actions · tsrs
+            {t.badge}
           </span>
-          <h2 className="mt-2 text-2xl font-extrabold text-[#18181B]">
-            Trung tâm Điều phối Gia đình ScamKill
-          </h2>
-          <p className="text-sm text-[#3F3F46]">
-            Chuyển trang tức thì ngay trong React Island mà không tải lại trang Astro
-          </p>
+          <h2 className="mt-2 text-2xl font-extrabold text-[#18181B]">{t.title}</h2>
+          <p className="text-sm text-[#3F3F46]">{t.subtitle}</p>
         </div>
 
-        <nav className="flex flex-wrap gap-2" aria-label="Điều hướng trung tâm gia đình">
+        <nav className="flex flex-wrap gap-2" aria-label={t.navLabel}>
           <Link
             to="/"
             activeOptions={{ exact: true }}
             activeProps={{ className: 'bg-[#0B5D56] text-[#FAF6EE]' }}
             inactiveProps={{ className: 'bg-[#F1EBDD] text-[#18181B] hover:bg-[#E4DBC6]' }}
             className="min-h-[44px] rounded-xl px-4 py-2.5 text-sm font-bold transition">
-            1. Vòng bảo vệ & Mã gia đình
+            {t.navOverview}
           </Link>
           <Link
             to="/calls"
             activeProps={{ className: 'bg-[#0B5D56] text-[#FAF6EE]' }}
             inactiveProps={{ className: 'bg-[#F1EBDD] text-[#18181B] hover:bg-[#E4DBC6]' }}
             className="min-h-[44px] rounded-xl px-4 py-2.5 text-sm font-bold transition">
-            2. Tra cứu Số gọi (Hono Edge)
+            {t.navCalls}
           </Link>
           <Link
             to="/bots"
             activeProps={{ className: 'bg-[#0B5D56] text-[#FAF6EE]' }}
             inactiveProps={{ className: 'bg-[#F1EBDD] text-[#18181B] hover:bg-[#E4DBC6]' }}
             className="min-h-[44px] rounded-xl px-4 py-2.5 text-sm font-bold transition">
-            3. Nhật ký Bot (SMS / Zalo / Telegram)
+            {t.navBots}
           </Link>
         </nav>
       </div>
@@ -69,37 +149,37 @@ function RootLayout() {
 }
 
 function OverviewView() {
+  const lang = useLang();
+  const t = copy[lang];
   const [safeWord, setSafeWord] = useState('Cây khế ngọt');
   const [savedNotice, setSavedNotice] = useState('');
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setSavedNotice(`Đã cập nhật Mã gia đình "${safeWord}" cho Bố/Mẹ.`);
+    setSavedNotice(t.savedSafe(safeWord));
   };
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <div className="rounded-2xl border border-[#DFD6C3] bg-[#FAF6EE] p-5">
-        <h3 className="text-lg font-extrabold text-[#18181B]">
-          Trạng thái người cao tuổi được bảo vệ
-        </h3>
+        <h3 className="text-lg font-extrabold text-[#18181B]">{t.protectedTitle}</h3>
         <ul className="mt-4 space-y-3">
           <li className="flex items-center justify-between rounded-xl bg-[#FFFDF9] p-3.5 border border-[#DFD6C3]">
             <div>
-              <p className="font-bold text-[#18181B]">Bà Nguyễn Thị Lan (68 tuổi)</p>
-              <p className="text-sm text-[#3F3F46]">Đã cài PWA · Tự động bật Làm chậm 60s</p>
+              <p className="font-bold text-[#18181B]">{t.lanName}</p>
+              <p className="text-sm text-[#3F3F46]">{t.lanState}</p>
             </div>
             <span className="rounded-full bg-[#ECFDF5] px-3 py-1 text-xs font-extrabold text-[#15803D]">
-              Đang bảo vệ
+              {t.lanBadge}
             </span>
           </li>
           <li className="flex items-center justify-between rounded-xl bg-[#FFFDF9] p-3.5 border border-[#DFD6C3]">
             <div>
-              <p className="font-bold text-[#18181B]">Chị Hương (Con gái — Người nhận cảnh báo)</p>
-              <p className="text-sm text-[#3F3F46]">Kênh nhận: Telegram · Zalo · SMS</p>
+              <p className="font-bold text-[#18181B]">{t.huongName}</p>
+              <p className="text-sm text-[#3F3F46]">{t.huongState}</p>
             </div>
             <span className="rounded-full bg-[#0B5D56]/10 px-3 py-1 text-xs font-extrabold text-[#0B5D56]">
-              Đã kết nối
+              {t.huongBadge}
             </span>
           </li>
         </ul>
@@ -109,14 +189,10 @@ function OverviewView() {
         onSubmit={handleSave}
         className="rounded-2xl border border-[#DFD6C3] bg-[#FAF6EE] p-5 flex flex-col justify-between">
         <div>
-          <h3 className="text-lg font-extrabold text-[#18181B]">
-            Mã gia đình chống giả giọng AI (Deepfake)
-          </h3>
-          <p className="mt-1 text-sm text-[#3F3F46]">
-            Khi có người lạ gọi tự xưng là con cháu mượn tiền gấp, ScamKill nhắc Bà Lan hỏi mật khẩu này trước tiên.
-          </p>
+          <h3 className="text-lg font-extrabold text-[#18181B]">{t.safeTitle}</h3>
+          <p className="mt-1 text-sm text-[#3F3F46]">{t.safeBody}</p>
           <label className="mt-4 block text-sm font-bold text-[#18181B]">
-            Từ khóa bí mật của gia đình:
+            {t.safeLabel}
             <input
               type="text"
               value={safeWord}
@@ -130,11 +206,9 @@ function OverviewView() {
           <button
             type="submit"
             className="min-h-[48px] w-full rounded-xl bg-[#0B5D56] px-5 py-3 text-sm font-extrabold text-[#FAF6EE] transition hover:bg-[#084741]">
-            Lưu Mã gia đình
+            {t.saveSafe}
           </button>
-          {savedNotice ? (
-            <p className="mt-2 text-sm font-bold text-[#15803D]">{savedNotice}</p>
-          ) : null}
+          {savedNotice ? <p className="mt-2 text-sm font-bold text-[#15803D]">{savedNotice}</p> : null}
         </div>
       </form>
     </div>
@@ -142,6 +216,8 @@ function OverviewView() {
 }
 
 function EdgeCallCheckView() {
+  const lang = useLang();
+  const t = copy[lang];
   const [phone, setPhone] = useState('0918 765 432');
   const [urgentMoney, setUrgentMoney] = useState(true);
   const [inContacts, setInContacts] = useState(false);
@@ -183,7 +259,7 @@ function EdgeCallCheckView() {
             void runCheck('0918 765 432', true, false);
           }}
           className="rounded-xl border border-[#DFD6C3] bg-[#FAF6EE] px-3.5 py-2 text-xs font-bold text-[#18181B] hover:border-[#0B5D56]">
-          👵 Kịch bản Bà Lan (0918 765 432)
+          {t.presetLan}
         </button>
         <button
           type="button"
@@ -194,7 +270,7 @@ function EdgeCallCheckView() {
             void runCheck('02477778888', true, false);
           }}
           className="rounded-xl border border-[#DFD6C3] bg-[#FAF6EE] px-3.5 py-2 text-xs font-bold text-[#18181B] hover:border-[#0B5D56]">
-          🚨 Giả Công an (024 7777 8888)
+          {t.presetPolice}
         </button>
         <button
           type="button"
@@ -205,13 +281,13 @@ function EdgeCallCheckView() {
             void runCheck('0939 404 505', false, false);
           }}
           className="rounded-xl border border-[#DFD6C3] bg-[#FAF6EE] px-3.5 py-2 text-xs font-bold text-[#18181B] hover:border-[#0B5D56]">
-          ❓ Số lạ Chưa xác minh (0939 404 505)
+          {t.presetUnknown}
         </button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <label className="block text-sm font-bold text-[#18181B]">
-          Số điện thoại gọi đến:
+          {t.phoneLabel}
           <input
             type="text"
             value={phone}
@@ -227,7 +303,7 @@ function EdgeCallCheckView() {
             onChange={(e) => setUrgentMoney(e.target.checked)}
             className="h-5 w-5 accent-[#0B5D56]"
           />
-          Người gọi thúc ép chuyển tiền gấp
+          {t.urgentLabel}
         </label>
 
         <div className="flex items-end">
@@ -236,7 +312,7 @@ function EdgeCallCheckView() {
             onClick={() => void runCheck()}
             disabled={loading}
             className="min-h-[46px] w-full rounded-xl bg-[#0B5D56] px-5 py-2.5 text-sm font-extrabold text-[#FAF6EE]">
-            {loading ? 'Đang kiểm tra trên Hono Edge...' : 'Kiểm tra qua Hono API (/api/v1/call-check)'}
+            {loading ? t.checkBusy : t.checkIdle}
           </button>
         </div>
       </div>
@@ -245,10 +321,10 @@ function EdgeCallCheckView() {
         <div className="rounded-2xl border-2 border-[#0B5D56]/30 bg-[#FAF6EE] p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-mono text-lg font-extrabold text-[#18181B]">
-              SĐT: {result.phoneNumber}
+              {lang === 'en' ? 'Number' : 'SĐT'}: {result.phoneNumber}
             </span>
             <span className="rounded-full bg-[#0B5D56] px-3.5 py-1 text-xs font-extrabold text-[#FAF6EE]">
-              {result.status.toUpperCase()} · {result.communityReportCount} báo cáo
+              {t.resultLabel(result.status.toUpperCase(), result.communityReportCount)}
             </span>
           </div>
           <p className="mt-2 text-lg font-extrabold text-[#B91C1C]">{result.badgeLabel}</p>
@@ -263,21 +339,20 @@ function EdgeCallCheckView() {
 }
 
 function MultiBotLogView() {
+  const lang = useLang();
+  const t = copy[lang];
+
   return (
     <div className="space-y-3">
       <div className="rounded-2xl border border-[#DFD6C3] bg-[#FAF6EE] p-4">
         <div className="flex items-center justify-between">
           <span className="rounded-lg bg-[#0B5D56] px-2.5 py-1 text-xs font-extrabold text-[#FAF6EE]">
-            TELEGRAM + ZALO + SMS
+            {t.botTag}
           </span>
-          <span className="font-mono text-xs text-[#3F3F46]">Vừa xong · Kịch bản Bà Lan</span>
+          <span className="font-mono text-xs text-[#3F3F46]">{t.botTime}</span>
         </div>
-        <p className="mt-2 font-bold text-[#18181B]">
-          [ScamKill] Cảnh báo Nghi giả giọng người thân mượn tiền gấp · SĐT lạ: 0918 765 432
-        </p>
-        <p className="mt-1 text-xs text-[#3F3F46]">
-          🔒 Quyền riêng tư (PDPD 2025): Chỉ gửi loại cảnh báo, thời điểm và số điện thoại. Nội dung chi tiết chỉ hiển thị khi Bà Lan bấm đồng ý chia sẻ.
-        </p>
+        <p className="mt-2 font-bold text-[#18181B]">{t.botMessage}</p>
+        <p className="mt-1 text-xs text-[#3F3F46]">{t.botPrivacy}</p>
       </div>
     </div>
   );

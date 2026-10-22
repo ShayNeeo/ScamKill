@@ -1,20 +1,21 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Be Vietnam Pro carries headings; Lexend carries long-form Vietnamese body copy;
-     JetBrains Mono is reserved for phone numbers, timers and measured values. */
+  /* Bricolage Grotesque carries headings; Atkinson Hyperlegible carries body copy
+     because it was drawn for low-vision readers; Azeret Mono is reserved for phone
+     numbers, timers and measured values. */
   --font-sans:
-    'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', sans-serif;
+    'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   --font-display:
-    'Be Vietnam Pro', 'Lexend', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    sans-serif;
+    'Bricolage Grotesque', 'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, sans-serif;
   --font-mono:
-    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Azeret Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
     'Liberation Mono', monospace;
   /* Serif role retired on this brand: legacy surfaces that still use it get the
      display face instead of Georgia until they migrate. */
-  --font-serif: 'Be Vietnam Pro', 'Lexend', ui-serif, Georgia, serif;
+  --font-serif: 'Bricolage Grotesque', 'Atkinson Hyperlegible', ui-serif, Georgia, serif;
 
   /* One authored easing curve, reused everywhere motion is meaningful. */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -119,6 +120,62 @@
 
 @utility container-page {
   @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+}
+
+/* Instant bilingual switching: both variants ship in the HTML and the document
+   language decides which one paints. No reload, no hydration gap. */
+.lang-vi {
+  display: none;
+}
+
+html[lang='vi'] .lang-en {
+  display: none;
+}
+
+html[lang='vi'] .lang-vi {
+  display: revert;
+}
+
+/* EN / VI segmented control, used on every public surface. */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border: 1px solid color-mix(in oklab, var(--color-ink-900) 15%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in oklab, #ffffff 72%, transparent);
+}
+
+.lang-switch button {
+  min-height: 2rem;
+  min-width: 2.5rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-600);
+  transition:
+    background-color 160ms var(--ease-out-quart),
+    color 160ms var(--ease-out-quart);
+}
+
+.lang-switch button:hover {
+  color: var(--color-ink-900);
+  background: color-mix(in oklab, var(--color-ink-900) 7%, transparent);
+}
+
+.lang-switch button[aria-pressed='true'] {
+  background: var(--color-ink-900);
+  color: var(--color-cream-50);
+}
+
+.lang-switch__globe {
+  padding-inline: 0.35rem 0.15rem;
+  font-size: 0.875rem;
+  line-height: 1;
 }
 
 /* Fine-dot texture used behind the dark surfaces. */

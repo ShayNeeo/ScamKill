@@ -4,210 +4,400 @@ import BaLanSimulator from '../components/BaLanSimulator.svelte';
 import PricingCalculator from '../components/PricingCalculator.svelte';
 import PwaInstallPrompt from '../components/PwaInstallPrompt.svelte';
 import LeadAndAuthModal from '../components/LeadAndAuthModal.svelte';
+import InteractiveGuidebook from '../components/InteractiveGuidebook.svelte';
 
 export const prerender = true;
 
 const appUrl = import.meta.env.PUBLIC_APP_URL ?? 'https://scamkill-pwa.9ez.workers.dev';
 
+type Bi = { en: string; vi: string };
+type BiList = { en: string[]; vi: string[] };
+
 const navLinks = [
-  { href: '#van-de', label: 'Thực trạng' },
-  { href: '#giai-phap', label: '3 lớp bảo vệ' },
-  { href: '#demo', label: 'Demo Bà Lan' },
-  { href: '#pwa', label: 'Cài PWA' },
-  { href: '#gia', label: 'Mô hình giá' },
+  { href: '#van-de', en: 'The reality', vi: 'Thực trạng' },
+  { href: '#giai-phap', en: '3 protection layers', vi: '3 lớp bảo vệ' },
+  { href: '#brain', en: 'Brain science', vi: 'Khoa học hành vi' },
+  { href: '#guidebook', en: 'Guidebook', vi: 'Cẩm nang' },
+  { href: '#demo', en: 'Mrs. Lan demo', vi: 'Demo Bà Lan' },
+  { href: '#gia', en: 'Pricing', vi: 'Mô hình giá' },
 ];
 
-const stats = [
+const stats: { value: Bi; label: Bi; source: Bi }[] = [
   {
-    value: '18.900 tỷ ₫',
-    label: 'thiệt hại ước tính do lừa đảo trực tuyến năm 2024',
-    source: 'Khảo sát NCA 2024',
+    value: { en: '18,900 bn ₫', vi: '18.900 tỷ ₫' },
+    label: {
+      en: 'estimated losses from online scams in 2024',
+      vi: 'thiệt hại ước tính do lừa đảo trực tuyến năm 2024',
+    },
+    source: { en: 'NCA 2024 survey', vi: 'Khảo sát NCA 2024' },
   },
   {
-    value: '1 / 220',
-    label: 'người dùng điện thoại từng là nạn nhân lừa đảo (0,45%)',
-    source: 'NCA 2024, N > 59.000',
+    value: { en: '1 in 220', vi: '1 / 220' },
+    label: {
+      en: 'phone users have been the victim of a scam (0.45%)',
+      vi: 'người dùng điện thoại từng là nạn nhân lừa đảo (0,45%)',
+    },
+    source: { en: 'NCA 2024, N > 59,000', vi: 'NCA 2024, N > 59.000' },
   },
   {
-    value: '62,08%',
-    label: 'từng nhận cuộc gọi giả danh công an, toà án, thuế hoặc ngân hàng',
-    source: 'NCA 2024',
+    value: { en: '62.08%', vi: '62,08%' },
+    label: {
+      en: 'have received a call impersonating police, a court, tax, or a bank',
+      vi: 'từng nhận cuộc gọi giả danh công an, toà án, thuế hoặc ngân hàng',
+    },
+    source: { en: 'NCA 2024', vi: 'NCA 2024' },
   },
   {
-    value: '296.000+',
-    label: 'số spam / lừa đảo được ghi nhận chỉ trong nửa cuối 2024',
-    source: 'nTrust · NCA',
-  },
-];
-
-const gaps = [
-  {
-    title: 'Khoảng trống thời điểm',
-    body: 'Cảnh báo phải xuất hiện trước khi người cao tuổi bắt máy hoặc ngay khi vừa đọc tin nhắn, trước khi nỗi sợ và sự khẩn cấp chiếm lấy quyết định.',
-    outcome: 'Cảnh báo đúng lúc, không phải sau khi tiền đã đi.',
-  },
-  {
-    title: 'Khoảng trống xác minh',
-    body: 'Khi giọng nói và video có thể bị làm giả bằng AI, tai người không còn là bằng chứng. Cần một quy tắc xác minh cố định, không dựa vào cảm giác.',
-    outcome: 'Mã gia đình + gọi lại số đã lưu.',
-  },
-  {
-    title: 'Khoảng trống hỗ trợ',
-    body: 'Người cao tuổi thường đối mặt một mình đúng lúc bị thúc ép. Một cảnh báo chỉ hiệu quả khi đi kèm cầu nối một chạm tới người thân tin cậy.',
-    outcome: 'Báo gia đình qua SMS, Zalo và Telegram.',
+    value: { en: '296,000+', vi: '296.000+' },
+    label: {
+      en: 'spam and scam numbers logged in the second half of 2024',
+      vi: 'số spam và lừa đảo được ghi nhận chỉ trong nửa cuối 2024',
+    },
+    source: { en: 'nTrust · NCA', vi: 'nTrust · NCA' },
   },
 ];
 
-const layers = [
+const gaps: { title: Bi; body: Bi; outcome: Bi }[] = [
   {
-    number: 'Lớp 1',
-    phase: 'Trước khi bắt máy',
-    title: 'Cảnh báo cuộc gọi từ số có nguy cơ',
-    body: 'Đối chiếu số gọi đến với báo cáo cộng đồng, nguồn công khai đã được uỷ quyền (nTrust, Bộ Công an, NHNN) và các dấu hiệu cấu trúc như đầu số quốc tế lạ, gọi dồn dập, số không có trong danh bạ.',
-    bullets: [
-      'Bốn trạng thái rủi ro tách bạch: Nguy cơ cao, Cần cảnh giác, Chưa xác minh, Trong danh bạ.',
-      'Luôn hiển thị mức rủi ro, không bao giờ khẳng định tuyệt đối “đây là lừa đảo”.',
-      'Khi thiếu dữ liệu, nhãn trung thực là “Chưa xác minh”, kèm lời nhắc không chuyển tiền, không đọc OTP.',
-    ],
+    title: { en: 'The timing gap', vi: 'Khoảng trống thời điểm' },
+    body: {
+      en: 'A warning has to arrive before the senior picks up, or the moment the message is read, before fear and urgency take over the decision.',
+      vi: 'Cảnh báo phải xuất hiện trước khi người cao tuổi bắt máy hoặc ngay khi vừa đọc tin nhắn, trước khi nỗi sợ và sự khẩn cấp chiếm lấy quyết định.',
+    },
+    outcome: {
+      en: 'A warning at the right moment, not after the money has left.',
+      vi: 'Cảnh báo đúng lúc, không phải sau khi tiền đã đi.',
+    },
+  },
+  {
+    title: { en: 'The verification gap', vi: 'Khoảng trống xác minh' },
+    body: {
+      en: 'When AI can fake a voice and a face, the human ear stops being evidence. Families need a fixed verification rule, not a feeling.',
+      vi: 'Khi giọng nói và video có thể bị làm giả bằng AI, tai người không còn là bằng chứng. Cần một quy tắc xác minh cố định, không dựa vào cảm giác.',
+    },
+    outcome: { en: 'Family code plus a callback to a saved number.', vi: 'Mã gia đình và gọi lại số đã lưu.' },
+  },
+  {
+    title: { en: 'The support gap', vi: 'Khoảng trống hỗ trợ' },
+    body: {
+      en: 'Older adults usually face the pressure alone at the exact moment it peaks. A warning only works when it carries a one-tap bridge to someone trusted.',
+      vi: 'Người cao tuổi thường đối mặt một mình đúng lúc bị thúc ép. Một cảnh báo chỉ hiệu quả khi đi kèm cầu nối một chạm tới người thân tin cậy.',
+    },
+    outcome: { en: 'Family alerts over SMS, Zalo, and Telegram.', vi: 'Báo gia đình qua SMS, Zalo và Telegram.' },
+  },
+];
+
+const layers: {
+  id: string;
+  number: Bi;
+  phase: Bi;
+  title: Bi;
+  body: Bi;
+  bullets: BiList;
+  example: { heading: Bi; badge: Bi; text: Bi };
+  tone: string;
+}[] = [
+  {
+    id: 'layer-1',
+    number: { en: 'Layer 1', vi: 'Lớp 1' },
+    phase: { en: 'Before pickup', vi: 'Trước khi bắt máy' },
+    title: { en: 'Warn on calls from risky numbers', vi: 'Cảnh báo cuộc gọi từ số có nguy cơ' },
+    body: {
+      en: 'Every incoming number is matched against community reports, authorized public sources (nTrust, the Ministry of Public Security, the State Bank), and structural signals such as unusual international prefixes, call bursts, and numbers outside the contact list.',
+      vi: 'Đối chiếu số gọi đến với báo cáo cộng đồng, nguồn công khai đã được uỷ quyền (nTrust, Bộ Công an, NHNN) và các dấu hiệu cấu trúc như đầu số quốc tế lạ, gọi dồn dập, số không có trong danh bạ.',
+    },
+    bullets: {
+      en: [
+        'Four separate risk states: High risk, Caution, Unverified, and In contacts.',
+        'Always show a risk level, never an absolute claim that a number is a scam.',
+        'When data is missing, the honest label is Unverified, with a reminder: do not transfer money, do not read out an OTP.',
+      ],
+      vi: [
+        'Bốn trạng thái rủi ro tách bạch: Nguy cơ cao, Cần cảnh giác, Chưa xác minh, Trong danh bạ.',
+        'Luôn hiển thị mức rủi ro, không bao giờ khẳng định tuyệt đối “đây là lừa đảo”.',
+        'Khi thiếu dữ liệu, nhãn trung thực là “Chưa xác minh”, kèm lời nhắc không chuyển tiền, không đọc OTP.',
+      ],
+    },
     example: {
-      number: '0918 765 432',
-      badge: 'Chưa xác minh',
-      text: 'Số lạ, chưa có dữ liệu báo cáo. Tuyệt đối không chuyển tiền hoặc đọc mã OTP.',
+      heading: { en: 'Incoming call preview', vi: 'Xem trước trên máy' },
+      badge: { en: 'Unverified', vi: 'Chưa xác minh' },
+      text: {
+        en: 'Unknown number with no report data. Do not transfer money or read out an OTP.',
+        vi: 'Số lạ, chưa có dữ liệu báo cáo. Tuyệt đối không chuyển tiền hoặc đọc mã OTP.',
+      },
     },
     tone: 'amber',
   },
   {
-    number: 'Lớp 2',
-    phase: 'Khi đọc tin nhắn',
-    title: 'Phân tích tin nhắn đáng ngờ',
-    body: 'Người dùng dán văn bản, tải ảnh chụp màn hình, quét QR hoặc chia sẻ tin nhắn. ScamKill đọc rồi trả lời bằng lời thường ngày, không dùng thuật ngữ.',
-    bullets: [
-      'Nhận diện giả danh cơ quan chức năng, áp lực thời gian, đòi OTP/chuyển khoản, link lạ, ép cài APK, giả tai nạn người thân.',
-      'Đưa ra 1–3 lý do dễ hiểu, không thuật ngữ, kèm một hành động cụ thể tiếp theo.',
-      'Đọc thành tiếng bằng giọng Việt ở tốc độ 0,85× cho người giảm thị lực.',
-    ],
+    id: 'layer-2',
+    number: { en: 'Layer 2', vi: 'Lớp 2' },
+    phase: { en: 'While reading a message', vi: 'Khi đọc tin nhắn' },
+    title: { en: 'Analyze suspicious messages', vi: 'Phân tích tin nhắn đáng ngờ' },
+    body: {
+      en: 'The user pastes text, uploads a screenshot, scans a QR code, or shares a message. ScamKill reads it and answers in everyday language, with no technical terms.',
+      vi: 'Người dùng dán văn bản, tải ảnh chụp màn hình, quét QR hoặc chia sẻ tin nhắn. ScamKill đọc rồi trả lời bằng lời thường ngày, không dùng thuật ngữ.',
+    },
+    bullets: {
+      en: [
+        'Detect authority impersonation, time pressure, OTP or transfer demands, strange links, forced APK installs, and fake family emergencies.',
+        'Give one to three plain-language reasons and one concrete next action.',
+        'Read the answer aloud in Vietnamese at 0.85x speed for low-vision users.',
+      ],
+      vi: [
+        'Nhận diện giả danh cơ quan chức năng, áp lực thời gian, đòi OTP hoặc chuyển khoản, link lạ, ép cài APK, giả tai nạn người thân.',
+        'Đưa ra 1 đến 3 lý do dễ hiểu, không thuật ngữ, kèm một hành động cụ thể tiếp theo.',
+        'Đọc thành tiếng bằng giọng Việt ở tốc độ 0,85× cho người giảm thị lực.',
+      ],
+    },
     example: {
-      number: 'Tin nhắn từ “VNeID”',
-      badge: 'Nguy cơ cao',
-      text: '1. Tạo áp lực “khoá tài khoản trong 24 giờ”. 2. Có đường link lạ. Việc cần làm: đừng bấm link, hỏi người thân trước.',
+      heading: { en: 'Incoming message preview', vi: 'Xem trước tin nhắn' },
+      badge: { en: 'High risk', vi: 'Nguy cơ cao' },
+      text: {
+        en: '1. Creates pressure to lock the account within 24 hours. 2. Contains a strange link. Next action: do not tap the link, ask a family member first.',
+        vi: '1. Tạo áp lực “khoá tài khoản trong 24 giờ”. 2. Có đường link lạ. Việc cần làm: đừng bấm link, hỏi người thân trước.',
+      },
     },
     tone: 'clay',
   },
   {
-    number: 'Lớp 3',
-    phase: 'Khi cần quyết định',
-    title: 'Xác minh người thân & báo gia đình 1-chạm',
-    body: 'Một quy trình hai bước không phụ thuộc vào việc phân biệt giọng thật hay giọng AI: hỏi Mã gia đình, rồi cúp máy và gọi lại số đã lưu. Song song, ScamKill báo người thân qua SMS, Zalo và Telegram.',
-    bullets: [
-      'Mã gia đình là cụm mật khẩu riêng, ví dụ “Cây khế ngọt”, không có trong bất kỳ hồ sơ công khai nào.',
-      'Mặc định chỉ gửi loại cảnh báo, thời điểm và số điện thoại liên quan. Nội dung cuộc gọi chỉ được chia sẻ khi người cao tuổi chọn đồng ý.',
-      'Người thân nhận nút “Gọi lại ngay”, “Xác nhận an toàn” hoặc “Báo chặn số”.',
-      'Khoảng dừng làm chậm 60 giây và bộ đếm cooling-off 48 giờ cho giao dịch rủi ro cao.',
-    ],
+    id: 'layer-3',
+    number: { en: 'Layer 3', vi: 'Lớp 3' },
+    phase: { en: 'When a decision is due', vi: 'Khi cần quyết định' },
+    title: { en: 'Verify family and alert them in one tap', vi: 'Xác minh người thân và báo gia đình một chạm' },
+    body: {
+      en: 'A two-step process that does not depend on telling a real voice from an AI voice: ask for the family code, then hang up and call the saved number. In parallel, ScamKill alerts a trusted person over SMS, Zalo, and Telegram.',
+      vi: 'Một quy trình hai bước không phụ thuộc vào việc phân biệt giọng thật hay giọng AI: hỏi Mã gia đình, rồi cúp máy và gọi lại số đã lưu. Song song, ScamKill báo người thân qua SMS, Zalo và Telegram.',
+    },
+    bullets: {
+      en: [
+        'The family code is a private phrase, for example "Sweet starfruit tree", never published anywhere.',
+        'By default only the alert type, the time, and the related phone number are sent. Call content is shared only when the senior opts in.',
+        'Family members get Call back now, Confirm safe, or Block this number.',
+        'A 60-second pause and a 48-hour cooling-off window for high-risk transfers.',
+      ],
+      vi: [
+        'Mã gia đình là cụm mật khẩu riêng, ví dụ “Cây khế ngọt”, không có trong bất kỳ hồ sơ công khai nào.',
+        'Mặc định chỉ gửi loại cảnh báo, thời điểm và số điện thoại liên quan. Nội dung cuộc gọi chỉ được chia sẻ khi người cao tuổi chọn đồng ý.',
+        'Người thân nhận nút “Gọi lại ngay”, “Xác nhận an toàn” hoặc “Báo chặn số”.',
+        'Khoảng dừng làm chậm 60 giây và bộ đếm cooling-off 48 giờ cho giao dịch rủi ro cao.',
+      ],
+    },
     example: {
-      number: 'Gửi Chị Hương · 14:32',
-      badge: 'Đã gửi 3 kênh',
-      text: 'Loại: giả danh người thân · SĐT: 0918 765 432 · Nội dung: chỉ khi có đồng ý.',
+      heading: { en: 'Alert sent to family', vi: 'Cảnh báo đã gửi' },
+      badge: { en: 'Sent on 3 channels', vi: 'Đã gửi 3 kênh' },
+      text: {
+        en: 'Type: family emergency impersonation · Number: 0918 765 432 · Content: only with consent.',
+        vi: 'Loại: giả danh người thân · SĐT: 0918 765 432 · Nội dung: chỉ khi có đồng ý.',
+      },
     },
     tone: 'jade',
   },
 ];
 
-const installSteps = [
+const brainCards: { title: Bi; body: Bi }[] = [
   {
-    platform: 'iOS · Safari',
+    title: {
+      en: 'Amygdala hijack vs. prefrontal cortex',
+      vi: 'Amygdala chiếm quyền và vỏ não trước trán',
+    },
+    body: {
+      en: 'Urgency, authority, and a crying relative trip the amygdala in a fraction of a second and take the prefrontal cortex offline. ScamKill interrupts before the transfer screen, not after the loss.',
+      vi: 'Sự khẩn cấp, quyền uy và tiếng khóc của người thân kích hoạt amygdala trong tích tắc và đẩy vỏ não trước trán ra khỏi cuộc chơi. ScamKill chen vào trước màn hình chuyển tiền, không phải sau khi mất tiền.',
+    },
+  },
+  {
+    title: { en: 'Miller\'s Law: three chunks under stress', vi: 'Định luật Miller: ba khối dưới áp lực' },
+    body: {
+      en: 'Working memory holds about seven items at rest and far fewer under threat. ScamKill shows at most three reasons and three next actions, then stops talking.',
+      vi: 'Trí nhớ làm việc giữ khoảng bảy mục khi bình tĩnh và ít hơn nhiều khi bị đe doạ. ScamKill chỉ hiển thị tối đa ba lý do và ba hành động, rồi dừng lại.',
+    },
+  },
+  {
+    title: { en: 'Gollwitzer: if-then safe-word intentions', vi: 'Gollwitzer: ý định nếu-thì với mật khẩu gia đình' },
+    body: {
+      en: 'Pre-committed if-then plans survive panic better than good intentions. Families agree in advance: "If a caller asks for money, then I hang up and call the saved number."',
+      vi: 'Kế hoạch nếu-thì được cam kết trước sống sót qua cơn hoảng loạn tốt hơn ý định tốt. Gia đình thống nhất trước: “Nếu người gọi đòi tiền, thì mình cúp máy và gọi lại số đã lưu.”',
+    },
+  },
+  {
+    title: { en: 'Polyvagal family co-regulation', vi: 'Đồng điều hoà thần kinh trong gia đình' },
+    body: {
+      en: 'A familiar voice calms the nervous system faster than any warning text. One-tap alerts route the senior to a trusted person, not to a chatbot. The 4-second in, 4-second out breathing ring does the rest.',
+      vi: 'Một giọng nói quen thuộc làm dịu hệ thần kinh nhanh hơn mọi dòng cảnh báo. Cảnh báo một chạm đưa người cao tuổi tới người thân tin cậy, không phải chatbot. Vòng thở 4 giây vào, 4 giây ra làm nốt phần còn lại.',
+    },
+  },
+];
+
+const installSteps: { platform: Bi; icon: string; intro: Bi; steps: BiList }[] = [
+  {
+    platform: { en: 'iOS · Safari', vi: 'iOS · Safari' },
     icon: 'ios',
-    intro: 'Mở ScamKill bằng Safari, không dùng trình duyệt trong app Facebook/Zalo.',
-    steps: [
-      'Mở Safari và truy cập https://scamkill-pwa.9ez.workers.dev (hoặc http://localhost:8081 khi chạy local).',
-      'Nhấn nút Chia sẻ (biểu tượng ô vuông có mũi tên) ở thanh dưới.',
-      'Chọn “Thêm vào Màn hình chính”.',
-      'Đặt tên “ScamKill” rồi nhấn “Thêm”. Mở từ màn hình chính để chạy toàn màn hình.',
-    ],
+    intro: {
+      en: 'Open ScamKill in Safari, not in the browser inside Facebook or Zalo.',
+      vi: 'Mở ScamKill bằng Safari, không dùng trình duyệt trong app Facebook hoặc Zalo.',
+    },
+    steps: {
+      en: [
+        'Open Safari and go to https://scamkill-pwa.9ez.workers.dev (or http://localhost:8081 when running locally).',
+        'Tap the Share button (the square with an arrow) on the bottom bar.',
+        'Choose Add to Home Screen.',
+        'Name it ScamKill and tap Add. Open it from the home screen to run full screen.',
+      ],
+      vi: [
+        'Mở Safari và truy cập https://scamkill-pwa.9ez.workers.dev (hoặc http://localhost:8081 khi chạy local).',
+        'Nhấn nút Chia sẻ (biểu tượng ô vuông có mũi tên) ở thanh dưới.',
+        'Chọn “Thêm vào Màn hình chính”.',
+        'Đặt tên “ScamKill” rồi nhấn “Thêm”. Mở từ màn hình chính để chạy toàn màn hình.',
+      ],
+    },
   },
   {
-    platform: 'Android · Chrome',
+    platform: { en: 'Android · Chrome', vi: 'Android · Chrome' },
     icon: 'android',
-    intro: 'Mở bằng Chrome. Nếu trình duyệt hỗ trợ, banner cài đặt sẽ tự xuất hiện.',
-    steps: [
-      'Mở Chrome và truy cập https://scamkill-pwa.9ez.workers.dev (hoặc http://localhost:8081 khi chạy local).',
-      'Nhấn menu ba chấm ở góc trên bên phải.',
-      'Chọn “Cài đặt ứng dụng” hoặc “Thêm vào Màn hình chính”.',
-      'Xác nhận “Cài đặt”. Biểu tượng ScamKill xuất hiện cùng các ứng dụng khác.',
-    ],
+    intro: {
+      en: 'Open it in Chrome. When the browser supports it, the install banner appears on its own.',
+      vi: 'Mở bằng Chrome. Nếu trình duyệt hỗ trợ, banner cài đặt sẽ tự xuất hiện.',
+    },
+    steps: {
+      en: [
+        'Open Chrome and go to https://scamkill-pwa.9ez.workers.dev (or http://localhost:8081 when running locally).',
+        'Tap the three-dot menu in the top right corner.',
+        'Choose Install app or Add to Home screen.',
+        'Confirm Install. The ScamKill icon appears with your other apps.',
+      ],
+      vi: [
+        'Mở Chrome và truy cập https://scamkill-pwa.9ez.workers.dev (hoặc http://localhost:8081 khi chạy local).',
+        'Nhấn menu ba chấm ở góc trên bên phải.',
+        'Chọn “Cài đặt ứng dụng” hoặc “Thêm vào Màn hình chính”.',
+        'Xác nhận “Cài đặt”. Biểu tượng ScamKill xuất hiện cùng các ứng dụng khác.',
+      ],
+    },
   },
 ];
 
-const checklist = [
-  'Bật chế độ máy bay sau lần mở đầu: app shell và kịch bản Bà Lan vẫn tải được.',
-  'Kiểm tra cỡ chữ 200% và trình đọc màn hình: không mất nút chính, không tràn ngang.',
-  'Thử từ chối quyền micro: app vẫn phân tích văn bản và hiển thị cảnh báo.',
-  'Kiểm tra hộp thoại cảnh báo gia đình: mặc định không có nội dung cuộc gọi; chỉ gửi khi tick đồng ý.',
-  'Gửi thử một lead trên landing và xác nhận bản ghi xuất hiện ở /dashboard.',
-];
+const checklist: BiList = {
+  en: [
+    'Turn on airplane mode after the first open: the app shell and the Mrs. Lan scenario still load.',
+    'Test 200% text size and a screen reader: no control disappears, nothing overflows sideways.',
+    'Deny the microphone permission: the app still analyzes text and shows warnings.',
+    'Check the family alert dialog: no call content by default, only sent when consent is ticked.',
+    'Submit a test lead on the landing page and confirm the record appears at /dashboard.',
+  ],
+  vi: [
+    'Bật chế độ máy bay sau lần mở đầu: app shell và kịch bản Bà Lan vẫn tải được.',
+    'Kiểm tra cỡ chữ 200% và trình đọc màn hình: không mất nút chính, không tràn ngang.',
+    'Thử từ chối quyền micro: app vẫn phân tích văn bản và hiển thị cảnh báo.',
+    'Kiểm tra hộp thoại cảnh báo gia đình: mặc định không có nội dung cuộc gọi; chỉ gửi khi tick đồng ý.',
+    'Gửi thử một lead trên landing và xác nhận bản ghi xuất hiện ở /dashboard.',
+  ],
+};
 
-const plans = [
+const plans: {
+  name: string;
+  audience: Bi;
+  price: string;
+  cadence: Bi;
+  highlight: boolean;
+  features: BiList;
+  cta: Bi;
+  href: string;
+}[] = [
   {
     name: 'Free Protection',
-    audience: 'Mọi người cao tuổi',
+    audience: { en: 'Every older adult', vi: 'Mọi người cao tuổi' },
     price: '$0',
-    cadence: 'miễn phí, không cần thẻ',
+    cadence: { en: 'free, no card required', vi: 'miễn phí, không cần thẻ' },
     highlight: false,
-    features: [
-      'Tra cứu số và cảnh báo cộng đồng cơ bản',
-      'Phân tích tin nhắn theo lượt dùng hằng ngày',
-      'Mã gia đình và hướng dẫn gọi lại',
-      'Một người thân nhận cảnh báo qua một kênh',
-    ],
-    cta: 'Dùng thử ngay',
+    features: {
+      en: [
+        'Number lookup and basic community warnings',
+        'Daily message analysis',
+        'Family code and callback guidance',
+        'One family member receives alerts on one channel',
+      ],
+      vi: [
+        'Tra cứu số và cảnh báo cộng đồng cơ bản',
+        'Phân tích tin nhắn theo lượt dùng hằng ngày',
+        'Mã gia đình và hướng dẫn gọi lại',
+        'Một người thân nhận cảnh báo qua một kênh',
+      ],
+    },
+    cta: { en: 'Try it now', vi: 'Dùng thử ngay' },
     href: appUrl,
   },
   {
     name: 'Family Plus',
-    audience: 'Hộ gia đình có người cao tuổi',
+    audience: { en: 'Households with older adults', vi: 'Hộ gia đình có người cao tuổi' },
     price: '$2.99',
-    cadence: '/ tháng / hộ · khoảng 69.000 ₫',
+    cadence: { en: '/ month / household · about 69,000 ₫', vi: '/ tháng / hộ · khoảng 69.000 ₫' },
     highlight: true,
-    features: [
-      'Bảo vệ tới 4 người cao tuổi trong cùng hộ',
-      'Cảnh báo tự động qua SMS + Zalo + Telegram',
-      'Bảng điều khiển an toàn chung cho cả gia đình',
-      'Cooling-Off 48 giờ và đồng ký giao dịch rủi ro cao',
-      'Phân tích kịch bản thoại ưu tiên',
-    ],
-    cta: 'Đăng ký Family Plus',
+    features: {
+      en: [
+        'Protection for up to 4 older adults in one household',
+        'Automatic alerts over SMS + Zalo + Telegram',
+        'A shared family safety dashboard',
+        '48-hour cooling-off and co-signing for high-risk transfers',
+        'Priority voice-scenario analysis',
+      ],
+      vi: [
+        'Bảo vệ tới 4 người cao tuổi trong cùng hộ',
+        'Cảnh báo tự động qua SMS + Zalo + Telegram',
+        'Bảng điều khiển an toàn chung cho cả gia đình',
+        'Cooling-Off 48 giờ và đồng ký giao dịch rủi ro cao',
+        'Phân tích kịch bản thoại ưu tiên',
+      ],
+    },
+    cta: { en: 'Sign up for Family Plus', vi: 'Đăng ký Family Plus' },
     href: '#lien-he',
   },
   {
     name: 'Institutional',
-    audience: 'Ngân hàng & nhà mạng',
+    audience: { en: 'Banks and telecom carriers', vi: 'Ngân hàng và nhà mạng' },
     price: '$0.08–$0.75',
-    cadence: '/ MAU / tháng',
+    cadence: { en: '/ MAU / month', vi: '/ MAU / tháng' },
     highlight: false,
-    features: [
-      'SDK white-label / đồng thương hiệu',
-      'API Cooling-Off và Trusted-Contact Co-Sign',
-      'Basic $0.08–$0.15 · Advanced $0.30–$0.75 / MAU',
-      'AI suy luận trên thiết bị, giảm chi phí cloud',
-      'Báo cáo tuân thủ và tích hợp vận hành',
-    ],
-    cta: 'Nhận báo giá B2B2C',
+    features: {
+      en: [
+        'White-label or co-branded SDK',
+        'Cooling-Off and Trusted-Contact Co-Sign APIs',
+        'Basic $0.08–$0.15 · Advanced $0.30–$0.75 / MAU',
+        'On-device inference that lowers cloud cost',
+        'Compliance reporting and operations integration',
+      ],
+      vi: [
+        'SDK white-label hoặc đồng thương hiệu',
+        'API Cooling-Off và Trusted-Contact Co-Sign',
+        'Basic $0.08–$0.15 · Advanced $0.30–$0.75 / MAU',
+        'AI suy luận trên thiết bị, giảm chi phí cloud',
+        'Báo cáo tuân thủ và tích hợp vận hành',
+      ],
+    },
+    cta: { en: 'Request a B2B2C quote', vi: 'Nhận báo giá B2B2C' },
     href: '#lien-he',
   },
 ];
 
-const revenueStreams = [
+const revenueStreams: { title: string; body: Bi }[] = [
   {
     title: 'B2C subscription',
-    body: 'Family Plus $2.99/hộ/tháng. Doanh thu định kỳ, biên gộp cao vì xử lý phần lớn trên thiết bị.',
+    body: {
+      en: 'Family Plus at $2.99 per household per month. Recurring revenue with high gross margin because most processing stays on the device.',
+      vi: 'Family Plus $2.99 mỗi hộ mỗi tháng. Doanh thu định kỳ, biên gộp cao vì xử lý phần lớn trên thiết bị.',
+    },
   },
   {
     title: 'B2B2C licensing',
-    body: 'Ngân hàng và nhà mạng trả theo MAU được bảo vệ, kèm phí tích hợp một lần. Kênh phân phối tin cậy tới hàng triệu người dùng.',
+    body: {
+      en: 'Banks and carriers pay per protected MAU, plus a one-time integration fee. A trusted distribution channel to millions of users.',
+      vi: 'Ngân hàng và nhà mạng trả theo MAU được bảo vệ, kèm phí tích hợp một lần. Kênh phân phối tin cậy tới hàng triệu người dùng.',
+    },
   },
   {
     title: 'On-device economics',
-    body: 'Mô hình nhỏ chạy tại biên giúp giảm chi phí suy luận và giữ dữ liệu nhạy cảm trên thiết bị.',
+    body: {
+      en: 'A small model at the edge lowers inference cost and keeps sensitive data on the device.',
+      vi: 'Mô hình nhỏ chạy tại biên giúp giảm chi phí suy luận và giữ dữ liệu nhạy cảm trên thiết bị.',
+    },
   },
 ];
 ---
@@ -215,7 +405,7 @@ const revenueStreams = [
 <Layout>
   <header class="sticky top-0 z-40 border-b border-ink-900/10 bg-cream-50/90 backdrop-blur-md">
     <div class="container-page flex h-16 items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2.5" aria-label="ScamKill — trang chủ">
+      <a href="/" class="flex items-center gap-2.5" aria-label="ScamKill home">
         <span class="grid size-9 place-items-center rounded-xl bg-ink-900 text-amber-400">
           <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M12 3 5 6v5c0 4.4 2.9 8.3 7 9.6 4.1-1.3 7-5.2 7-9.6V6l-7-3Z" stroke-linejoin="round" />
@@ -224,30 +414,46 @@ const revenueStreams = [
         </span>
         <span class="leading-tight">
           <span class="block font-display text-lg font-semibold tracking-tight text-ink-900">ScamKill</span>
-          <span class="block text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-600">by QuadDraKe</span>
+          <span class="hidden whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-600 sm:block">by QuadDraKe</span>
         </span>
       </a>
 
-      <nav class="hidden items-center gap-6 text-sm font-semibold text-ink-700 lg:flex" aria-label="Điều hướng chính">
+      <nav class="hidden items-center gap-4 text-[13px] font-semibold text-ink-700 xl:flex" aria-label="Main navigation">
         {navLinks.map((link) => (
-          <a href={link.href} class="transition hover:text-jade-700">{link.label}</a>
+          <a href={link.href} class="whitespace-nowrap transition hover:text-jade-700">
+            <span class="lang-en">{link.en}</span>
+            <span class="lang-vi">{link.vi}</span>
+          </a>
         ))}
       </nav>
 
       <div class="flex items-center gap-2">
-        <details class="relative lg:hidden">
+        <div class="lang-switch" role="group" aria-label="Language / Ngôn ngữ">
+          <span class="lang-switch__globe" aria-hidden="true">🌐</span>
+          <button type="button" data-lang-btn="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang-btn="vi" aria-pressed="false">VI</button>
+        </div>
+        <details class="relative xl:hidden">
           <summary class="cursor-pointer list-none rounded-lg border border-ink-900/15 px-3 py-2 text-sm font-semibold text-ink-800">
-            Mục lục
+            <span class="lang-en">Menu</span>
+            <span class="lang-vi">Mục lục</span>
           </summary>
-          <div class="absolute right-0 z-50 mt-2 w-52 rounded-2xl border border-ink-900/10 bg-white p-2 shadow-xl">
+          <div class="absolute right-0 z-50 mt-2 w-60 rounded-2xl border border-ink-900/10 bg-white p-2 shadow-xl">
             {navLinks.map((link) => (
               <a href={link.href} class="block rounded-lg px-3 py-2 text-sm font-semibold text-ink-700 hover:bg-cream-50">
-                {link.label}
+                <span class="lang-en">{link.en}</span>
+                <span class="lang-vi">{link.vi}</span>
               </a>
             ))}
+            <a href="/dashboard" class="mt-1 block rounded-lg border-t border-ink-900/10 px-3 py-2 text-sm font-semibold text-jade-700 hover:bg-cream-50">
+              <span class="lang-en">Sign in</span>
+              <span class="lang-vi">Đăng nhập</span>
+            </a>
           </div>
         </details>
-        <LeadAndAuthModal client:load triggerLabel="Đăng nhập" initialMode="auth" variant="nav" compact />
+        <div class="hidden sm:block">
+          <LeadAndAuthModal client:load initialMode="auth" variant="nav" compact />
+        </div>
       </div>
     </div>
   </header>
@@ -258,23 +464,28 @@ const revenueStreams = [
       <div class="dot-grid absolute inset-0" aria-hidden="true"></div>
 
       <div class="container-page relative grid gap-14 py-16 sm:py-24 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center">
-        <div class="reveal">
+        <div data-hero-copy>
           <h1 class="font-display text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-            ScamKill — Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại
+            <span class="lang-en">ScamKill: an AI shield that helps older adults and their families stop phone scams together</span>
+            <span class="lang-vi">ScamKill: Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại</span>
           </h1>
 
           <p class="mt-6 max-w-xl text-lg leading-relaxed text-cream-50/75">
-            Lừa đảo không chờ ai bình tĩnh. ScamKill có mặt ở đúng ba khoảnh khắc:
-            trước khi bắt máy, lúc vừa đọc tin nhắn, và ngay trước khi bấm chuyển tiền.
+            <span class="lang-en">Scams do not wait for anyone to calm down. ScamKill shows up at the three moments that decide the outcome: before pickup, right after a message is read, and a second before the transfer is confirmed.</span>
+            <span class="lang-vi">Lừa đảo không chờ ai bình tĩnh. ScamKill có mặt ở đúng ba khoảnh khắc: trước khi bắt máy, lúc vừa đọc tin nhắn, và ngay trước khi bấm chuyển tiền.</span>
           </p>
 
           <figure class="mt-8 rounded-2xl bg-white/5 px-5 py-4">
             <blockquote>
               <p class="font-display text-xl font-semibold text-amber-200 sm:text-2xl">
-                “Không ai phải đối mặt với lừa đảo một mình.”
+                <span class="lang-en">“Nobody should face a scam alone.”</span>
+                <span class="lang-vi">“Không ai phải đối mặt với lừa đảo một mình.”</span>
               </p>
             </blockquote>
-            <figcaption class="mt-2 text-xs font-semibold text-cream-50/60">Tầm nhìn ScamKill</figcaption>
+            <figcaption class="mt-2 text-xs font-semibold text-cream-50/60">
+              <span class="lang-en">The ScamKill vision</span>
+              <span class="lang-vi">Tầm nhìn ScamKill</span>
+            </figcaption>
           </figure>
 
           <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -282,7 +493,8 @@ const revenueStreams = [
               href={appUrl}
               class="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 py-3.5 text-base font-bold text-ink-950 shadow-lg shadow-amber-400/20 transition hover:bg-amber-300 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
             >
-              Mở ứng dụng PWA
+              <span class="lang-en">Open the PWA</span>
+              <span class="lang-vi">Mở ứng dụng PWA</span>
               <svg viewBox="0 0 20 20" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M4 10h12M11 5l5 5-5 5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
@@ -291,44 +503,76 @@ const revenueStreams = [
               href="#demo"
               class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-base font-bold text-cream-50 transition hover:bg-white/20 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cream-50"
             >
-              Chạy demo Bà Lan
+              <span class="lang-en">Run the Mrs. Lan demo</span>
+              <span class="lang-vi">Chạy demo Bà Lan</span>
             </a>
           </div>
 
           <p class="mt-4 text-sm text-cream-50/60">
-            Bản chạy thử: <code class="font-mono text-cream-50/80">https://scamkill-pwa.9ez.workers.dev</code>
-            · máy local: <code class="font-mono text-cream-50/80">http://localhost:8081</code>
+            <span class="lang-en">Live build:</span>
+            <span class="lang-vi">Bản chạy thử:</span>
+            <code class="font-mono text-cream-50/80">https://scamkill-pwa.9ez.workers.dev</code>
+            · <span class="lang-en">local:</span><span class="lang-vi">máy local:</span>
+            <code class="font-mono text-cream-50/80">http://localhost:8081</code>
           </p>
-          <p class="mt-2 text-sm text-cream-50/60">Đội QuadDraKe · HITC InnoStar 2026</p>
+          <p class="mt-2 text-sm text-cream-50/60">
+            <span class="lang-en">Team QuadDraKe · HITC InnoStar 2026</span>
+            <span class="lang-vi">Đội QuadDraKe · HITC InnoStar 2026</span>
+          </p>
         </div>
 
         <!-- Hero visual -->
-        <div class="reveal relative mx-auto w-full max-w-md" role="img" aria-label="Minh hoạ luồng bảo vệ của ScamKill">
+        <div class="relative mx-auto w-full max-w-md" role="img" aria-label="ScamKill protection flow illustration" data-hero-visual>
           <div class="rounded-[2rem] border border-white/15 bg-white/5 p-4 shadow-2xl shadow-ink-950/60">
             <div class="rounded-[1.5rem] bg-ink-900 p-5">
-              <div class="flex items-center justify-between text-xs text-cream-50/60">
-                <span>Cuộc gọi đến · <span class="font-mono">14:31</span></span>
-                <span class="rounded-full bg-amber-400/15 px-2 py-0.5 font-semibold text-amber-300">Chưa xác minh</span>
+              <div class="flex items-center justify-between gap-3 text-xs text-cream-50/60">
+                <span>
+                  <span class="lang-en">Incoming call ·</span>
+                  <span class="lang-vi">Cuộc gọi đến ·</span>
+                  <span class="font-mono">14:31</span>
+                </span>
+                <span class="rounded-full bg-amber-400/15 px-2 py-0.5 font-semibold text-amber-300">
+                  <span class="lang-en">Unverified</span>
+                  <span class="lang-vi">Chưa xác minh</span>
+                </span>
               </div>
-              <p class="mt-4 font-mono text-2xl font-semibold tracking-tight">0918 765 432</p>
-              <p class="mt-1 text-sm text-cream-50/60">Số lạ, không có trong danh bạ</p>
+
+              <div class="mt-4 flex items-center gap-3">
+                <span class="grid size-11 place-items-center rounded-full bg-white/10 text-jade-400" data-hero-shield>
+                  <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M12 3 5 6v5c0 4.4 2.9 8.3 7 9.6 4.1-1.3 7-5.2 7-9.6V6l-7-3Z" stroke-linejoin="round" />
+                    <path d="m8.8 12 2.2 2.2 4.2-4.4" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="font-mono text-2xl font-semibold tracking-tight">0918 765 432</p>
+                  <p class="text-sm text-cream-50/60">
+                    <span class="lang-en">Unknown number, not in contacts</span>
+                    <span class="lang-vi">Số lạ, không có trong danh bạ</span>
+                  </p>
+                </div>
+              </div>
 
               <div class="mt-5 space-y-2 text-sm">
-                <div class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
+                <div class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5" data-timeline-step>
                   <span class="grid size-6 place-items-center rounded-full bg-amber-400 text-xs font-bold text-ink-950">1</span>
-                  Cảnh báo trước khi bắt máy
+                  <span class="lang-en">Warn before pickup</span>
+                  <span class="lang-vi">Cảnh báo trước khi bắt máy</span>
                 </div>
-                <div class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
+                <div class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5" data-timeline-step>
                   <span class="grid size-6 place-items-center rounded-full bg-amber-400 text-xs font-bold text-ink-950">2</span>
-                  Khoảng dừng 60 giây
+                  <span class="lang-en">60-second pause</span>
+                  <span class="lang-vi">Khoảng dừng 60 giây</span>
                 </div>
-                <div class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
+                <div class="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5" data-timeline-step>
                   <span class="grid size-6 place-items-center rounded-full bg-amber-400 text-xs font-bold text-ink-950">3</span>
-                  Hỏi Mã gia đình · gọi lại số đã lưu
+                  <span class="lang-en">Family code · callback to a saved number</span>
+                  <span class="lang-vi">Hỏi Mã gia đình · gọi lại số đã lưu</span>
                 </div>
-                <div class="flex items-center gap-3 rounded-xl border border-jade-500/30 bg-jade-500/10 px-3 py-2.5">
+                <div class="flex items-center gap-3 rounded-xl border border-jade-500/30 bg-jade-500/10 px-3 py-2.5" data-timeline-step>
                   <span class="grid size-6 place-items-center rounded-full bg-jade-500 text-xs font-bold text-ink-950">4</span>
-                  Gia đình gọi lại trong 2 phút
+                  <span class="lang-en">Family calls back within 2 minutes</span>
+                  <span class="lang-vi">Gia đình gọi lại trong 2 phút</span>
                 </div>
               </div>
 
@@ -336,13 +580,22 @@ const revenueStreams = [
                 <span class="rounded-full border border-jade-500/30 bg-jade-500/10 px-2.5 py-1 text-mint-100">SMS</span>
                 <span class="rounded-full border border-jade-500/30 bg-jade-500/10 px-2.5 py-1 text-mint-100">Zalo</span>
                 <span class="rounded-full border border-jade-500/30 bg-jade-500/10 px-2.5 py-1 text-mint-100">Telegram</span>
-                <span class="rounded-full border border-white/15 px-2.5 py-1 text-cream-50/60">Chỉ gửi khi đồng ý</span>
+                <span class="rounded-full border border-white/15 px-2.5 py-1 text-cream-50/60">
+                  <span class="lang-en">Sent only with consent</span>
+                  <span class="lang-vi">Chỉ gửi khi đồng ý</span>
+                </span>
               </div>
             </div>
 
             <div class="mt-4 flex items-center justify-between rounded-2xl bg-amber-400 px-4 py-3 text-ink-950">
-              <span class="text-sm font-bold">30.000.000 ₫ được giữ lại</span>
-              <span class="text-xs font-semibold uppercase tracking-wider">Kịch bản Bà Lan</span>
+              <span class="text-sm font-bold">
+                <span class="lang-en">30,000,000 ₫ kept</span>
+                <span class="lang-vi">30.000.000 ₫ được giữ lại</span>
+              </span>
+              <span class="text-xs font-semibold uppercase tracking-wider">
+                <span class="lang-en">Mrs. Lan scenario</span>
+                <span class="lang-vi">Kịch bản Bà Lan</span>
+              </span>
             </div>
           </div>
         </div>
@@ -353,9 +606,18 @@ const revenueStreams = [
         <dl class="rise grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <div class="bg-ink-950/80 p-5">
-              <dt class="text-xs font-semibold uppercase tracking-wider text-cream-50/60">{stat.source}</dt>
-              <dd class="mt-2 font-mono text-2xl font-bold tracking-tight text-amber-300 sm:text-3xl">{stat.value}</dd>
-              <dd class="mt-2 text-sm leading-snug text-cream-50/60">{stat.label}</dd>
+              <dt class="text-xs font-semibold uppercase tracking-wider text-cream-50/60">
+                <span class="lang-en">{stat.source.en}</span>
+                <span class="lang-vi">{stat.source.vi}</span>
+              </dt>
+              <dd class="mt-2 font-mono text-2xl font-bold tracking-tight text-amber-300 sm:text-3xl">
+                <span class="lang-en">{stat.value.en}</span>
+                <span class="lang-vi">{stat.value.vi}</span>
+              </dd>
+              <dd class="mt-2 text-sm leading-snug text-cream-50/60">
+                <span class="lang-en">{stat.label.en}</span>
+                <span class="lang-vi">{stat.label.vi}</span>
+              </dd>
             </div>
           ))}
         </dl>
@@ -368,29 +630,33 @@ const revenueStreams = [
         <div class="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
           <div>
             <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
-              Lừa đảo không còn là chuyện hiếm. Nó là một cuộc gọi.
+              <span class="lang-en">Scams are no longer rare. They are one phone call away.</span>
+              <span class="lang-vi">Lừa đảo không còn là chuyện hiếm. Nó là một cuộc gọi.</span>
             </h2>
           </div>
           <div class="space-y-4 text-base leading-relaxed text-ink-700">
             <p>
-              Khảo sát hơn 59.000 người dùng của Hiệp hội An ninh mạng quốc gia (NCA) năm 2024 ước tính
-              lừa đảo trực tuyến gây thiệt hại <strong class="font-semibold text-ink-900">18.900 tỷ đồng</strong>
-              trong một năm. Cứ 220 người dùng điện thoại thì có một người là nạn nhân. Tỷ lệ lấy lại được tiền rất nhỏ.
+              <span class="lang-en">A survey of more than 59,000 users by the National Cybersecurity Association (NCA) in 2024 estimated that online scams caused </span>
+              <span class="lang-vi">Khảo sát hơn 59.000 người dùng của Hiệp hội An ninh mạng quốc gia (NCA) năm 2024 ước tính lừa đảo trực tuyến gây thiệt hại </span>
+              <strong class="font-semibold text-ink-900">
+                <span class="lang-en">18,900 billion VND</span>
+                <span class="lang-vi">18.900 tỷ đồng</span>
+              </strong>
+              <span class="lang-en"> in one year. One in every 220 phone users is a victim. Very few ever recover the money.</span>
+              <span class="lang-vi"> trong một năm. Cứ 220 người dùng điện thoại thì có một người là nạn nhân. Tỷ lệ lấy lại được tiền rất nhỏ.</span>
             </p>
             <p>
-              <strong class="font-semibold text-ink-900">62,08%</strong> người được hỏi từng nhận cuộc gọi giả danh
-              công an, toà án, cơ quan thuế hoặc ngân hàng. Chỉ trong 6 tháng cuối 2024, hệ thống nTrust ghi nhận
-              134.000 báo cáo số lừa đảo và hơn 296.000 số spam/lừa đảo.
+              <strong class="font-semibold text-ink-900">62.08%</strong>
+              <span class="lang-en"> of respondents had received a call impersonating police, a court, a tax office, or a bank. In the last six months of 2024 alone, nTrust logged 134,000 scam-number reports and more than 296,000 spam or scam numbers.</span>
+              <span class="lang-vi"> người được hỏi từng nhận cuộc gọi giả danh công an, toà án, cơ quan thuế hoặc ngân hàng. Chỉ trong 6 tháng cuối 2024, hệ thống nTrust ghi nhận 134.000 báo cáo số lừa đảo và hơn 296.000 số spam hoặc lừa đảo.</span>
             </p>
             <p>
-              Người cao tuổi thường sống bằng lương hưu cố định và dễ bị đẩy vào trạng thái hoảng loạn bởi
-              giọng nói bị làm giả. Tháng 12/2025, công an Hà Nội kịp ngăn một cụ bà 78 tuổi chuyển 80 triệu đồng
-              cho “công an” qua video call Zalo giả. Một người thân trong đội cũng suýt mắc bẫy dù biết rõ rủi ro:
-              nỗi sợ và sự khẩn cấp làm tê liệt khả năng suy xét.
+              <span class="lang-en">Older adults often live on a fixed pension and are easy to push into panic by a cloned voice. In December 2025, Hanoi police stopped a 78-year-old woman from transferring 80 million VND to a fake police officer on a Zalo video call. A member of our own team almost fell for it while knowing the risks: fear and urgency paralyze judgment.</span>
+              <span class="lang-vi">Người cao tuổi thường sống bằng lương hưu cố định và dễ bị đẩy vào trạng thái hoảng loạn bởi giọng nói bị làm giả. Tháng 12/2025, công an Hà Nội kịp ngăn một cụ bà 78 tuổi chuyển 80 triệu đồng cho “công an” qua video call Zalo giả. Một người thân trong đội cũng suýt mắc bẫy dù biết rõ rủi ro: nỗi sợ và sự khẩn cấp làm tê liệt khả năng suy xét.</span>
             </p>
             <p class="text-sm text-ink-600">
-              Nguồn: báo cáo an ninh mạng NCA 2024; dữ liệu nTrust H2/2024; thống kê Bộ Công an 2020–2025.
-              Đây là số liệu tham chiếu cho phần vấn đề, không phải tuyên bố về hiệu quả sản phẩm.
+              <span class="lang-en">Sources: NCA 2024 cybersecurity report, nTrust H2/2024 data, Ministry of Public Security statistics 2020–2025. These figures describe the problem, not a claim about product effectiveness.</span>
+              <span class="lang-vi">Nguồn: báo cáo an ninh mạng NCA 2024; dữ liệu nTrust H2/2024; thống kê Bộ Công an 2020–2025. Đây là số liệu tham chiếu cho phần vấn đề, không phải tuyên bố về hiệu quả sản phẩm.</span>
             </p>
           </div>
         </div>
@@ -398,13 +664,71 @@ const revenueStreams = [
         <div class="rise mt-14 grid gap-4 md:grid-cols-3">
           {gaps.map((gap) => (
             <article class="rounded-2xl border border-ink-900/10 bg-white p-6">
-              <h3 class="font-display text-lg font-bold text-ink-900">{gap.title}</h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink-700">{gap.body}</p>
+              <h3 class="font-display text-lg font-bold text-ink-900">
+                <span class="lang-en">{gap.title.en}</span>
+                <span class="lang-vi">{gap.title.vi}</span>
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-ink-700">
+                <span class="lang-en">{gap.body.en}</span>
+                <span class="lang-vi">{gap.body.vi}</span>
+              </p>
               <p class="mt-4 border-t border-ink-900/10 pt-3 text-sm font-semibold text-jade-700">
-                {gap.outcome}
+                <span class="lang-en">{gap.outcome.en}</span>
+                <span class="lang-vi">{gap.outcome.vi}</span>
               </p>
             </article>
           ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- NEUROSCIENCE -->
+    <section id="brain" class="scroll-mt-20 bg-ink-950 py-20 text-cream-50 sm:py-28">
+      <div class="container-page">
+        <div class="max-w-3xl">
+          <h2 class="font-display text-3xl font-semibold leading-tight sm:text-4xl">
+            <span class="lang-en">Neuroscience and behavioral design: why seniors fall for scams and how ScamKill interrupts panic</span>
+            <span class="lang-vi">Khoa học thần kinh và thiết kế hành vi: vì sao người cao tuổi sập bẫy và ScamKill cắt cơn hoảng loạn như thế nào</span>
+          </h2>
+          <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-cream-50/70">
+            <span class="lang-en">ScamKill is designed around the nervous system under threat, not around an ideal calm user. Every screen is a timed intervention, and every intervention is measured against how the brain behaves in the first seconds of fear.</span>
+            <span class="lang-vi">ScamKill được thiết kế cho hệ thần kinh đang bị đe doạ, không phải cho một người dùng lý tưởng đang bình tĩnh. Mỗi màn hình là một can thiệp đúng thời điểm, và mỗi can thiệp được đo bằng cách não bộ phản ứng trong những giây đầu của nỗi sợ.</span>
+          </p>
+        </div>
+
+        <div class="mt-14 grid gap-4 md:grid-cols-2">
+          {brainCards.map((card) => (
+            <article class="rounded-2xl border border-white/10 bg-white/5 p-6">
+              <h3 class="font-display text-xl font-semibold text-amber-200">
+                <span class="lang-en">{card.title.en}</span>
+                <span class="lang-vi">{card.title.vi}</span>
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed text-cream-50/75">
+                <span class="lang-en">{card.body.en}</span>
+                <span class="lang-vi">{card.body.vi}</span>
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <div class="mt-8 flex flex-col gap-6 rounded-3xl border border-jade-500/25 bg-jade-950/40 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div class="max-w-2xl">
+            <h3 class="font-display text-xl font-semibold text-mint-100">
+              <span class="lang-en">A 4-second in, 4-second out reset</span>
+              <span class="lang-vi">Nhịp thở đặt lại 4 giây vào, 4 giây ra</span>
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-cream-50/70">
+              <span class="lang-en">When adrenaline spikes, the pause screen takes over and paces a physiological sigh. Four seconds in, four seconds out, until the prefrontal cortex comes back online.</span>
+              <span class="lang-vi">Khi adrenaline tăng vọt, màn hình dừng tiếp quản và dẫn nhịp thở sinh lý. Bốn giây hít vào, bốn giây thở ra, cho tới khi vỏ não trước trán hoạt động trở lại.</span>
+            </p>
+          </div>
+          <a
+            href="#demo"
+            class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-amber-400 px-5 py-3 text-sm font-bold text-ink-950 transition hover:bg-amber-300 active:scale-[0.98]"
+          >
+            <span class="lang-en">Try the breathing pause</span>
+            <span class="lang-vi">Thử khoảng dừng hít thở</span>
+          </a>
         </div>
       </div>
     </section>
@@ -414,11 +738,12 @@ const revenueStreams = [
       <div class="container-page">
         <div class="max-w-3xl">
           <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
-            Ba lớp chắn, đúng ba khoảnh khắc nguy hiểm
+            <span class="lang-en">Three shields, at the three dangerous moments</span>
+            <span class="lang-vi">Ba lớp chắn, đúng ba khoảnh khắc nguy hiểm</span>
           </h2>
           <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-ink-700">
-            ScamKill không chờ người dùng bình tĩnh rồi tự đánh giá. Mỗi lớp có mặt ở nơi quyết định
-            đang được đưa ra: trước khi bắt máy, khi vừa đọc tin nhắn, và ngay trước khi chuyển tiền.
+            <span class="lang-en">ScamKill does not wait for the user to calm down and judge the situation. Each layer sits where the decision is being made: before pickup, while reading a message, and a second before sending money.</span>
+            <span class="lang-vi">ScamKill không chờ người dùng bình tĩnh rồi tự đánh giá. Mỗi lớp có mặt ở nơi quyết định đang được đưa ra: trước khi bắt máy, khi vừa đọc tin nhắn, và ngay trước khi chuyển tiền.</span>
           </p>
         </div>
 
@@ -426,21 +751,32 @@ const revenueStreams = [
           {layers.map((layer) => (
             <article class="rise grid gap-6 rounded-3xl border border-ink-900/10 bg-cream-50 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-start">
               <div>
-                <h3 class="font-display text-2xl font-semibold text-ink-900 sm:text-3xl">{layer.title}</h3>
+                <h3 class="font-display text-2xl font-semibold text-ink-900 sm:text-3xl">
+                  <span class="lang-en">{layer.title.en}</span>
+                  <span class="lang-vi">{layer.title.vi}</span>
+                </h3>
                 <p class="mt-2 flex flex-wrap items-center gap-2 text-sm font-semibold text-jade-700">
                   <span class="rounded-full bg-ink-900 px-2.5 py-0.5 text-[11px] font-bold text-cream-50">
-                    {layer.number}
+                    <span class="lang-en">{layer.number.en}</span>
+                    <span class="lang-vi">{layer.number.vi}</span>
                   </span>
-                  {layer.phase}
+                  <span class="lang-en">{layer.phase.en}</span>
+                  <span class="lang-vi">{layer.phase.vi}</span>
                 </p>
-                <p class="mt-3 text-base leading-relaxed text-ink-700">{layer.body}</p>
+                <p class="mt-3 text-base leading-relaxed text-ink-700">
+                  <span class="lang-en">{layer.body.en}</span>
+                  <span class="lang-vi">{layer.body.vi}</span>
+                </p>
                 <ul class="mt-5 space-y-2.5">
-                  {layer.bullets.map((bullet) => (
+                  {layer.bullets.en.map((bullet, index) => (
                     <li class="flex gap-2.5 text-sm leading-relaxed text-ink-700">
                       <svg viewBox="0 0 20 20" class="mt-0.5 size-4 shrink-0 text-jade-600" fill="currentColor" aria-hidden="true">
                         <path d="M10 1.8a8.2 8.2 0 1 0 0 16.4 8.2 8.2 0 0 0 0-16.4Zm3.6 6.3-4.3 4.6a1 1 0 0 1-1.4.02L5.8 10.6l1.4-1.4 1.4 1.4 3.6-3.9 1.4 1.4Z" />
                       </svg>
-                      <span>{bullet}</span>
+                      <span>
+                        <span class="lang-en">{bullet}</span>
+                        <span class="lang-vi">{layer.bullets.vi[index]}</span>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -448,7 +784,10 @@ const revenueStreams = [
 
               <div class="rounded-2xl border border-ink-900/10 bg-white p-5 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
-                  <p class="text-xs font-semibold text-ink-600">Xem trước trên máy</p>
+                  <p class="text-xs font-semibold text-ink-600">
+                    <span class="lang-en">{layer.example.heading.en}</span>
+                    <span class="lang-vi">{layer.example.heading.vi}</span>
+                  </p>
                   <span
                     class={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
                       layer.tone === 'jade'
@@ -458,28 +797,45 @@ const revenueStreams = [
                           : 'bg-amber-400/20 text-ink-900'
                     }`}
                   >
-                    {layer.example.badge}
+                    <span class="lang-en">{layer.example.badge.en}</span>
+                    <span class="lang-vi">{layer.example.badge.vi}</span>
                   </span>
                 </div>
-                <p class="mt-4 text-lg font-bold text-ink-900">{layer.example.number}</p>
-                <p class="mt-2 text-sm leading-relaxed text-ink-700">{layer.example.text}</p>
+                <p class="mt-4 font-mono text-lg font-bold text-ink-900">{layer.id === 'layer-2' ? 'VNeID' : '0918 765 432'}</p>
+                <p class="mt-2 text-sm leading-relaxed text-ink-700">
+                  <span class="lang-en">{layer.example.text.en}</span>
+                  <span class="lang-vi">{layer.example.text.vi}</span>
+                </p>
 
-                {layer.number === 'Lớp 3' && (
+                {layer.id === 'layer-3' && (
                   <div class="mt-4 rounded-xl bg-cream-50 p-3">
-                    <p class="text-[11px] font-bold uppercase tracking-wider text-ink-600">Mã gia đình đã đặt</p>
-                    <p class="mt-1 font-display text-lg font-semibold text-jade-800">“Cây khế ngọt”</p>
-                    <p class="mt-1 text-xs text-ink-600">Ví dụ mẫu. Mỗi gia đình tự đặt cụm mật khẩu riêng.</p>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-ink-600">
+                      <span class="lang-en">Family code on file</span>
+                      <span class="lang-vi">Mã gia đình đã đặt</span>
+                    </p>
+                    <p class="mt-1 font-display text-lg font-semibold text-jade-800">
+                      <span class="lang-en">“Sweet starfruit tree”</span>
+                      <span class="lang-vi">“Cây khế ngọt”</span>
+                    </p>
+                    <p class="mt-1 text-xs text-ink-600">
+                      <span class="lang-en">Sample only. Every family sets its own private phrase.</span>
+                      <span class="lang-vi">Ví dụ mẫu. Mỗi gia đình tự đặt cụm mật khẩu riêng.</span>
+                    </p>
                   </div>
                 )}
 
-                {layer.number === 'Lớp 1' && (
+                {layer.id === 'layer-1' && (
                   <div class="mt-4 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-400/10 p-3">
                     <svg viewBox="0 0 24 24" class="mt-0.5 size-4 shrink-0 text-clay-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                       <path d="M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                     <p class="text-xs leading-relaxed text-ink-700">
-                      <strong class="font-bold text-ink-900">Nhãn trung thực:</strong> khi chưa đủ dữ liệu, app hiển thị
-                      “Chưa xác minh” thay vì đoán bừa “an toàn”.
+                      <strong class="font-bold text-ink-900">
+                        <span class="lang-en">Honest label:</span>
+                        <span class="lang-vi">Nhãn trung thực:</span>
+                      </strong>
+                      <span class="lang-en"> when data is thin, the app shows Unverified instead of guessing safe.</span>
+                      <span class="lang-vi"> khi chưa đủ dữ liệu, app hiển thị “Chưa xác minh” thay vì đoán bừa “an toàn”.</span>
                     </p>
                   </div>
                 )}
@@ -487,6 +843,33 @@ const revenueStreams = [
             </article>
           ))}
         </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE GUIDEBOOK -->
+    <section id="guidebook" class="scroll-mt-20 bg-cream-50 py-20 sm:py-28">
+      <div class="container-page">
+        <div class="max-w-3xl">
+          <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
+            <span class="lang-en">Interactive guidebook: tap a numbered callout to see the feature up close</span>
+            <span class="lang-vi">Cẩm nang tương tác: chạm vào số đánh dấu để phóng to đúng tính năng</span>
+          </h2>
+          <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-ink-700">
+            <span class="lang-en">Five annotated regions, three persona views, and a 1x, 1.5x, 2x zoom lens. Click a callout or a zoom level and the canvas pans to that exact control with a plain-language explanation.</span>
+            <span class="lang-vi">Năm vùng được chú thích, ba góc nhìn, và ống kính 1x, 1.5x, 2x. Chạm vào số đánh dấu hoặc mức phóng to, khung hình sẽ pan tới đúng nút đó kèm giải thích bằng lời thường.</span>
+          </p>
+        </div>
+
+        <div class="mt-10">
+          <InteractiveGuidebook client:visible />
+        </div>
+
+        <p class="mt-6 text-sm text-ink-600">
+          <a href="/guidebook" class="font-semibold text-jade-700 underline decoration-jade-600/30 underline-offset-4 hover:decoration-jade-600">
+            <span class="lang-en">Open the full guidebook page</span>
+            <span class="lang-vi">Mở trang cẩm nang đầy đủ</span>
+          </a>
+        </p>
       </div>
     </section>
 
@@ -498,16 +881,23 @@ const revenueStreams = [
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div class="max-w-2xl">
             <h2 class="font-display text-3xl font-semibold leading-tight sm:text-4xl">
-              Kịch bản Bà Lan: bấm thử bốn bước giữ lại 30 triệu
+              <span class="lang-en">Mrs. Lan: four steps that keep 30 million</span>
+              <span class="lang-vi">Kịch bản Bà Lan: bấm thử bốn bước giữ lại 30 triệu</span>
             </h2>
             <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-cream-50/70">
-              Cùng một kịch bản với ứng dụng PWA. Không có cuộc gọi thật, không có tin nhắn thật.
-              Chỉ có cảnh báo, khoảng dừng, xác minh và người thân gọi lại.
+              <span class="lang-en">The same scenario as the PWA. No real call, no real message. Only a warning, a pause, verification, and a family callback.</span>
+              <span class="lang-vi">Cùng một kịch bản với ứng dụng PWA. Không có cuộc gọi thật, không có tin nhắn thật. Chỉ có cảnh báo, khoảng dừng, xác minh và người thân gọi lại.</span>
             </p>
           </div>
           <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-cream-50/60">
-            <p class="font-semibold text-cream-50">Dành cho giám khảo</p>
-            <p class="mt-1">4 bước · khoảng 60 giây · không cần đăng nhập</p>
+            <p class="font-semibold text-cream-50">
+              <span class="lang-en">For judges</span>
+              <span class="lang-vi">Dành cho giám khảo</span>
+            </p>
+            <p class="mt-1">
+              <span class="lang-en">4 steps · about 60 seconds · no sign-in</span>
+              <span class="lang-vi">4 bước · khoảng 60 giây · không cần đăng nhập</span>
+            </p>
           </div>
         </div>
 
@@ -517,24 +907,60 @@ const revenueStreams = [
       </div>
     </section>
 
+    <!-- VIDEO -->
+    <section id="video" class="scroll-mt-20 border-y border-ink-900/10 bg-white py-20 sm:py-28">
+      <div class="container-page">
+        <div class="grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-center lg:gap-14">
+          <div>
+            <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
+              <span class="lang-en">Live product walkthrough</span>
+              <span class="lang-vi">Video chạy thử sản phẩm</span>
+            </h2>
+            <p class="mt-4 max-w-[60ch] text-base leading-relaxed text-ink-700">
+              <span class="lang-en">Two minutes inside the PWA: the warning before pickup, the 60-second pause, family code verification, and the three-channel alert. Recorded on a mid-range Android phone in Hanoi.</span>
+              <span class="lang-vi">Hai phút bên trong PWA: cảnh báo trước khi bắt máy, khoảng dừng 60 giây, xác minh Mã gia đình và cảnh báo ba kênh. Ghi trên một chiếc Android tầm trung tại Hà Nội.</span>
+            </p>
+            <p class="mt-3 text-sm text-ink-600">
+              <span class="lang-en">If the video does not play, the Mrs. Lan simulator above runs the same script interactively.</span>
+              <span class="lang-vi">Nếu video không phát, phần mô phỏng Bà Lan phía trên chạy đúng kịch bản đó ở dạng tương tác.</span>
+            </p>
+          </div>
+
+          <div class="overflow-hidden rounded-3xl border border-ink-900/10 bg-ink-950 shadow-xl shadow-ink-900/10">
+            <video controls playsinline preload="metadata" poster="/icons/screenshot-wide.png" class="aspect-video w-full">
+              <source src="/media/scamkill-demo.webm" type="video/webm" />
+              <source src="/media/scamkill-demo.mp4" type="video/mp4" />
+              <span class="lang-en">Your browser does not support embedded video. The simulator above covers the same flow.</span>
+              <span class="lang-vi">Trình duyệt không hỗ trợ video nhúng. Phần mô phỏng phía trên mô tả cùng luồng.</span>
+            </video>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- PWA -->
     <section id="pwa" class="scroll-mt-20 bg-cream-50 py-20 sm:py-28">
       <div class="container-page">
         <div class="max-w-3xl">
           <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
-            Cài ScamKill lên màn hình chính trong 30 giây
+            <span class="lang-en">Install ScamKill on the home screen in 30 seconds</span>
+            <span class="lang-vi">Cài ScamKill lên màn hình chính trong 30 giây</span>
           </h2>
           <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-ink-700">
-            Chạy như một ứng dụng trên cả iPhone và Android, không cần qua App Store. Bên dưới là
-            hướng dẫn cho từng máy, kèm danh sách kiểm thử cho đội ngũ và giám khảo.
+            <span class="lang-en">It runs like an app on iPhone and Android without the App Store. Below are the steps per device, plus the test checklist for the team and judges.</span>
+            <span class="lang-vi">Chạy như một ứng dụng trên cả iPhone và Android, không cần qua App Store. Bên dưới là hướng dẫn cho từng máy, kèm danh sách kiểm thử cho đội ngũ và giám khảo.</span>
           </p>
         </div>
 
         <div class="mt-10 flex flex-col gap-5 rounded-3xl bg-ink-900 p-6 text-cream-50 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div class="max-w-xl">
-            <h3 class="font-display text-xl font-semibold">Cài trong một chạm</h3>
+            <h3 class="font-display text-xl font-semibold">
+              <span class="lang-en">Install in one tap</span>
+              <span class="lang-vi">Cài trong một chạm</span>
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-cream-50/70">
-              Bấm nút bên cạnh để mở bản PWA kèm lời nhắc cài đặt. Máy nào đã cài rồi thì nút này chỉ mở ứng dụng.
+              <span class="lang-en">Tap the button to open the PWA with the install prompt. If it is already installed, the button simply opens the app.</span>
+              <span class="lang-vi">Bấm nút bên cạnh để mở bản PWA kèm lời nhắc cài đặt. Máy nào đã cài rồi thì nút này chỉ mở ứng dụng.</span>
             </p>
           </div>
           <a
@@ -543,11 +969,8 @@ const revenueStreams = [
             rel="noopener"
             class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2.5 rounded-xl bg-amber-400 px-5 py-3 text-sm font-bold text-ink-950 transition hover:bg-amber-300 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
           >
-            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M4.5 17.5v1A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5v-1" stroke-linecap="round" />
-            </svg>
-            Mở và cài ScamKill
+            <span class="lang-en">Open and install ScamKill</span>
+            <span class="lang-vi">Mở và cài ScamKill</span>
           </a>
         </div>
 
@@ -569,18 +992,27 @@ const revenueStreams = [
                   )}
                 </span>
                 <div>
-                  <h3 class="text-lg font-bold text-ink-900">{guide.platform}</h3>
-                  <p class="text-xs text-ink-600">{guide.intro}</p>
+                  <h3 class="text-lg font-bold text-ink-900">
+                    <span class="lang-en">{guide.platform.en}</span>
+                    <span class="lang-vi">{guide.platform.vi}</span>
+                  </h3>
+                  <p class="text-xs text-ink-600">
+                    <span class="lang-en">{guide.intro.en}</span>
+                    <span class="lang-vi">{guide.intro.vi}</span>
+                  </p>
                 </div>
               </div>
 
               <ol class="mt-6 space-y-3">
-                {guide.steps.map((step, index) => (
+                {guide.steps.en.map((step, index) => (
                   <li class="flex gap-3">
                     <span class="grid size-7 shrink-0 place-items-center rounded-full bg-mint-100 text-xs font-bold text-jade-800">
                       {index + 1}
                     </span>
-                    <p class="text-sm leading-relaxed text-ink-700">{step}</p>
+                    <p class="text-sm leading-relaxed text-ink-700">
+                      <span class="lang-en">{step}</span>
+                      <span class="lang-vi">{guide.steps.vi[index]}</span>
+                    </p>
                   </li>
                 ))}
               </ol>
@@ -591,7 +1023,8 @@ const revenueStreams = [
                 rel="noopener"
                 class="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-ink-900/15 bg-cream-50 px-4 py-2.5 text-sm font-bold text-ink-900 transition hover:border-jade-600 hover:text-jade-700 active:scale-[0.98]"
               >
-                Mở và cài trên máy này
+                <span class="lang-en">Open and install on this device</span>
+                <span class="lang-vi">Mở và cài trên máy này</span>
               </a>
             </article>
           ))}
@@ -599,18 +1032,24 @@ const revenueStreams = [
 
         <div class="mt-8 rounded-3xl border border-jade-600/20 bg-mint-100/50 p-6 sm:p-8">
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <h3 class="font-display text-xl font-semibold text-ink-900">Checklist kiểm thử trước khi chấm</h3>
+            <h3 class="font-display text-xl font-semibold text-ink-900">
+              <span class="lang-en">Test checklist before judging</span>
+              <span class="lang-vi">Checklist kiểm thử trước khi chấm</span>
+            </h3>
             <span class="rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-jade-700">
               iOS + Android
             </span>
           </div>
           <ul class="mt-5 grid gap-3 sm:grid-cols-2">
-            {checklist.map((item) => (
+            {checklist.en.map((item, index) => (
               <li class="flex gap-2.5 text-sm leading-relaxed text-ink-700">
                 <svg viewBox="0 0 20 20" class="mt-0.5 size-4 shrink-0 text-jade-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path d="m4 10 4 4 8-8" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <span>{item}</span>
+                <span>
+                  <span class="lang-en">{item}</span>
+                  <span class="lang-vi">{checklist.vi[index]}</span>
+                </span>
               </li>
             ))}
           </ul>
@@ -623,79 +1062,54 @@ const revenueStreams = [
       <div class="container-page grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
         <div>
           <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
-            Cảnh báo không có nghĩa là được phép đọc trộm cuộc gọi.
+            <span class="lang-en">A warning is not permission to spy on a call.</span>
+            <span class="lang-vi">Cảnh báo không có nghĩa là được phép đọc trộm cuộc gọi.</span>
           </h2>
           <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-ink-700">
-            ScamKill làm theo nguyên tắc tối thiểu dữ liệu và đồng ý rõ ràng (PDPD 2025 / Nghị định 356/2025).
-            Người cao tuổi là người quyết định, không phải đối tượng bị giám sát.
+            <span class="lang-en">ScamKill follows minimum data and explicit consent (PDPD 2025 / Decree 356/2025). The older adult is the decision-maker, not the person under surveillance.</span>
+            <span class="lang-vi">ScamKill làm theo nguyên tắc tối thiểu dữ liệu và đồng ý rõ ràng (PDPD 2025 / Nghị định 356/2025). Người cao tuổi là người quyết định, không phải đối tượng bị giám sát.</span>
           </p>
         </div>
         <div class="rise grid gap-4 sm:grid-cols-2">
           <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-5">
-            <h3 class="text-base font-bold text-ink-900">Mặc định chỉ gửi thông tin tối thiểu</h3>
+            <h3 class="text-base font-bold text-ink-900">
+              <span class="lang-en">Minimum data by default</span>
+              <span class="lang-vi">Mặc định chỉ gửi thông tin tối thiểu</span>
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-700">
-              Cảnh báo cho gia đình chỉ gồm loại cảnh báo, thời điểm và số điện thoại liên quan.
+              <span class="lang-en">A family alert contains only the alert type, the time, and the related phone number.</span>
+              <span class="lang-vi">Cảnh báo cho gia đình chỉ gồm loại cảnh báo, thời điểm và số điện thoại liên quan.</span>
             </p>
           </div>
           <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-5">
-            <h3 class="text-base font-bold text-ink-900">Nội dung chỉ đi khi bạn đồng ý</h3>
+            <h3 class="text-base font-bold text-ink-900">
+              <span class="lang-en">Content leaves only with consent</span>
+              <span class="lang-vi">Nội dung chỉ đi khi bạn đồng ý</span>
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-700">
-              Nội dung tin nhắn hoặc bản tóm tắt cuộc gọi chỉ được đính kèm khi người dùng chủ động tick đồng ý.
+              <span class="lang-en">Message text or a call summary is attached only when the user actively ticks consent.</span>
+              <span class="lang-vi">Nội dung tin nhắn hoặc bản tóm tắt cuộc gọi chỉ được đính kèm khi người dùng chủ động tick đồng ý.</span>
             </p>
           </div>
           <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-5">
-            <h3 class="text-base font-bold text-ink-900">Rủi ro, không phán xét</h3>
+            <h3 class="text-base font-bold text-ink-900">
+              <span class="lang-en">Risk, not judgment</span>
+              <span class="lang-vi">Rủi ro, không phán xét</span>
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-700">
-              ScamKill trả về mức rủi ro và lý do. Không khẳng định tuyệt đối một số là lừa đảo hay an toàn.
+              <span class="lang-en">ScamKill returns a risk level and the reasons behind it. It never claims absolutely that a number is a scam or safe.</span>
+              <span class="lang-vi">ScamKill trả về mức rủi ro và lý do. Không khẳng định tuyệt đối một số là lừa đảo hay an toàn.</span>
             </p>
           </div>
           <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-5">
-            <h3 class="text-base font-bold text-ink-900">Không thay thế cơ quan chức năng</h3>
+            <h3 class="text-base font-bold text-ink-900">
+              <span class="lang-en">Not a replacement for authorities</span>
+              <span class="lang-vi">Không thay thế cơ quan chức năng</span>
+            </h3>
             <p class="mt-2 text-sm leading-relaxed text-ink-700">
-              Khi có thiệt hại, người dùng vẫn cần liên hệ ngân hàng và cơ quan công an. ScamKill giúp giảm
-              khả năng phải đi đến bước đó.
+              <span class="lang-en">If money is lost, the user still contacts the bank and the police. ScamKill reduces the chance of reaching that step.</span>
+              <span class="lang-vi">Khi có thiệt hại, người dùng vẫn cần liên hệ ngân hàng và cơ quan công an. ScamKill giúp giảm khả năng phải đi đến bước đó.</span>
             </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ENGLISH SUMMARY -->
-    <section id="english" lang="en" class="scroll-mt-20 border-t border-ink-900/10 bg-white py-16 sm:py-20">
-      <div class="container-page">
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14">
-          <div>
-            <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900">
-              ScamKill in one minute
-            </h2>
-            <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-ink-700">
-              ScamKill is an AI shield for Vietnamese older adults and their families. It does not
-              try to win an argument with a scammer. It inserts time, independent verification, and a
-              trusted person at the exact moment a decision is being made.
-            </p>
-          </div>
-          <div class="rise grid gap-3 sm:grid-cols-3">
-            <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-4">
-              <h3 class="text-sm font-bold text-jade-700">Before pickup</h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink-700">
-                Caller reputation, community reports, and honest labels — including “Unverified” when
-                data is insufficient.
-              </p>
-            </div>
-            <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-4">
-              <h3 class="text-sm font-bold text-jade-700">While reading</h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink-700">
-                Message analysis with 1–3 plain-language reasons, a concrete next action, and Vietnamese
-                text-to-speech.
-              </p>
-            </div>
-            <div class="rounded-2xl border border-ink-900/10 bg-cream-50 p-4">
-              <h3 class="text-sm font-bold text-jade-700">Before paying</h3>
-              <p class="mt-2 text-sm leading-relaxed text-ink-700">
-                Family safe-word, callback to a saved number, and one-tap alerts over SMS, Zalo, and
-                Telegram. Metadata only unless the senior opts in.
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -706,11 +1120,12 @@ const revenueStreams = [
       <div class="container-page">
         <div class="max-w-3xl">
           <h2 class="font-display text-3xl font-semibold leading-tight text-ink-900 sm:text-4xl">
-            Bảo vệ cơ bản miễn phí. Gia đình trả phí. Tổ chức cấp phép.
+            <span class="lang-en">Basic protection free. Families pay. Institutions license.</span>
+            <span class="lang-vi">Bảo vệ cơ bản miễn phí. Gia đình trả phí. Tổ chức cấp phép.</span>
           </h2>
           <p class="mt-4 max-w-[68ch] text-base leading-relaxed text-ink-700">
-            Người dùng cá nhân không phải trả tiền cho những tính năng an toàn thiết yếu.
-            Ngân hàng và nhà mạng trả theo số người dùng được bảo vệ.
+            <span class="lang-en">Individuals never pay for essential safety features. Banks and carriers pay per protected user.</span>
+            <span class="lang-vi">Người dùng cá nhân không phải trả tiền cho những tính năng an toàn thiết yếu. Ngân hàng và nhà mạng trả theo số người dùng được bảo vệ.</span>
           </p>
         </div>
 
@@ -727,20 +1142,25 @@ const revenueStreams = [
                 <h3 class="font-display text-2xl font-semibold">{plan.name}</h3>
                 {plan.highlight && (
                   <span class="shrink-0 rounded-full bg-amber-400 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-ink-950">
-                    Phổ biến nhất
+                    <span class="lang-en">Most chosen</span>
+                    <span class="lang-vi">Phổ biến nhất</span>
                   </span>
                 )}
               </div>
               <p class={`mt-1.5 text-sm font-semibold ${plan.highlight ? 'text-amber-300' : 'text-jade-700'}`}>
-                {plan.audience}
+                <span class="lang-en">{plan.audience.en}</span>
+                <span class="lang-vi">{plan.audience.vi}</span>
               </p>
               <p class="mt-5 flex items-baseline gap-2">
                 <span class="font-mono text-4xl font-bold tracking-tight">{plan.price}</span>
-                <span class={`text-sm ${plan.highlight ? 'text-cream-50/60' : 'text-ink-600'}`}>{plan.cadence}</span>
+                <span class={`text-sm ${plan.highlight ? 'text-cream-50/60' : 'text-ink-600'}`}>
+                  <span class="lang-en">{plan.cadence.en}</span>
+                  <span class="lang-vi">{plan.cadence.vi}</span>
+                </span>
               </p>
 
               <ul class="mt-6 flex-1 space-y-3">
-                {plan.features.map((feature) => (
+                {plan.features.en.map((feature, index) => (
                   <li class="flex gap-2.5 text-sm leading-relaxed">
                     <svg
                       viewBox="0 0 20 20"
@@ -752,7 +1172,10 @@ const revenueStreams = [
                     >
                       <path d="m4 10 4 4 8-8" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
-                    <span class={plan.highlight ? 'text-cream-50/80' : 'text-ink-700'}>{feature}</span>
+                    <span class={plan.highlight ? 'text-cream-50/80' : 'text-ink-700'}>
+                      <span class="lang-en">{feature}</span>
+                      <span class="lang-vi">{plan.features.vi[index]}</span>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -765,7 +1188,8 @@ const revenueStreams = [
                     : 'border border-ink-900/15 bg-cream-50 text-ink-900 hover:border-jade-600 hover:text-jade-700'
                 }`}
               >
-                {plan.cta}
+                <span class="lang-en">{plan.cta.en}</span>
+                <span class="lang-vi">{plan.cta.vi}</span>
               </a>
             </article>
           ))}
@@ -773,16 +1197,22 @@ const revenueStreams = [
 
         <div class="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-start">
           <div>
-            <h3 class="font-display text-2xl font-semibold text-ink-900">Tính thử chi phí</h3>
+            <h3 class="font-display text-2xl font-semibold text-ink-900">
+              <span class="lang-en">Estimate the cost</span>
+              <span class="lang-vi">Tính thử chi phí</span>
+            </h3>
             <p class="mt-2 max-w-[60ch] text-sm leading-relaxed text-ink-700">
-              Ước tính nhanh cho hộ gia đình hoặc tổ chức. Giá B2B2C có hai bậc: Basic $0.08–$0.15 và
-              Advanced AI $0.30–$0.75 mỗi người dùng mỗi tháng. Đây là giá sơ bộ để thảo luận, chưa gồm phí tích hợp.
+              <span class="lang-en">A quick estimate for a household or an organization. B2B2C has two tiers: Basic $0.08–$0.15 and Advanced AI $0.30–$0.75 per user per month. These are provisional figures for discussion and exclude integration fees.</span>
+              <span class="lang-vi">Ước tính nhanh cho hộ gia đình hoặc tổ chức. Giá B2B2C có hai bậc: Basic $0.08–$0.15 và Advanced AI $0.30–$0.75 mỗi người dùng mỗi tháng. Đây là giá sơ bộ để thảo luận, chưa gồm phí tích hợp.</span>
             </p>
             <div class="mt-6 grid gap-3 sm:grid-cols-3">
               {revenueStreams.map((stream) => (
                 <div class="rounded-2xl border border-ink-900/10 bg-white p-4">
                   <p class="text-sm font-bold text-ink-900">{stream.title}</p>
-                  <p class="mt-1 text-xs leading-relaxed text-ink-600">{stream.body}</p>
+                  <p class="mt-1 text-xs leading-relaxed text-ink-600">
+                    <span class="lang-en">{stream.body.en}</span>
+                    <span class="lang-vi">{stream.body.vi}</span>
+                  </p>
                 </div>
               ))}
             </div>
@@ -797,45 +1227,54 @@ const revenueStreams = [
       <div class="container-page grid gap-10 rounded-3xl bg-ink-950 p-6 text-cream-50 sm:p-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:p-12">
         <div>
           <h2 class="font-display text-3xl font-semibold leading-tight sm:text-4xl">
-            Cùng chạy thử với gia đình bạn.
+            <span class="lang-en">Run the pilot with your family.</span>
+            <span class="lang-vi">Cùng chạy thử với gia đình bạn.</span>
           </h2>
           <p class="mt-4 max-w-xl text-base leading-relaxed text-cream-50/70">
-            Đội QuadDraKe đang tìm những nhà có người cao tuổi, cùng các ngân hàng và nhà mạng muốn thử
-            bản MVP: cảnh báo cuộc gọi, phân tích tin nhắn, Mã gia đình và cảnh báo đa kênh.
-            Để lại thông tin, hoặc mở PWA để tự trải nghiệm trước.
+            <span class="lang-en">Team QuadDraKe is looking for households with older adults, plus banks and carriers that want to test the MVP: call warnings, message analysis, family code, and multi-channel alerts. Leave your details, or open the PWA and try it yourself first.</span>
+            <span class="lang-vi">Đội QuadDraKe đang tìm những nhà có người cao tuổi, cùng các ngân hàng và nhà mạng muốn thử bản MVP: cảnh báo cuộc gọi, phân tích tin nhắn, Mã gia đình và cảnh báo đa kênh. Để lại thông tin, hoặc mở PWA để tự trải nghiệm trước.</span>
           </p>
           <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-            <LeadAndAuthModal client:visible triggerLabel="Đăng ký thử nghiệm" initialMode="lead" variant="primary" />
+            <LeadAndAuthModal client:visible initialMode="lead" variant="primary" />
             <a
               href={appUrl}
               class="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-base font-bold text-cream-50 transition hover:bg-white/20 active:scale-[0.98]"
             >
-              Mở ứng dụng PWA
+              <span class="lang-en">Open the PWA</span>
+              <span class="lang-vi">Mở ứng dụng PWA</span>
             </a>
           </div>
           <p class="mt-4 text-xs text-cream-50/60">
-            Không spam. Có thể yêu cầu xoá dữ liệu bất kỳ lúc nào. Không nhập OTP hay thông tin ngân hàng vào form này.
+            <span class="lang-en">No spam. You can ask us to delete your data at any time. Never enter an OTP or banking details in this form.</span>
+            <span class="lang-vi">Không spam. Có thể yêu cầu xoá dữ liệu bất kỳ lúc nào. Không nhập OTP hay thông tin ngân hàng vào form này.</span>
           </p>
         </div>
 
         <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cream-50/60">Nguyên tắc thiết kế</p>
+          <p class="font-display text-lg font-semibold text-cream-50">
+            <span class="lang-en">Design principles</span>
+            <span class="lang-vi">Nguyên tắc thiết kế</span>
+          </p>
           <ul class="mt-4 space-y-3 text-sm leading-relaxed text-cream-50/75">
             <li class="flex gap-2.5">
               <span class="mt-1 size-1.5 shrink-0 rounded-full bg-amber-400"></span>
-              Chữ lớn, tương phản cao, thao tác một chạm.
+              <span class="lang-en">Large type, high contrast, one-tap actions.</span>
+              <span class="lang-vi">Chữ lớn, tương phản cao, thao tác một chạm.</span>
             </li>
             <li class="flex gap-2.5">
               <span class="mt-1 size-1.5 shrink-0 rounded-full bg-amber-400"></span>
-              Không đổ lỗi cho nạn nhân; không dùng nỗi sợ để bán hàng.
+              <span class="lang-en">Never blame the victim; never sell with fear.</span>
+              <span class="lang-vi">Không đổ lỗi cho nạn nhân; không dùng nỗi sợ để bán hàng.</span>
             </li>
             <li class="flex gap-2.5">
               <span class="mt-1 size-1.5 shrink-0 rounded-full bg-amber-400"></span>
-              Xác minh tất định trước, AI hỗ trợ sau.
+              <span class="lang-en">Deterministic verification first, AI second.</span>
+              <span class="lang-vi">Xác minh tất định trước, AI hỗ trợ sau.</span>
             </li>
             <li class="flex gap-2.5">
               <span class="mt-1 size-1.5 shrink-0 rounded-full bg-amber-400"></span>
-              Hoạt động trên mạng yếu, ưu tiên xử lý tại thiết bị.
+              <span class="lang-en">Works on weak networks and prefers on-device processing.</span>
+              <span class="lang-vi">Hoạt động trên mạng yếu, ưu tiên xử lý tại thiết bị.</span>
             </li>
           </ul>
         </div>
@@ -855,41 +1294,94 @@ const revenueStreams = [
           <span class="font-display text-lg font-semibold text-ink-900">ScamKill</span>
         </div>
         <p class="mt-3 text-sm leading-relaxed text-ink-600">
-          Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại.
-          Sản phẩm của đội QuadDraKe tại HITC InnoStar 2026.
+          <span class="lang-en">An AI shield that helps older adults and their families stop phone scams together. A QuadDraKe product at HITC InnoStar 2026.</span>
+          <span class="lang-vi">Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại. Sản phẩm của đội QuadDraKe tại HITC InnoStar 2026.</span>
         </p>
         <p class="mt-3 text-xs leading-relaxed text-ink-500">
-          ScamKill đưa ra mức rủi ro, không phải kết luận tuyệt đối. Không thay thế tư vấn pháp lý
-          hoặc cơ quan chức năng. Nếu nghi ngờ lừa đảo, hãy liên hệ ngân hàng và công an địa phương.
+          <span class="lang-en">ScamKill returns a risk level, not an absolute conclusion. It does not replace legal advice or the authorities. If you suspect a scam, contact your bank and local police.</span>
+          <span class="lang-vi">ScamKill đưa ra mức rủi ro, không phải kết luận tuyệt đối. Không thay thế tư vấn pháp lý hoặc cơ quan chức năng. Nếu nghi ngờ lừa đảo, hãy liên hệ ngân hàng và công an địa phương.</span>
         </p>
       </div>
 
       <div class="grid grid-cols-2 gap-8 text-sm">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-ink-600">Sản phẩm</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-ink-600">
+            <span class="lang-en">Product</span>
+            <span class="lang-vi">Sản phẩm</span>
+          </p>
           <ul class="mt-3 space-y-2 font-semibold text-ink-700">
-            <li><a href={appUrl} class="hover:text-jade-700">Ứng dụng PWA</a></li>
-            <li><a href="#demo" class="hover:text-jade-700">Demo Bà Lan</a></li>
-            <li><a href="#pwa" class="hover:text-jade-700">Hướng dẫn cài đặt</a></li>
-            <li><a href="/dashboard" class="hover:text-jade-700">Bảng điều khiển</a></li>
+            <li><a href={appUrl} class="hover:text-jade-700"><span class="lang-en">PWA app</span><span class="lang-vi">Ứng dụng PWA</span></a></li>
+            <li><a href="/guidebook" class="hover:text-jade-700"><span class="lang-en">Interactive guidebook</span><span class="lang-vi">Cẩm nang tương tác</span></a></li>
+            <li><a href="#demo" class="hover:text-jade-700"><span class="lang-en">Mrs. Lan demo</span><span class="lang-vi">Demo Bà Lan</span></a></li>
+            <li><a href="#pwa" class="hover:text-jade-700"><span class="lang-en">Install guide</span><span class="lang-vi">Hướng dẫn cài đặt</span></a></li>
+            <li><a href="/dashboard" class="hover:text-jade-700"><span class="lang-en">Dashboard</span><span class="lang-vi">Bảng điều khiển</span></a></li>
           </ul>
         </div>
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-ink-600">Đội ngũ</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-ink-600">
+            <span class="lang-en">Team</span>
+            <span class="lang-vi">Đội ngũ</span>
+          </p>
           <ul class="mt-3 space-y-2 font-semibold text-ink-700">
-            <li><a href="#giai-phap" class="hover:text-jade-700">Kiến trúc 3 lớp</a></li>
-            <li><a href="#gia" class="hover:text-jade-700">Mô hình giá</a></li>
-            <li><a href="#lien-he" class="hover:text-jade-700">Liên hệ thử nghiệm</a></li>
-            <li><a href="/api/reports" class="hover:text-jade-700">API báo cáo</a></li>
+            <li><a href="#giai-phap" class="hover:text-jade-700"><span class="lang-en">3-layer architecture</span><span class="lang-vi">Kiến trúc 3 lớp</span></a></li>
+            <li><a href="#brain" class="hover:text-jade-700"><span class="lang-en">Behavioral design</span><span class="lang-vi">Thiết kế hành vi</span></a></li>
+            <li><a href="#gia" class="hover:text-jade-700"><span class="lang-en">Pricing model</span><span class="lang-vi">Mô hình giá</span></a></li>
+            <li><a href="#lien-he" class="hover:text-jade-700"><span class="lang-en">Pilot contact</span><span class="lang-vi">Liên hệ thử nghiệm</span></a></li>
+            <li><a href="/api/reports" class="hover:text-jade-700"><span class="lang-en">Reports API</span><span class="lang-vi">API báo cáo</span></a></li>
           </ul>
         </div>
       </div>
     </div>
     <div class="container-page flex flex-col gap-2 border-t border-ink-900/10 py-5 text-xs text-ink-500 sm:flex-row sm:items-center sm:justify-between">
-      <p>© 2026 QuadDrake · ScamKill MVP. Giá và số liệu mang tính trình bày, không phải cam kết thương mại.</p>
+      <p>
+        <span class="lang-en">© 2026 QuadDrake · ScamKill MVP. Prices and figures are illustrative, not a commercial commitment.</span>
+        <span class="lang-vi">© 2026 QuadDrake · ScamKill MVP. Giá và số liệu mang tính trình bày, không phải cam kết thương mại.</span>
+      </p>
       <p>Astro + Svelte + Cloudflare Workers · D1 · Drizzle</p>
     </div>
   </footer>
 
   <PwaInstallPrompt client:load appUrl={appUrl} />
+
+  <script>
+    import gsap from 'gsap';
+    import { initLang, setLang, subscribeLang } from '../lib/i18n';
+
+    initLang();
+
+    const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-lang-btn]'));
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        setLang(button.dataset.langBtn === 'vi' ? 'vi' : 'en');
+      });
+    });
+    subscribeLang((lang) => {
+      buttons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.langBtn === lang));
+      });
+    });
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.fromTo(
+        '[data-hero-copy]',
+        { y: 26, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out' },
+      );
+      gsap.fromTo(
+        '[data-hero-visual]',
+        { y: 34, opacity: 0, scale: 0.97 },
+        { y: 0, opacity: 1, scale: 1, duration: 1.1, delay: 0.12, ease: 'power3.out' },
+      );
+      gsap.fromTo(
+        '[data-hero-shield]',
+        { scale: 0.55, opacity: 0, rotate: -10 },
+        { scale: 1, opacity: 1, rotate: 0, duration: 0.9, delay: 0.28, ease: 'back.out(1.7)' },
+      );
+      gsap.fromTo(
+        '[data-timeline-step]',
+        { x: -16, opacity: 0 },
+        { x: 0, opacity: 1, stagger: 0.09, duration: 0.55, delay: 0.36, ease: 'power3.out' },
+      );
+    }
+  </script>
 </Layout>

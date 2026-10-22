@@ -219,8 +219,8 @@ export function PwaInstallBanner() {
               <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
                 {installEvent
                   ? isEn
-                    ? 'Ready to install — opens full-screen like a native app, even offline.'
-                    : 'Cài 1 chạm — mở toàn màn hình chữ to, chạy ngay cả khi mạng yếu.'
+                    ? 'Ready to install: opens full-screen like a native app, even offline.'
+                    : 'Cài 1 chạm: mở toàn màn hình chữ to, chạy ngay cả khi mạng yếu.'
                   : isEn
                     ? 'Works on both iPhone (Safari) and Android (Chrome/Firefox).'
                     : 'Mở nhanh 1 chạm như ứng dụng thật trên cả iPhone và Android.'}
@@ -287,7 +287,7 @@ export function PwaInstallBanner() {
                 <Ionicons name="checkmark-circle" size={20} color={theme.riskSafe} />
                 <ThemedText style={styles.benefitText}>
                   {isEn
-                    ? 'Opens full-screen with extra-large Vietnamese letters'
+                    ? 'Opens full-screen with extra-large letters'
                     : 'Nằm ngay ngoài màn hình chính, chữ to, không cần tìm trình duyệt'}
                 </ThemedText>
               </View>

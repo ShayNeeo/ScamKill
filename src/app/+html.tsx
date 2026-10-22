@@ -3,7 +3,7 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 
 export default function Root({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -14,15 +14,15 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <meta name="theme-color" content="#0B5D56" />
         <meta
           name="description"
-          content="ScamKill — Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại"
+          content="ScamKill: AI shield helping seniors and families fight phone scams together"
         />
 
-        {/* Google Fonts: Be Vietnam Pro (Headings/UI) + Lexend (Low-Vision Senior Reading) + JetBrains Mono (Digits) */}
+        {/* Google Fonts: Bricolage Grotesque (Headings) + Atkinson Hyperlegible (Readable Body) + Azeret Mono (Digits) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Lexend:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Azeret+Mono:wght@500;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap"
         />
 
         {/* PWA & iOS/Android Home Screen Metadata */}
@@ -59,12 +59,22 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <style
           dangerouslySetInnerHTML={{
             __html: `
+              @font-face {
+                font-family: 'ionicons';
+                src: url('/fonts/Ionicons.ttf') format('truetype');
+                font-display: block;
+              }
+              @font-face {
+                font-family: 'Ionicons';
+                src: url('/fonts/Ionicons.ttf') format('truetype');
+                font-display: block;
+              }
               :root {
-                --font-display: 'Lexend', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-                --font-heading: 'Be Vietnam Pro', 'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
-                --font-serif: 'Be Vietnam Pro', Georgia, serif;
-                --font-rounded: 'Lexend', 'Be Vietnam Pro', sans-serif;
-                --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+                --font-display: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, sans-serif;
+                --font-heading: 'Bricolage Grotesque', 'Atkinson Hyperlegible', sans-serif;
+                --font-serif: 'Atkinson Hyperlegible', Georgia, serif;
+                --font-rounded: 'Bricolage Grotesque', 'Atkinson Hyperlegible', sans-serif;
+                --font-mono: 'Azeret Mono', ui-monospace, monospace;
                 --p-scale: 1;
               }
               html, body {

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { subscribeLang, type Lang } from '../lib/i18n';
+
   interface Props {
     appUrl?: string;
   }
@@ -16,26 +18,74 @@
   const STORAGE_KEY = 'scamkill:pwa-prompt';
   const launchUrl = $derived(`${appUrl}?autoinstall=1`);
 
+  let lang = $state<Lang>('en');
   let view = $state<View>('hidden');
   let device = $state<Device>('desktop');
   let inAppBrowser = $state(false);
   let installEvent = $state<InstallPromptEvent | null>(null);
   let copied = $state(false);
 
-  const deviceCopy: Record<Device, { label: string; body: string }> = {
-    ios: {
-      label: 'Bạn đang dùng iPhone hoặc iPad',
-      body: 'Mở bằng Safari, chạm nút Chia sẻ [↑] ở thanh dưới, rồi chọn “Thêm vào Màn hình chính”.',
+  $effect(() => subscribeLang((next) => (lang = next)));
+
+  const copy = {
+    en: {
+      pill: 'Install ScamKill',
+      title: 'Install ScamKill on the home screen (iOS and Android)',
+      body: 'One tap to open whenever a strange call arrives. Works on patchy networks, no App Store required.',
+      inAppTitle: 'You are inside another app',
+      inAppBody:
+        'Tap the menu in the top corner and choose Open in Safari (iPhone) or Open in Chrome (Android), then follow the steps below.',
+      copy: 'Copy',
+      copied: 'Copied',
+      cta: 'Open and install in one tap',
+      later: 'Later',
+      fine: 'No sign-in needed. No notifications unless you agree.',
+      close: 'Close the install prompt',
+      devices: {
+        ios: {
+          label: 'You are on iPhone or iPad',
+          body: 'Open in Safari, tap Share [↑] on the bottom bar, then choose Add to Home Screen.',
+        },
+        android: {
+          label: 'You are on Android',
+          body: 'Open in Chrome or Firefox, tap the three-dot menu, then choose Install app or Add to Home Screen.',
+        },
+        desktop: {
+          label: 'You are on a computer',
+          body: 'Open the link below on your phone, or copy it and send it to a family member over Zalo.',
+        },
+      },
     },
-    android: {
-      label: 'Bạn đang dùng Android',
-      body: 'Mở bằng Chrome hoặc Firefox, chạm menu ba chấm ở góc trên, rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào Màn hình chính”.',
-    },
-    desktop: {
-      label: 'Bạn đang dùng máy tính',
-      body: 'Mở đường link dưới đây trên điện thoại, hoặc sao chép rồi gửi qua Zalo cho người thân.',
+    vi: {
+      pill: 'Cài ScamKill',
+      title: 'Cài ứng dụng ScamKill ra màn hình chính (iOS và Android)',
+      body: 'Mở một chạm mỗi khi có cuộc gọi lạ. Dùng được cả khi mạng chập chờn, không cần vào App Store.',
+      inAppTitle: 'Bạn đang mở trong ứng dụng khác',
+      inAppBody:
+        'Chạm nút “…” ở góc trên và chọn “Mở bằng Safari” (iPhone) hoặc “Mở bằng Chrome” (Android), rồi làm theo hướng dẫn bên dưới.',
+      copy: 'Sao chép',
+      copied: 'Đã chép',
+      cta: 'Mở và cài trong 1 chạm',
+      later: 'Để sau',
+      fine: 'Không cần đăng nhập. Không gửi thông báo nếu bạn không đồng ý.',
+      close: 'Đóng lời mời cài ứng dụng',
+      devices: {
+        ios: {
+          label: 'Bạn đang dùng iPhone hoặc iPad',
+          body: 'Mở bằng Safari, chạm nút Chia sẻ [↑] ở thanh dưới, rồi chọn “Thêm vào Màn hình chính”.',
+        },
+        android: {
+          label: 'Bạn đang dùng Android',
+          body: 'Mở bằng Chrome hoặc Firefox, chạm menu ba chấm ở góc trên, rồi chọn “Cài đặt ứng dụng” hoặc “Thêm vào Màn hình chính”.',
+        },
+        desktop: {
+          label: 'Bạn đang dùng máy tính',
+          body: 'Mở đường link dưới đây trên điện thoại, hoặc sao chép rồi gửi qua Zalo cho người thân.',
+        },
+      },
     },
   };
+  const t = $derived(copy[lang]);
 
   function detectDevice() {
     const ua = navigator.userAgent;
@@ -49,12 +99,12 @@
     try {
       localStorage.setItem(STORAGE_KEY, 'dismissed');
     } catch {
-      /* lưu trữ bị chặn thì chỉ cần ẩn trong phiên này */
+      /* storage blocked: hide for this session only */
     }
   }
 
   async function launch(event: MouseEvent) {
-    if (!installEvent) return; // Không có sự kiện gốc: để liên kết mở bản PWA.
+    if (!installEvent) return; // No native event: let the link open the PWA.
     event.preventDefault();
     const promptEvent = installEvent;
     await promptEvent.prompt();
@@ -65,10 +115,10 @@
       try {
         localStorage.setItem(STORAGE_KEY, 'dismissed');
       } catch {
-        /* bỏ qua */
+        /* ignore */
       }
     } else {
-      // Trình duyệt có thể chặn popup sau await; điều hướng cùng tab là đường dự phòng chắc chắn.
+      // Browsers may block popups after an await; same-tab navigation is the reliable fallback.
       const opened = window.open(launchUrl, '_blank', 'noopener');
       if (!opened) window.location.assign(launchUrl);
     }
@@ -144,7 +194,7 @@
         <path d="M4.5 17.5v1A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5v-1" stroke-linecap="round" />
       </svg>
     </span>
-    Cài ScamKill
+    {t.pill}
   </button>
 {:else if view === 'card'}
   <aside
@@ -163,7 +213,7 @@
         <button
           type="button"
           onclick={closeToPill}
-          aria-label="Đóng lời mời cài ứng dụng"
+          aria-label={t.close}
           class="grid size-11 place-items-center rounded-full text-ink-600 transition hover:bg-cream-100 hover:text-ink-900 active:scale-95"
         >
           <svg viewBox="0 0 20 20" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -173,23 +223,19 @@
       </div>
 
       <h2 id="pwa-prompt-title" class="mt-3 text-lg font-bold leading-snug text-ink-900">
-        📲 Cài ứng dụng ScamKill ra Màn hình chính (iOS &amp; Android)
+        {t.title}
       </h2>
-      <p class="mt-2 text-[15px] leading-relaxed text-ink-700">
-        Mở một chạm mỗi khi có cuộc gọi lạ. Dùng được cả khi mạng chập chờn, không cần vào App Store.
-      </p>
+      <p class="mt-2 text-[15px] leading-relaxed text-ink-700">{t.body}</p>
 
       {#if inAppBrowser}
         <div class="mt-4 rounded-2xl border border-amber-500/40 bg-amber-400/10 p-3.5">
-          <p class="text-base font-semibold text-ink-900">Bạn đang mở trong ứng dụng khác</p>
-          <p class="mt-1 text-[15px] leading-relaxed text-ink-700">
-            Chạm nút “…” ở góc trên và chọn “Mở bằng Safari” (iPhone) hoặc “Mở bằng Chrome” (Android), rồi làm theo hướng dẫn bên dưới.
-          </p>
+          <p class="text-base font-semibold text-ink-900">{t.inAppTitle}</p>
+          <p class="mt-1 text-[15px] leading-relaxed text-ink-700">{t.inAppBody}</p>
         </div>
       {:else}
         <div class="mt-4 rounded-2xl bg-cream-50 p-3.5">
-          <p class="text-xs font-bold uppercase tracking-wider text-jade-700">{deviceCopy[device].label}</p>
-          <p class="mt-1.5 text-[15px] leading-relaxed text-ink-700">{deviceCopy[device].body}</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-jade-700">{t.devices[device].label}</p>
+          <p class="mt-1.5 text-[15px] leading-relaxed text-ink-700">{t.devices[device].body}</p>
         </div>
       {/if}
 
@@ -201,7 +247,7 @@
             onclick={copyLink}
             class="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-bold text-jade-700 transition hover:bg-mint-100 active:scale-95"
           >
-            {copied ? 'Đã chép' : 'Sao chép'}
+            {copied ? t.copied : t.copy}
           </button>
         </div>
       {/if}
@@ -214,7 +260,7 @@
           rel="noopener"
           class="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-ink-900 px-4 py-3 text-base font-bold text-cream-50 transition hover:bg-ink-800 active:scale-[0.98]"
         >
-          Mở và cài trong 1 chạm
+          {t.cta}
           <svg viewBox="0 0 20 20" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M4 10h12M11 5l5 5-5 5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
@@ -224,13 +270,11 @@
           onclick={closeToPill}
           class="inline-flex min-h-12 items-center justify-center rounded-xl px-4 py-3 text-base font-semibold text-ink-600 transition hover:bg-cream-100 hover:text-ink-900 active:scale-[0.98]"
         >
-          Để sau
+          {t.later}
         </button>
       </div>
 
-      <p class="mt-3 text-xs leading-relaxed text-ink-500">
-        Không cần đăng nhập. Không gửi thông báo nếu bạn không đồng ý.
-      </p>
+      <p class="mt-3 text-xs leading-relaxed text-ink-500">{t.fine}</p>
     </div>
   </aside>
 {/if}

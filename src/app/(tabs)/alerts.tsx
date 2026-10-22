@@ -298,7 +298,7 @@ export default function AlertsScreen() {
                   placeholder={t('alert.customNotePlaceholder')}
                   placeholderTextColor={theme.textSecondary}
                   multiline
-                  accessibilityLabel="Lời nhắn kèm theo"
+                  accessibilityLabel={isEn ? 'Optional note for family' : 'Lời nhắn kèm theo'}
                 />
 
                 <View style={styles.modalButtons}>

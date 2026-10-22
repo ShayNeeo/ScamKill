@@ -76,8 +76,8 @@ export default function ProfileScreen() {
             </ThemedText>
             <ThemedText style={[styles.seniorSubtitle, { color: theme.textSecondary }]}>
               {isEn
-                ? 'Cỡ chữ & Giao diện cho Người cao tuổi · one tap is enough'
-                : 'Senior Display & Font Size · chạm 1 lần là xong'}
+                ? 'Senior Display & Font Size · one tap is enough'
+                : 'Cỡ chữ & Giao diện cho Người cao tuổi · chạm 1 lần là xong'}
             </ThemedText>
           </View>
         </View>
@@ -213,13 +213,13 @@ export default function ProfileScreen() {
                     accessibilityRole="radio"
                     accessibilityState={{ selected: isActive }}
                     aria-checked={isActive}
-                    accessibilityLabel={`Ngôn ngữ: ${d.name}`}>
+                    accessibilityLabel={isEn ? `Language: ${d.name}` : `Ngôn ngữ: ${d.name}`}>
                     <View style={{ flex: 1 }}>
                       <ThemedText style={[styles.optionLabel, isActive && { color: theme.primaryAction }]}>
                         {d.name}
                       </ThemedText>
                       <ThemedText style={[styles.optionDesc, { color: theme.textSecondary }]}>
-                        Cách xưng hô thân mật: "{d.addressUser}"
+                        {isEn ? 'Friendly address' : 'Cách xưng hô thân mật'}: "{d.addressUser}"
                       </ThemedText>
                     </View>
                     {isActive && <Ionicons name="checkmark-circle" size={24} color={theme.primaryAction} />}
@@ -233,7 +233,7 @@ export default function ProfileScreen() {
       {/* App Info */}
       <ThemedView type="backgroundElement" style={styles.infoCard}>
         <ThemedText style={styles.infoTitle}>
-          {isEn ? 'ScamKill — QuadDrake Team (HITC InnoStar 2026)' : 'ScamKill — Đội ngũ QuadDrake (HITC InnoStar 2026)'}
+          {isEn ? 'ScamKill · QuadDrake Team (HITC InnoStar 2026)' : 'ScamKill · Đội ngũ QuadDrake (HITC InnoStar 2026)'}
         </ThemedText>
         <ThemedText style={[styles.infoText, { color: theme.textSecondary }]}>
           {isEn

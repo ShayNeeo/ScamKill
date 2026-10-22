@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 
 import { getDefaultFamilySafeWord } from '@/api/scamkill/client';
+import { Fonts } from '@/constants/theme';
+import { useLanguageDialect } from '@/i18n/regional';
 
 export interface SafeWordCardProps {
   safeWord: string;
@@ -17,6 +19,8 @@ export interface SafeWordCardProps {
 
 export function SafeWordCard(props: SafeWordCardProps): React.JSX.Element {
   const { safeWord, onChangeSafeWord, onOpenCoolingOff } = props;
+  const [dialect] = useLanguageDialect();
+  const isEn = dialect === 'en';
 
   const [draft, setDraft] = React.useState(safeWord);
   const [savedFlash, setSavedFlash] = React.useState(false);
@@ -33,7 +37,9 @@ export function SafeWordCard(props: SafeWordCardProps): React.JSX.Element {
 
   const trimmed = draft.trim();
   const canSave = trimmed.length > 0 && trimmed !== safeWord;
-  const displayWord = safeWord || getDefaultFamilySafeWord();
+  const rawWord = safeWord || getDefaultFamilySafeWord();
+  const displayWord =
+    isEn && rawWord === 'Cây khế ngọt' ? 'Sweet starfruit (Cây khế ngọt)' : rawWord;
 
   const handleSave = () => {
     if (!canSave) return;
@@ -43,51 +49,60 @@ export function SafeWordCard(props: SafeWordCardProps): React.JSX.Element {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.eyebrow}>Mã gia đình (Từ khóa bí mật)</Text>
+      <Text style={styles.whyTitle}>
+        {isEn ? 'Family secret phrase' : 'Mã gia đình (Từ khóa bí mật)'}
+      </Text>
       <Text style={styles.currentWord}>“{displayWord}”</Text>
 
-      <Text style={styles.whyTitle}>Vì sao cách này chặn được giả giọng AI?</Text>
+      <Text style={styles.whyTitle}>
+        {isEn ? 'Why does this stop AI voice cloning?' : 'Vì sao cách này chặn được giả giọng AI?'}
+      </Text>
       <Text style={styles.whyText}>
-        Kẻ lừa đảo có thể sao chép giọng nói từ video/voice clip, nhưng không biết cụm từ bí mật
-        của gia đình. Chỉ cần hỏi “Mã gia đình là gì?” và nghe câu trả lời — không cần phần cứng
-        chống deepfake, không cần phân tích âm thanh phức tạp.
+        {isEn
+          ? 'A scammer can copy a voice from a video or voice clip, but cannot know your family secret phrase. Just ask "What is our family code?" and listen to the answer. No anti-deepfake hardware, no complex audio analysis needed.'
+          : 'Kẻ lừa đảo có thể sao chép giọng nói từ video/voice clip, nhưng không biết cụm từ bí mật của gia đình. Chỉ cần hỏi “Mã gia đình là gì?” và nghe câu trả lời, không cần phần cứng chống deepfake, không cần phân tích âm thanh phức tạp.'}
       </Text>
 
-      <Text style={styles.inputLabel}>Đổi mã gia đình</Text>
+      <Text style={styles.inputLabel}>
+        {isEn ? 'Change family code' : 'Đổi mã gia đình'}
+      </Text>
       <TextInput
         value={draft}
         onChangeText={setDraft}
-        placeholder="Ví dụ: Cây khế ngọt"
+        placeholder={isEn ? 'For example: Sweet starfruit' : 'Ví dụ: Cây khế ngọt'}
         placeholderTextColor="#64748B"
         autoCapitalize="words"
         autoCorrect={false}
         maxLength={40}
         style={styles.input}
-        accessibilityLabel="Nhập mã gia đình mới"
+        accessibilityLabel={isEn ? 'Enter a new family code' : 'Nhập mã gia đình mới'}
         returnKeyType="done"
         onSubmitEditing={handleSave}
       />
       <Text style={styles.inputHint}>
-        Chọn cụm từ dễ nhớ với người thân, khó đoán với người ngoài. Ví dụ: “Cây khế ngọt”,
-        “Mướp đắng”, “Con mèo tam thể”.
+        {isEn
+          ? 'Pick a phrase your family remembers easily and outsiders cannot guess. For example: "Sweet starfruit", "Bitter melon", "Calico cat".'
+          : 'Chọn cụm từ dễ nhớ với người thân, khó đoán với người ngoài. Ví dụ: “Cây khế ngọt”, “Mướp đắng”, “Con mèo tam thể”.'}
       </Text>
 
       <Pressable
         onPress={handleSave}
         disabled={!canSave}
         accessibilityRole="button"
-        accessibilityLabel="Lưu mã gia đình"
+        accessibilityLabel={isEn ? 'Save family code' : 'Lưu mã gia đình'}
         accessibilityState={{ disabled: !canSave }}
         style={({ pressed }) => [
           styles.saveButton,
           !canSave && styles.disabledButton,
           pressed && styles.pressed,
         ]}>
-        <Text style={styles.saveButtonText}>Lưu mã gia đình</Text>
+        <Text style={styles.saveButtonText}>
+          {isEn ? 'Save family code' : 'Lưu mã gia đình'}
+        </Text>
       </Pressable>
       {savedFlash ? (
         <Text style={styles.savedText} accessibilityRole="alert">
-          ✓ Đã lưu mã gia đình mới.
+          {isEn ? '✓ New family code saved.' : '✓ Đã lưu mã gia đình mới.'}
         </Text>
       ) : null}
 
@@ -95,10 +110,16 @@ export function SafeWordCard(props: SafeWordCardProps): React.JSX.Element {
         <Pressable
           onPress={onOpenCoolingOff}
           accessibilityRole="button"
-          accessibilityLabel="Thử quy trình xác minh với khoảng dừng 60 giây"
+          accessibilityLabel={
+            isEn
+              ? 'Try the verification flow with a 60 second pause'
+              : 'Thử quy trình xác minh với khoảng dừng 60 giây'
+          }
           style={({ pressed }) => [styles.testButton, pressed && styles.pressed]}>
           <Text style={styles.testButtonText}>
-            ▶ Thử quy trình xác minh (Khoảng dừng 60 giây)
+            {isEn
+              ? '▶ Try the verification flow (60 second pause)'
+              : '▶ Thử quy trình xác minh (Khoảng dừng 60 giây)'}
           </Text>
         </Pressable>
       ) : null}
@@ -132,6 +153,7 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: '800',
     color: '#0F172A',
+    fontFamily: Fonts.heading,
   },
   whyText: {
     fontSize: 18,

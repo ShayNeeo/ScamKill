@@ -27,8 +27,8 @@
     "profile": "Cài đặt"
   },
   "home": {
-    "brandTitle": "ScamKill — Lá chắn AI cho Người cao tuổi & Gia đình",
-    "brandSubtitle": "Phát hiện sớm — Làm chậm — Xác minh — Cùng quyết định",
+    "brandTitle": "ScamKill: Lá chắn AI cho Người cao tuổi & Gia đình",
+    "brandSubtitle": "Phát hiện sớm, làm chậm, xác minh, cùng quyết định",
     "loopTitle": "Vòng Bảo Vệ Gia Đình",
     "loopStep1": "1. Phát hiện",
     "loopStep2": "2. Làm chậm",
@@ -38,7 +38,7 @@
     "reasonsTitle": "Vì sao đáng ngờ",
     "concreteAction": "Đừng bấm vào đường link nhé. Hỏi người thân trước đã",
     "slowDownButton": "⏸ Làm chậm & Hỏi Mã Gia Đình",
-    "reportButton": "🚨 Tôi nghi ngờ — Báo người thân (SMS / Zalo / Telegram)",
+    "reportButton": "🚨 Tôi nghi ngờ: Báo người thân (SMS / Zalo / Telegram)",
     "shareConsent": "Đồng ý chia sẻ nội dung tin nhắn cho người thân",
     "alertSent": "Đã gửi cảnh báo tới người thân",
     "callResultTitle": "Kết quả kiểm tra cuộc gọi"
@@ -46,14 +46,14 @@
   "trusted": {
     "safeWordTitle": "Mã gia đình",
     "safeWordHint": "Mã bí mật để xác minh người thân thật, không đọc cho người lạ.",
-    "dispatchTitle": "Tôi nghi ngờ — Gửi người thân",
+    "dispatchTitle": "Tôi nghi ngờ: Gửi người thân",
     "dispatchHint": "Chọn kênh gửi và đồng ý chia sẻ nếu muốn người thân thấy nội dung.",
     "channels": "Kênh gửi",
     "consent": "Đồng ý chia sẻ nội dung tin nhắn/cuộc gọi (Nếu tắt, chỉ gửi Loại cảnh báo, Thời gian và Số điện thoại)",
     "telegramChatId": "Telegram Chat ID (thử với bot thật, không bắt buộc)",
     "relatedPhone": "Số điện thoại lạ liên quan",
     "content": "Nội dung tin nhắn/cuộc gọi (không bắt buộc)",
-    "send": "🚨 Tôi nghi ngờ — Gửi ngay",
+    "send": "🚨 Tôi nghi ngờ: Gửi ngay",
     "inboxTitle": "Hộp thư Bot Gia đình (trực tiếp)",
     "emptyInbox": "Chưa có cảnh báo nào. Bấm gửi thử để xem người thân nhận được gì.",
     "hiddenContent": "Nội dung đã ẩn (chưa đồng ý chia sẻ)",
@@ -122,7 +122,7 @@
     "quizCorrect": "Chính xác! Cô/chú đã hiểu bài rồi đó.",
     "quizIncorrect": "Chưa đúng ạ. Đáp án đúng là:",
     "certModalTitle": "Chứng nhận An toàn số",
-    "certModalDesc": "Trao bởi ScamKill — QuadDrake",
+    "certModalDesc": "Trao bởi ScamKill · QuadDrake",
     "congrats": "Chúc mừng cô/chú đã hoàn thành xuất sắc tất cả bài học an toàn."
   },
   "circle": {

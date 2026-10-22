@@ -1,97 +1,255 @@
 <script lang="ts">
+  import gsap from 'gsap';
+  import { subscribeLang, type Lang } from '../lib/i18n';
+
   type Speaker = 'scammer' | 'lan' | 'app' | 'family';
+  type Bi = { en: string; vi: string };
 
   type Line = {
     speaker: Speaker;
-    text: string;
+    text: Bi;
     tone?: 'danger' | 'safe' | 'neutral' | 'warning';
   };
 
   interface Step {
-    label: string;
+    label: Bi;
     time: string;
-    title: string;
-    screen: string;
+    title: Bi;
+    screen: Bi;
     lines: Line[];
-    actionTitle: string;
-    actionBody: string;
+    actionTitle: Bi;
+    actionBody: Bi;
   }
+
+  let lang = $state<Lang>('en');
+  $effect(() => subscribeLang((next) => (lang = next)));
 
   const steps: Step[] = [
     {
-      label: 'Cuộc gọi đến',
+      label: { en: 'Incoming call', vi: 'Cuộc gọi đến' },
       time: '14:31',
-      title: 'Số lạ giả giọng con gái',
-      screen: 'Số lạ · Chưa xác minh',
+      title: { en: 'An unknown number imitating her daughter', vi: 'Số lạ giả giọng con gái' },
+      screen: { en: 'Unknown number · Unverified', vi: 'Số lạ · Chưa xác minh' },
       lines: [
-        { speaker: 'app', text: '0918 765 432 · Không có trong danh bạ', tone: 'warning' },
-        { speaker: 'scammer', text: '“Mẹ ơi, con bị tai nạn. Mẹ chuyển giúp con 30 triệu gấp!”', tone: 'danger' },
-        { speaker: 'lan', text: '“Con bình tĩnh, mẹ nghe không rõ…”', tone: 'neutral' },
+        {
+          speaker: 'app',
+          text: { en: '0918 765 432 · Not in contacts', vi: '0918 765 432 · Không có trong danh bạ' },
+          tone: 'warning',
+        },
+        {
+          speaker: 'scammer',
+          text: {
+            en: '“Mom, I had an accident. Please send 30 million right now!”',
+            vi: '“Mẹ ơi, con bị tai nạn. Mẹ chuyển giúp con 30 triệu gấp!”',
+          },
+          tone: 'danger',
+        },
+        {
+          speaker: 'lan',
+          text: { en: '“Slow down, I cannot hear you clearly...”', vi: '“Con bình tĩnh, mẹ nghe không rõ…”' },
+          tone: 'neutral',
+        },
       ],
-      actionTitle: 'Khoan đã, có dấu hiệu bất thường',
-      actionBody:
-        'Số lạ, giọng gấp, đòi tiền ngay. ScamKill không kết luận đây là lừa đảo. App chỉ nói: có nguy cơ, và mời bà Lan kiểm tra trước khi làm bất cứ điều gì.',
+      actionTitle: { en: 'Wait, something does not add up', vi: 'Khoan đã, có dấu hiệu bất thường' },
+      actionBody: {
+        en: 'Unknown number, rushed voice, immediate demand for money. ScamKill does not conclude this is a scam. It says there is risk, and invites Mrs. Lan to check before doing anything.',
+        vi: 'Số lạ, giọng gấp, đòi tiền ngay. ScamKill không kết luận đây là lừa đảo. App chỉ nói: có nguy cơ, và mời bà Lan kiểm tra trước khi làm bất cứ điều gì.',
+      },
     },
     {
-      label: 'Làm chậm',
+      label: { en: 'Slow down', vi: 'Làm chậm' },
       time: '14:31',
-      title: 'Khoảng dừng 60 giây',
-      screen: 'Làm chậm · Slow Down',
+      title: { en: 'A 60-second pause', vi: 'Khoảng dừng 60 giây' },
+      screen: { en: 'Slow Down · pause', vi: 'Làm chậm · Slow Down' },
       lines: [
-        { speaker: 'app', text: '“Khoan chuyển 30 triệu. Mình dừng lại một phút đã.”', tone: 'safe' },
-        { speaker: 'lan', text: '“Mình sẽ không chuyển tiền cho đến khi kiểm tra xong.”', tone: 'safe' },
+        {
+          speaker: 'app',
+          text: {
+            en: '“Hold the 30 million transfer. Let us stop for a minute.”',
+            vi: '“Khoan chuyển 30 triệu. Mình dừng lại một phút đã.”',
+          },
+          tone: 'safe',
+        },
+        {
+          speaker: 'lan',
+          text: {
+            en: '“I will not send money until I have checked.”',
+            vi: '“Mình sẽ không chuyển tiền cho đến khi kiểm tra xong.”',
+          },
+          tone: 'safe',
+        },
       ],
-      actionTitle: 'Cảm xúc bị kích động là điểm yếu bị khai thác',
-      actionBody:
-        'Giao diện phủ toàn màn hình, chữ lớn, đọc thành tiếng. Mục đích duy nhất: cắt cơn hoảng trước khi ngón tay chạm nút chuyển tiền.',
+      actionTitle: {
+        en: 'A hijacked emotion is the exploited weakness',
+        vi: 'Cảm xúc bị kích động là điểm yếu bị khai thác',
+      },
+      actionBody: {
+        en: 'The screen covers the phone, type is large, and the text is read aloud. The only goal: cut the panic before a finger reaches the transfer button.',
+        vi: 'Giao diện phủ toàn màn hình, chữ lớn, đọc thành tiếng. Mục đích duy nhất: cắt cơn hoảng trước khi ngón tay chạm nút chuyển tiền.',
+      },
     },
     {
-      label: 'Xác minh',
+      label: { en: 'Verify', vi: 'Xác minh' },
       time: '14:32',
-      title: 'Mã gia đình rồi báo tin một chạm',
-      screen: 'Xác minh người thân',
+      title: { en: 'Family code, then a one-tap alert', vi: 'Mã gia đình rồi báo tin một chạm' },
+      screen: { en: 'Verify family', vi: 'Xác minh người thân' },
       lines: [
-        { speaker: 'app', text: '“Hỏi người gọi: Mã gia đình của mình là gì?”', tone: 'safe' },
-        { speaker: 'lan', text: '“Con cho mẹ Mã gia đình?”', tone: 'neutral' },
-        { speaker: 'app', text: 'Người gọi không trả lời đúng. Hãy cúp máy và gọi lại số con gái đã lưu.', tone: 'danger' },
+        {
+          speaker: 'app',
+          text: {
+            en: '“Ask the caller: what is our family code?”',
+            vi: '“Hỏi người gọi: Mã gia đình của mình là gì?”',
+          },
+          tone: 'safe',
+        },
+        {
+          speaker: 'lan',
+          text: { en: '“Can you tell me our family code?”', vi: '“Con cho mẹ Mã gia đình?”' },
+          tone: 'neutral',
+        },
+        {
+          speaker: 'app',
+          text: {
+            en: 'The caller cannot answer. Hang up and call your daughter at the saved number.',
+            vi: 'Người gọi không trả lời đúng. Hãy cúp máy và gọi lại số con gái đã lưu.',
+          },
+          tone: 'danger',
+        },
       ],
-      actionTitle: 'Hai việc cùng lúc: xác minh và gọi cứu viện',
-      actionBody:
-        'Phần xác minh không dựa vào tai người hay AI nhận giọng. Cảnh báo chỉ gửi loại cảnh báo, giờ và số gọi đến. Nội dung cuộc gọi chỉ đi khi bà Lan đồng ý.',
+      actionTitle: {
+        en: 'Two jobs at once: verify and call for backup',
+        vi: 'Hai việc cùng lúc: xác minh và gọi cứu viện',
+      },
+      actionBody: {
+        en: 'Verification does not rely on the human ear or on voice AI. The alert sends only the alert type, the time, and the calling number. Call content leaves only when Mrs. Lan agrees.',
+        vi: 'Phần xác minh không dựa vào tai người hay AI nhận giọng. Cảnh báo chỉ gửi loại cảnh báo, giờ và số gọi đến. Nội dung cuộc gọi chỉ đi khi bà Lan đồng ý.',
+      },
     },
     {
-      label: 'Gia đình',
+      label: { en: 'Family', vi: 'Gia đình' },
       time: '14:33',
-      title: 'Con gái gọi lại, giữ được 30 triệu',
-      screen: 'Đã an toàn',
+      title: { en: 'Her daughter calls back and 30 million stay', vi: 'Con gái gọi lại, giữ được 30 triệu' },
+      screen: { en: 'Safe', vi: 'Đã an toàn' },
       lines: [
-        { speaker: 'family', text: '“Mẹ ơi con đang ở cơ quan, con an toàn. Đừng chuyển tiền.”', tone: 'safe' },
-        { speaker: 'lan', text: '“May quá, mẹ suýt chuyển 30 triệu.”', tone: 'safe' },
-        { speaker: 'app', text: 'Không có giao dịch nào được thực hiện. Số 0918 765 432 đã được đánh dấu.', tone: 'safe' },
+        {
+          speaker: 'family',
+          text: {
+            en: '“Mom, I am at the office and I am safe. Do not transfer.”',
+            vi: '“Mẹ ơi con đang ở cơ quan, con an toàn. Đừng chuyển tiền.”',
+          },
+          tone: 'safe',
+        },
+        {
+          speaker: 'lan',
+          text: { en: '“Thank goodness, I almost sent 30 million.”', vi: '“May quá, mẹ suýt chuyển 30 triệu.”' },
+          tone: 'safe',
+        },
+        {
+          speaker: 'app',
+          text: {
+            en: 'No transaction was made. The number 0918 765 432 has been flagged.',
+            vi: 'Không có giao dịch nào được thực hiện. Số 0918 765 432 đã được đánh dấu.',
+          },
+          tone: 'safe',
+        },
       ],
-      actionTitle: '30.000.000 ₫ được giữ lại trong 2 phút',
-      actionBody:
-        'Một vòng khép kín: cảnh báo trước khi bắt máy, khoảng dừng, xác minh độc lập, rồi người thân gọi lại xác nhận.',
+      actionTitle: { en: '30,000,000 ₫ kept in 2 minutes', vi: '30.000.000 ₫ được giữ lại trong 2 phút' },
+      actionBody: {
+        en: 'A closed loop: a warning before pickup, a pause, independent verification, then a family callback.',
+        vi: 'Một vòng khép kín: cảnh báo trước khi bắt máy, khoảng dừng, xác minh độc lập, rồi người thân gọi lại xác nhận.',
+      },
     },
   ];
 
-  const channels = [
+  const channels: { name: string; tint: string; text: Bi }[] = [
     {
       name: 'SMS',
       tint: 'bg-jade-500/15 text-mint-100',
-      text: 'Cảnh báo: cuộc gọi rủi ro từ 0918 765 432',
+      text: {
+        en: 'Alert: risky call from 0918 765 432',
+        vi: 'Cảnh báo: cuộc gọi rủi ro từ 0918 765 432',
+      },
     },
     {
       name: 'Zalo',
       tint: 'bg-[#0068ff]/20 text-[#b9d4ff]',
-      text: 'Cảnh báo: cuộc gọi rủi ro từ 0918 765 432',
+      text: {
+        en: 'Alert: risky call from 0918 765 432',
+        vi: 'Cảnh báo: cuộc gọi rủi ro từ 0918 765 432',
+      },
     },
     {
       name: 'Telegram',
       tint: 'bg-[#229ed9]/20 text-[#bfe6f7]',
-      text: 'Cảnh báo: cuộc gọi rủi ro từ 0918 765 432',
+      text: {
+        en: 'Alert: risky call from 0918 765 432',
+        vi: 'Cảnh báo: cuộc gọi rủi ro từ 0918 765 432',
+      },
     },
   ];
+
+  const speakerLabel: Record<Speaker, Bi> = {
+    scammer: { en: 'Caller', vi: 'Người gọi' },
+    lan: { en: 'Mrs. Lan', vi: 'Bà Lan' },
+    app: { en: 'ScamKill', vi: 'ScamKill' },
+    family: { en: 'Ms. Huong', vi: 'Chị Hương' },
+  };
+
+  const ui = {
+    en: {
+      scenario: 'Mrs. Lan scenario',
+      stepOf: (current: number, total: number) => `Step ${current}/${total}`,
+      stopAuto: 'Stop auto-play',
+      startAuto: 'Auto-play the simulation',
+      progress: 'Scenario progress',
+      stepsLabel: 'Scenario steps',
+      why: 'Why this step works',
+      back: 'Back',
+      next: 'Next step',
+      sendFirst: 'Send the alert first',
+      replay: 'Run the scenario again',
+      simulated: 'Simulated data, no real messages are sent.',
+      askCode: 'Ask for the family code first',
+      codeFailed: 'The caller does not know the code. Verification failed, so no money moves.',
+      shareCall: 'Allow call content to be attached. By default only the alert type, time, and calling number are sent.',
+      sendAlert: 'Send a one-tap alert to Ms. Huong',
+      sent: 'Sent on 3 channels',
+      withContent: 'Includes call content, with Mrs. Lan consent.',
+      reply: 'Mom, I am at the office and I am safe. Please do not transfer.',
+      sentValue: 'sent',
+      callbackValue: 'from alert to callback',
+      channelsValue: 'channels',
+      breatheIn: 'Breathe in 4s',
+      breatheOut: 'Breathe out 4s',
+    },
+    vi: {
+      scenario: 'Kịch bản Bà Lan',
+      stepOf: (current: number, total: number) => `Bước ${current}/${total}`,
+      stopAuto: 'Dừng tự động',
+      startAuto: 'Tự động chạy mô phỏng',
+      progress: 'Tiến độ kịch bản',
+      stepsLabel: 'Các bước kịch bản',
+      why: 'Vì sao bước này hiệu quả',
+      back: 'Quay lại',
+      next: 'Bước tiếp theo',
+      sendFirst: 'Gửi cảnh báo trước đã',
+      replay: 'Chạy lại kịch bản',
+      simulated: 'Dữ liệu mô phỏng, không gửi tin thật.',
+      askCode: 'Hỏi “Mã gia đình” trước đã',
+      codeFailed: 'Người gọi không biết mã. Xác minh thất bại, nên không chuyển tiền.',
+      shareCall: 'Cho phép gửi kèm nội dung cuộc gọi. Mặc định chỉ gửi loại cảnh báo, giờ và số gọi đến.',
+      sendAlert: 'Gửi cảnh báo một chạm tới chị Hương',
+      sent: 'Đã gửi tới 3 kênh',
+      withContent: 'Kèm nội dung cuộc gọi, theo sự đồng ý của bà Lan.',
+      reply: 'Mẹ ơi con đang ở cơ quan, con an toàn. Mẹ đừng chuyển tiền nhé.',
+      sentValue: 'đã chuyển',
+      callbackValue: 'từ cảnh báo đến gọi lại',
+      channelsValue: 'kênh',
+      breatheIn: 'Hít vào 4s',
+      breatheOut: 'Thở ra 4s',
+    },
+  };
+  const t = $derived(ui[lang]);
 
   let index = $state(0);
   let safeWordAsked = $state(false);
@@ -100,6 +258,7 @@
   let familyReplied = $state(false);
   let auto = $state(false);
   let replyTimer: number | undefined;
+  let breatheEl = $state<HTMLSpanElement | null>(null);
 
   const step = $derived(steps[index]);
   const isLast = $derived(index === steps.length - 1);
@@ -123,6 +282,20 @@
       index += 1;
     }, 4000);
     return () => window.clearTimeout(id);
+  });
+
+  // The pause step paces a physiological breath with GSAP: 4 seconds in, 4 seconds out.
+  $effect(() => {
+    if (index !== 1 || !breatheEl) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const tween = gsap.fromTo(
+      breatheEl,
+      { scale: 0.82, opacity: 0.35 },
+      { scale: 1.16, opacity: 0.85, duration: 4, ease: 'sine.inOut', yoyo: true, repeat: -1 },
+    );
+    return () => {
+      tween.kill();
+    };
   });
 
   function stopAuto() {
@@ -172,13 +345,6 @@
       familyReplied = true;
     }, 900);
   }
-
-  const speakerLabel: Record<Speaker, string> = {
-    scammer: 'Người gọi',
-    lan: 'Bà Lan',
-    app: 'ScamKill',
-    family: 'Chị Hương',
-  };
 </script>
 
 <div class="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-8">
@@ -210,7 +376,7 @@
           </div>
           <div>
             <p class="font-mono text-lg font-semibold leading-tight">0918 765 432</p>
-            <p class="text-sm text-amber-300">{step.screen}</p>
+            <p class="text-sm text-amber-300">{step.screen[lang]}</p>
           </div>
         </div>
 
@@ -227,7 +393,7 @@
                 }`}
               >
                 <p class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-cream-50/60">
-                  {speakerLabel[line.speaker]}
+                  {speakerLabel[line.speaker][lang]}
                 </p>
                 <p
                   class={line.tone === 'danger'
@@ -238,7 +404,7 @@
                         ? 'text-amber-200'
                         : ''}
                 >
-                  {line.text}
+                  {line.text[lang]}
                 </p>
               </div>
             {/each}
@@ -246,15 +412,18 @@
             {#if index === 1}
               <div class="flex flex-col items-center gap-3 pt-2">
                 <div class="relative grid size-32 place-items-center">
-                  <span class="breathe-ring" aria-hidden="true"></span>
-                  <span class="breathe-ring" style="animation-delay: 5s" aria-hidden="true"></span>
+                  <span class="breathe-ring" bind:this={breatheEl} aria-hidden="true"></span>
                   <div class="grid size-32 place-items-center rounded-full border border-jade-400/40 bg-jade-950/50 text-center">
                     <p class="font-mono text-xs leading-relaxed text-mint-100">
-                      Hít vào 4s<br />Thở ra 6s
+                      {t.breatheIn}<br />{t.breatheOut}
                     </p>
                   </div>
                 </div>
-                <p class="text-center text-xs text-cream-50/60">Vòng tròn lớn dần khi hít vào, nhỏ lại khi thở ra.</p>
+                <p class="text-center text-xs text-cream-50/60">
+                  {lang === 'en'
+                    ? 'The ring grows on the inhale and settles on the exhale.'
+                    : 'Vòng tròn lớn dần khi hít vào, nhỏ lại khi thở ra.'}
+                </p>
               </div>
             {/if}
 
@@ -266,11 +435,11 @@
                     onclick={() => (safeWordAsked = true)}
                     class="w-full rounded-xl border border-amber-400/50 bg-amber-400/10 px-4 py-3 text-left text-sm font-semibold text-amber-200 transition hover:bg-amber-400/20 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                   >
-                    Hỏi “Mã gia đình” trước đã
+                    {t.askCode}
                   </button>
                 {:else}
                   <div class="rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm leading-relaxed text-amber-200">
-                    Người gọi không biết mã. Xác minh thất bại, nên không chuyển tiền.
+                    {t.codeFailed}
                   </div>
                 {/if}
 
@@ -280,7 +449,7 @@
                     bind:checked={shareContent}
                     class="mt-0.5 size-4 shrink-0 rounded border-white/30 bg-transparent accent-jade-500"
                   />
-                  <span>Cho phép gửi kèm nội dung cuộc gọi. Mặc định chỉ gửi loại cảnh báo, giờ và số gọi đến.</span>
+                  <span>{t.shareCall}</span>
                 </label>
 
                 {#if !alertSent}
@@ -289,7 +458,7 @@
                     onclick={sendAlert}
                     class="w-full rounded-xl bg-amber-400 px-4 py-3 text-sm font-bold text-ink-950 transition hover:bg-amber-300 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
                   >
-                    Gửi cảnh báo một chạm tới chị Hương
+                    {t.sendAlert}
                   </button>
                 {/if}
               </div>
@@ -301,7 +470,7 @@
                   <svg viewBox="0 0 20 20" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="m4 10 4 4 8-8" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
-                  Đã gửi tới 3 kênh
+                  {t.sent}
                 </p>
                 {#each channels as channel}
                   <div class="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
@@ -311,10 +480,10 @@
                       </svg>
                     </span>
                     <div class="min-w-0">
-                      <p class="text-[11px] font-semibold text-cream-50/55">{channel.name} · Chị Hương</p>
-                      <p class="mt-0.5 text-sm leading-snug text-cream-50">{channel.text}</p>
+                      <p class="text-[11px] font-semibold text-cream-50/55">{channel.name} · {lang === 'en' ? 'Ms. Huong' : 'Chị Hương'}</p>
+                      <p class="mt-0.5 text-sm leading-snug text-cream-50">{channel.text[lang]}</p>
                       {#if shareContent}
-                        <p class="mt-1 text-[11px] leading-snug text-cream-50/55">Kèm nội dung cuộc gọi, theo sự đồng ý của bà Lan.</p>
+                        <p class="mt-1 text-[11px] leading-snug text-cream-50/55">{t.withContent}</p>
                       {/if}
                       <p class="mt-1 font-mono text-[11px] text-cream-50/60">14:32</p>
                     </div>
@@ -326,12 +495,12 @@
             {#if index === 3 && familyReplied}
               <div class="step-screen rounded-2xl border border-[#0068ff]/35 bg-[#0068ff]/10 p-3">
                 <div class="flex items-center justify-between gap-3">
-                  <p class="text-[11px] font-semibold text-[#b9d4ff]">Chị Hương · Zalo</p>
+                  <p class="text-[11px] font-semibold text-[#b9d4ff]">
+                    {lang === 'en' ? 'Ms. Huong · Zalo' : 'Chị Hương · Zalo'}
+                  </p>
                   <p class="font-mono text-[11px] text-cream-50/60">14:33</p>
                 </div>
-                <p class="mt-1.5 text-sm leading-relaxed text-cream-50">
-                  Mẹ ơi con đang ở cơ quan, con an toàn. Mẹ đừng chuyển tiền nhé.
-                </p>
+                <p class="mt-1.5 text-sm leading-relaxed text-cream-50">{t.reply}</p>
               </div>
             {/if}
           </div>
@@ -343,15 +512,15 @@
       <div class="mt-4 grid grid-cols-3 gap-2 text-center">
         <div class="rounded-xl border border-jade-500/30 bg-jade-950/40 px-2 py-3">
           <p class="font-mono text-lg font-bold text-mint-100">0 ₫</p>
-          <p class="text-[11px] text-cream-50/60">đã chuyển</p>
+          <p class="text-[11px] text-cream-50/60">{t.sentValue}</p>
         </div>
         <div class="rounded-xl border border-jade-500/30 bg-jade-950/40 px-2 py-3">
-          <p class="font-mono text-lg font-bold text-mint-100">2 phút</p>
-          <p class="text-[11px] text-cream-50/60">từ cảnh báo đến gọi lại</p>
+          <p class="font-mono text-lg font-bold text-mint-100">{lang === 'en' ? '2 min' : '2 phút'}</p>
+          <p class="text-[11px] text-cream-50/60">{t.callbackValue}</p>
         </div>
         <div class="rounded-xl border border-jade-500/30 bg-jade-950/40 px-2 py-3">
-          <p class="font-mono text-lg font-bold text-mint-100">3 kênh</p>
-          <p class="text-[11px] text-cream-50/60">SMS · Zalo · Telegram</p>
+          <p class="font-mono text-lg font-bold text-mint-100">{lang === 'en' ? '3' : '3'}</p>
+          <p class="text-[11px] text-cream-50/60">{t.channelsValue}</p>
         </div>
       </div>
     {/if}
@@ -360,9 +529,9 @@
   <!-- Controls -->
   <div class="rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <p class="text-sm font-bold text-amber-300">Kịch bản Bà Lan</p>
+      <p class="text-sm font-bold text-amber-300">{t.scenario}</p>
       <div class="flex flex-wrap items-center gap-3">
-        <p class="font-mono text-sm text-cream-50/60">Bước {index + 1}/{steps.length}</p>
+        <p class="font-mono text-sm text-cream-50/60">{t.stepOf(index + 1, steps.length)}</p>
         <button
           type="button"
           onclick={toggleAuto}
@@ -378,9 +547,9 @@
               <rect x="3" y="2" width="3.5" height="12" rx="1"></rect>
               <rect x="9.5" y="2" width="3.5" height="12" rx="1"></rect>
             </svg>
-            Dừng tự động
+            {t.stopAuto}
           {:else}
-            ▶ Tự động chạy mô phỏng
+            ▶ {t.startAuto}
           {/if}
         </button>
       </div>
@@ -389,7 +558,7 @@
     <div
       class="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10"
       role="progressbar"
-      aria-label="Tiến độ kịch bản"
+      aria-label={t.progress}
       aria-valuemin="0"
       aria-valuemax={steps.length}
       aria-valuenow={index + 1}
@@ -400,7 +569,7 @@
       ></div>
     </div>
 
-    <ol class="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Các bước kịch bản">
+    <ol class="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={t.stepsLabel}>
       {#each steps as item, i}
         <li>
           <button
@@ -416,20 +585,20 @@
                   : 'border-white/10 text-cream-50/40'
             }`}
           >
-            <span class="block font-bold">{i + 1}. {item.label}</span>
+            <span class="block font-bold">{i + 1}. {item.label[lang]}</span>
           </button>
         </li>
       {/each}
     </ol>
 
     <div class="mt-7" aria-live="polite">
-      <h3 class="font-display text-2xl font-semibold text-cream-50 sm:text-3xl">{step.title}</h3>
-      <p class="mt-3 text-base leading-relaxed text-cream-50/75">{step.actionBody}</p>
+      <h3 class="font-display text-2xl font-semibold text-cream-50 sm:text-3xl">{step.title[lang]}</h3>
+      <p class="mt-3 text-base leading-relaxed text-cream-50/75">{step.actionBody[lang]}</p>
     </div>
 
     <div class="mt-6 rounded-2xl border border-white/10 bg-ink-950/40 p-4">
-      <p class="text-xs font-semibold text-jade-400">Vì sao bước này hiệu quả</p>
-      <p class="mt-2 text-sm leading-relaxed text-cream-50/70">{step.actionTitle}</p>
+      <p class="text-xs font-semibold text-jade-400">{t.why}</p>
+      <p class="mt-2 text-sm leading-relaxed text-cream-50/70">{step.actionTitle[lang]}</p>
     </div>
 
     <div class="mt-7 flex flex-wrap items-center gap-3">
@@ -439,7 +608,7 @@
         disabled={index === 0}
         class="inline-flex min-h-11 items-center rounded-xl border border-white/20 px-4 py-2.5 text-sm font-semibold text-cream-50 transition hover:bg-white/10 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
       >
-        Quay lại
+        {t.back}
       </button>
 
       {#if isLast}
@@ -448,7 +617,7 @@
           onclick={reset}
           class="inline-flex min-h-11 items-center rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-bold text-ink-950 transition hover:bg-amber-300 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
         >
-          Chạy lại kịch bản
+          {t.replay}
         </button>
       {:else}
         <button
@@ -457,11 +626,11 @@
           disabled={!canAdvance}
           class="inline-flex min-h-11 items-center rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-bold text-ink-950 transition hover:bg-amber-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
         >
-          {index === 2 && !alertSent ? 'Gửi cảnh báo trước đã' : 'Bước tiếp theo'}
+          {index === 2 && !alertSent ? t.sendFirst : t.next}
         </button>
       {/if}
 
-      <span class="text-xs text-cream-50/60">Dữ liệu mô phỏng, không gửi tin thật.</span>
+      <span class="text-xs text-cream-50/60">{t.simulated}</span>
     </div>
   </div>
 </div>
@@ -482,7 +651,7 @@
     inset: 0;
     border-radius: 9999px;
     border: 1px solid rgba(45, 212, 191, 0.35);
-    animation: breathe 10s var(--ease-out-quart) infinite;
+    opacity: 0.35;
     pointer-events: none;
   }
 
@@ -498,18 +667,6 @@
     100% {
       opacity: 0;
       transform: scale(2.35);
-    }
-  }
-
-  @keyframes breathe {
-    0%,
-    100% {
-      transform: scale(0.82);
-      opacity: 0.35;
-    }
-    40% {
-      transform: scale(1.22);
-      opacity: 0.85;
     }
   }
 

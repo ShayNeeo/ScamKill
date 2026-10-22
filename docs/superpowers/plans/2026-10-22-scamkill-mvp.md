@@ -54,7 +54,7 @@
 
 ---
 
-### Task 2: Layer 1 & Layer 3B UI — Call Shield Screen, "Bà Lan" Incoming Call Overlay, Cooling-Off Pause & Safe-Word Verifier
+### Task 2: Layer 1 & Layer 3B UI - Call Shield Screen, "Bà Lan" Incoming Call Overlay, Cooling-Off Pause & Safe-Word Verifier
 
 **Files:**
 - Create: `src/components/scamkill/IncomingCallModal.tsx`
@@ -72,7 +72,7 @@
 
 ---
 
-### Task 3: Layer 2 & Layer 3A UI — Rebrand App Shell to ScamKill, Upgrade Message Analyzer & Trusted Family Multi-Bot Inbox
+### Task 3: Layer 2 & Layer 3A UI - Rebrand App Shell to ScamKill, Upgrade Message Analyzer & Trusted Family Multi-Bot Inbox
 
 **Files:**
 - Modify: `app.json`
@@ -86,7 +86,7 @@
 - Consumes: `ScenarioDrawer`, `CoolingOffModal`, `SafeWordCard`, `IncomingCallModal`, `dispatchFamilyAlert`, `getBotInbox`
 
 - [ ] **Step 1: Rebrand `app.json`, `locales/{vi,en}.json`, and `src/app/(tabs)/_layout.tsx` to ScamKill**
-- [ ] **Step 2: Upgrade `src/app/(tabs)/index.tsx` with Vòng Bảo Vệ Gia Đình 4-step bar, 1-tap `"Tôi nghi ngờ — Báo người thân"` button, Cooling-Off trigger, and Scenario Drawer**
+- [ ] **Step 2: Upgrade `src/app/(tabs)/index.tsx` with Vòng Bảo Vệ Gia Đình 4-step bar, 1-tap `"Tôi nghi ngờ - Báo người thân"` button, Cooling-Off trigger, and Scenario Drawer**
 - [ ] **Step 3: Upgrade `src/app/(tabs)/trusted_circle.tsx` with Family Safe-Word (`Mã gia đình`) editor, Consent toggle, SMS/Zalo/Telegram channel selectors, and Live Family Bot Inbox + simulated relative callback ("Chị Hương gọi lại")**
 - [ ] **Step 4: Run `rtk pnpm run typecheck`, `rtk pnpm test`, and live smoke verification**
 

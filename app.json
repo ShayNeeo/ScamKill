@@ -27,7 +27,7 @@
       "bundler": "metro",
       "output": "single",
       "favicon": "./assets/images/favicon.png",
-      "name": "ScamKill — Lá chắn chống lừa đảo",
+      "name": "ScamKill - Lá chắn chống lừa đảo",
       "shortName": "ScamKill",
       "themeColor": "#0B5D56",
       "backgroundColor": "#FAF6EE"

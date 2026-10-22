@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { subscribeLang, type Lang } from '../lib/i18n';
+
   type Variant = 'primary' | 'secondary' | 'ghost' | 'nav';
   type Mode = 'lead' | 'auth';
   type AuthMode = 'login' | 'signup';
@@ -10,12 +12,7 @@
     compact?: boolean;
   }
 
-  let {
-    triggerLabel = 'Đăng ký nhận tin',
-    variant = 'primary',
-    initialMode = 'lead',
-    compact = false,
-  }: Props = $props();
+  let { triggerLabel, variant = 'primary', initialMode = 'lead', compact = false }: Props = $props();
 
   const variantClass: Record<Variant, string> = {
     primary:
@@ -27,6 +24,7 @@
     nav: 'bg-ink-900 text-cream-50 hover:bg-ink-800 focus-visible:outline-ink-900',
   };
 
+  let lang = $state<Lang>('en');
   let open = $state(false);
   let mode = $state<Mode>('lead');
   let authMode = $state<AuthMode>('login');
@@ -46,6 +44,101 @@
   let email = $state('');
   let password = $state('');
   let accountName = $state('');
+
+  $effect(() => subscribeLang((next) => (lang = next)));
+
+  const copy = {
+    en: {
+      triggerLead: 'Join the pilot',
+      triggerAuth: 'Sign in',
+      titleLead: 'Pilot news and pricing',
+      titleAuth: 'Dashboard sign-in',
+      leadBody:
+        'Leave a phone number and the team will help install the PWA and run a session with your family. No spam.',
+      authBody: 'For the team and testing partners: leads, sessions, and D1 on the edge.',
+      tabLead: 'Pilot news',
+      tabAuth: 'Sign in',
+      successTitle: 'Received. Thank you.',
+      successBody:
+        'The ScamKill team will contact you within 1 to 2 business days. Meanwhile, try the Mrs. Lan scenario on this page.',
+      close: 'Close',
+      closeDialog: 'Close dialog',
+      fullName: 'Full name',
+      phone: 'Phone number',
+      phonePlaceholder: '09xx xxx xxx',
+      role: 'You are',
+      roleFamily: 'Child or grandchild of an older adult',
+      roleSenior: 'Older adult',
+      roleBank: 'Bank or finance',
+      roleTelco: 'Telecom carrier',
+      roleOther: 'Other',
+      city: 'Province or city',
+      consent:
+        'I agree to be contacted about the pilot program. My data is used for this purpose and I can ask for deletion at any time.',
+      sending: 'Sending...',
+      submitLead: 'Send my details',
+      email: 'Email',
+      password: 'Password',
+      passwordHint: 'At least 8 characters. Passwords are hashed with PBKDF2 before D1 storage.',
+      processing: 'Working...',
+      createAccount: 'Create account',
+      signIn: 'Sign in',
+      toSignup: 'No account yet? Create a test account',
+      toLogin: 'Already have an account? Sign in',
+      errorLead: 'Could not send. Please try again.',
+      errorAuth: 'Could not sign in.',
+      errorNetwork: 'Connection lost. Please try again.',
+      name: 'Name',
+      chooseForm: 'Choose form type',
+    },
+    vi: {
+      triggerLead: 'Đăng ký thử nghiệm',
+      triggerAuth: 'Đăng nhập',
+      titleLead: 'Nhận tin thử nghiệm và báo giá',
+      titleAuth: 'Đăng nhập bảng điều khiển',
+      leadBody:
+        'Để lại số điện thoại để đội ngũ liên hệ cài đặt PWA và chạy thử cùng gia đình bạn. Không spam.',
+      authBody: 'Dành cho đội ngũ và đối tác kiểm thử lead, phiên đăng nhập, D1 trên edge.',
+      tabLead: 'Nhận tin',
+      tabAuth: 'Đăng nhập',
+      successTitle: 'Đã ghi nhận. Cảm ơn bạn!',
+      successBody:
+        'Đội ngũ ScamKill sẽ liên hệ trong 1 đến 2 ngày làm việc. Trong lúc chờ, hãy thử kịch bản Bà Lan ngay trên trang này.',
+      close: 'Đóng',
+      closeDialog: 'Đóng hộp thoại',
+      fullName: 'Họ tên',
+      phone: 'Số điện thoại',
+      phonePlaceholder: '09xx xxx xxx',
+      role: 'Bạn là',
+      roleFamily: 'Con hoặc cháu của người cao tuổi',
+      roleSenior: 'Người cao tuổi',
+      roleBank: 'Ngân hàng hoặc tài chính',
+      roleTelco: 'Nhà mạng viễn thông',
+      roleOther: 'Khác',
+      city: 'Tỉnh hoặc thành phố',
+      consent:
+        'Tôi đồng ý được liên hệ về chương trình thử nghiệm. Dữ liệu dùng cho mục đích này và có thể yêu cầu xoá bất cứ lúc nào.',
+      sending: 'Đang gửi...',
+      submitLead: 'Gửi đăng ký',
+      email: 'Email',
+      password: 'Mật khẩu',
+      passwordHint: 'Tối thiểu 8 ký tự. Mật khẩu được băm PBKDF2 trước khi lưu D1.',
+      processing: 'Đang xử lý...',
+      createAccount: 'Tạo tài khoản',
+      signIn: 'Đăng nhập',
+      toSignup: 'Chưa có tài khoản? Tạo tài khoản thử nghiệm',
+      toLogin: 'Đã có tài khoản? Đăng nhập',
+      errorLead: 'Không gửi được. Vui lòng thử lại.',
+      errorAuth: 'Không đăng nhập được.',
+      errorNetwork: 'Mất kết nối. Vui lòng thử lại.',
+      name: 'Tên',
+      chooseForm: 'Chọn hình thức',
+    },
+  };
+  const t = $derived(copy[lang]);
+  const buttonLabel = $derived(
+    triggerLabel ?? (initialMode === 'auth' ? t.triggerAuth : t.triggerLead),
+  );
 
   $effect(() => {
     if (!open) return;
@@ -123,7 +216,7 @@
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        feedback = data.error ?? 'Không gửi được. Vui lòng thử lại.';
+        feedback = data.error ?? t.errorLead;
         return;
       }
       success = true;
@@ -132,7 +225,7 @@
       leadCity = '';
       leadConsent = false;
     } catch {
-      feedback = 'Mất kết nối. Vui lòng thử lại.';
+      feedback = t.errorNetwork;
     } finally {
       busy = false;
     }
@@ -151,12 +244,12 @@
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        feedback = data.error ?? 'Không đăng nhập được.';
+        feedback = data.error ?? t.errorAuth;
         return;
       }
       window.location.assign('/dashboard');
     } catch {
-      feedback = 'Mất kết nối. Vui lòng thử lại.';
+      feedback = t.errorNetwork;
     } finally {
       busy = false;
     }
@@ -171,9 +264,9 @@
   onclick={() => show(initialMode)}
   aria-haspopup="dialog"
   aria-expanded={open}
-  class={`inline-flex items-center justify-center gap-2 rounded-xl font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 ${compact ? 'px-4 py-2 text-sm' : 'px-5 py-3 text-base'} ${variantClass[variant]}`}
+  class={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 ${compact ? 'px-4 py-2 text-sm' : 'px-5 py-3 text-base'} ${variantClass[variant]}`}
 >
-  {triggerLabel}
+  {buttonLabel}
   <svg viewBox="0 0 20 20" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
     <path d="M4 10h12M11 5l5 5-5 5" stroke-linecap="round" stroke-linejoin="round" />
   </svg>
@@ -197,7 +290,7 @@
       <button
         type="button"
         onclick={close}
-        aria-label="Đóng hộp thoại"
+        aria-label={t.closeDialog}
         class="absolute right-4 top-4 grid size-9 place-items-center rounded-full border border-ink-900/10 bg-white text-ink-700 transition hover:bg-cream-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-600"
       >
         <svg viewBox="0 0 20 20" class="size-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -205,24 +298,21 @@
         </svg>
       </button>
 
-      <p class="text-xs font-bold uppercase tracking-[0.18em] text-jade-700">ScamKill · QuadDraKe</p>
-      <h2 id="lead-modal-title" class="mt-2 font-serif text-2xl font-semibold text-ink-900">
-        {mode === 'lead' ? 'Nhận tin thử nghiệm & báo giá' : 'Đăng nhập bảng điều khiển'}
+      <h2 id="lead-modal-title" class="mt-1 font-display text-2xl font-semibold text-ink-900">
+        {mode === 'lead' ? t.titleLead : t.titleAuth}
       </h2>
       <p class="mt-2 text-sm leading-relaxed text-ink-700">
-        {mode === 'lead'
-          ? 'Để lại số điện thoại để đội ngũ liên hệ cài đặt PWA và chạy thử cùng gia đình bạn. Không spam.'
-          : 'Dành cho đội ngũ và đối tác kiểm thử lead, phiên đăng nhập, D1 trên edge.'}
+        {mode === 'lead' ? t.leadBody : t.authBody}
       </p>
 
-      <div class="mt-5 inline-flex rounded-xl border border-ink-900/10 bg-white p-1" role="group" aria-label="Chọn hình thức">
+      <div class="mt-5 inline-flex rounded-xl border border-ink-900/10 bg-white p-1" role="group" aria-label={t.chooseForm}>
         <button
           type="button"
           onclick={() => { mode = 'lead'; feedback = ''; }}
           aria-pressed={mode === 'lead'}
           class={`rounded-lg px-3 py-2 text-sm font-semibold transition ${mode === 'lead' ? 'bg-ink-900 text-cream-50' : 'text-ink-700 hover:bg-cream-50'}`}
         >
-          Nhận tin
+          {t.tabLead}
         </button>
         <button
           type="button"
@@ -230,25 +320,23 @@
           aria-pressed={mode === 'auth'}
           class={`rounded-lg px-3 py-2 text-sm font-semibold transition ${mode === 'auth' ? 'bg-ink-900 text-cream-50' : 'text-ink-700 hover:bg-cream-50'}`}
         >
-          Đăng nhập
+          {t.tabAuth}
         </button>
       </div>
 
       {#if success}
         <div class="mt-6 rounded-2xl border border-jade-600/30 bg-mint-100/70 p-5" role="status">
-          <p class="font-bold text-jade-800">Đã ghi nhận. Cảm ơn bạn!</p>
-          <p class="mt-1 text-sm text-ink-700">
-            Đội ngũ ScamKill sẽ liên hệ trong 1–2 ngày làm việc. Trong lúc chờ, hãy thử kịch bản Bà Lan ngay trên trang này.
-          </p>
+          <p class="font-bold text-jade-800">{t.successTitle}</p>
+          <p class="mt-1 text-sm text-ink-700">{t.successBody}</p>
           <button type="button" onclick={close} class="mt-4 rounded-xl bg-ink-900 px-4 py-2 text-sm font-bold text-cream-50">
-            Đóng
+            {t.close}
           </button>
         </div>
       {:else if mode === 'lead'}
         <form class="mt-6 space-y-4" onsubmit={submitLead} novalidate>
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label for="lead-name" class="block text-sm font-semibold text-ink-800">Họ tên</label>
+              <label for="lead-name" class="block text-sm font-semibold text-ink-800">{t.fullName}</label>
               <input
                 id="lead-name"
                 name="name"
@@ -262,7 +350,7 @@
               />
             </div>
             <div>
-              <label for="lead-phone" class="block text-sm font-semibold text-ink-800">Số điện thoại</label>
+              <label for="lead-phone" class="block text-sm font-semibold text-ink-800">{t.phone}</label>
               <input
                 id="lead-phone"
                 name="phone"
@@ -270,7 +358,7 @@
                 inputmode="tel"
                 autocomplete="tel"
                 required
-                placeholder="09xx xxx xxx"
+                placeholder={t.phonePlaceholder}
                 bind:value={leadPhone}
                 class="mt-1.5 w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 text-base text-ink-900 outline-none transition focus:border-jade-600 focus:ring-2 focus:ring-jade-600/20"
               />
@@ -279,21 +367,21 @@
 
           <div class="grid gap-4 sm:grid-cols-2">
             <div>
-              <label for="lead-role" class="block text-sm font-semibold text-ink-800">Bạn là</label>
+              <label for="lead-role" class="block text-sm font-semibold text-ink-800">{t.role}</label>
               <select
                 id="lead-role"
                 bind:value={leadRole}
                 class="mt-1.5 w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 text-base text-ink-900 outline-none transition focus:border-jade-600 focus:ring-2 focus:ring-jade-600/20"
               >
-                <option value="family">Con/cháu của người cao tuổi</option>
-                <option value="senior">Người cao tuổi</option>
-                <option value="bank">Ngân hàng / tài chính</option>
-                <option value="telco">Nhà mạng viễn thông</option>
-                <option value="other">Khác</option>
+                <option value="family">{t.roleFamily}</option>
+                <option value="senior">{t.roleSenior}</option>
+                <option value="bank">{t.roleBank}</option>
+                <option value="telco">{t.roleTelco}</option>
+                <option value="other">{t.roleOther}</option>
               </select>
             </div>
             <div>
-              <label for="lead-city" class="block text-sm font-semibold text-ink-800">Tỉnh / thành phố</label>
+              <label for="lead-city" class="block text-sm font-semibold text-ink-800">{t.city}</label>
               <input
                 id="lead-city"
                 type="text"
@@ -307,7 +395,7 @@
 
           <label class="flex items-start gap-2.5 text-sm text-ink-700">
             <input type="checkbox" bind:checked={leadConsent} required class="mt-0.5 size-4 accent-jade-600" />
-            <span>Tôi đồng ý được liên hệ về chương trình thử nghiệm. Dữ liệu dùng cho mục đích này và có thể yêu cầu xoá bất cứ lúc nào.</span>
+            <span>{t.consent}</span>
           </label>
 
           <div class="hidden" aria-hidden="true">
@@ -324,14 +412,14 @@
             disabled={busy}
             class="w-full rounded-xl bg-jade-600 px-4 py-3 text-base font-bold text-white transition hover:bg-jade-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-600"
           >
-            {busy ? 'Đang gửi…' : 'Gửi đăng ký'}
+            {busy ? t.sending : t.submitLead}
           </button>
         </form>
       {:else}
         <form class="mt-6 space-y-4" onsubmit={submitAuth}>
           {#if authMode === 'signup'}
             <div>
-              <label for="auth-name" class="block text-sm font-semibold text-ink-800">Tên</label>
+              <label for="auth-name" class="block text-sm font-semibold text-ink-800">{t.name}</label>
               <input
                 id="auth-name"
                 type="text"
@@ -343,7 +431,7 @@
             </div>
           {/if}
           <div>
-            <label for="auth-email" class="block text-sm font-semibold text-ink-800">Email</label>
+            <label for="auth-email" class="block text-sm font-semibold text-ink-800">{t.email}</label>
             <input
               id="auth-email"
               type="email"
@@ -354,7 +442,7 @@
             />
           </div>
           <div>
-            <label for="auth-password" class="block text-sm font-semibold text-ink-800">Mật khẩu</label>
+            <label for="auth-password" class="block text-sm font-semibold text-ink-800">{t.password}</label>
             <input
               id="auth-password"
               type="password"
@@ -365,7 +453,7 @@
               bind:value={password}
               class="mt-1.5 w-full rounded-xl border border-ink-900/15 bg-white px-3 py-2.5 text-base text-ink-900 outline-none transition focus:border-jade-600 focus:ring-2 focus:ring-jade-600/20"
             />
-            <p class="mt-1 text-xs text-ink-600">Tối thiểu 8 ký tự. Mật khẩu được băm PBKDF2 trước khi lưu D1.</p>
+            <p class="mt-1 text-xs text-ink-600">{t.passwordHint}</p>
           </div>
 
           {#if feedback}
@@ -377,7 +465,7 @@
             disabled={busy}
             class="w-full rounded-xl bg-jade-600 px-4 py-3 text-base font-bold text-white transition hover:bg-jade-700 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-jade-600"
           >
-            {busy ? 'Đang xử lý…' : authMode === 'signup' ? 'Tạo tài khoản' : 'Đăng nhập'}
+            {busy ? t.processing : authMode === 'signup' ? t.createAccount : t.signIn}
           </button>
 
           <button
@@ -385,7 +473,7 @@
             onclick={() => { authMode = authMode === 'login' ? 'signup' : 'login'; feedback = ''; }}
             class="w-full text-center text-sm font-semibold text-jade-700 underline decoration-jade-600/30 underline-offset-4 hover:decoration-jade-600"
           >
-            {authMode === 'login' ? 'Chưa có tài khoản? Tạo tài khoản thử nghiệm' : 'Đã có tài khoản? Đăng nhập'}
+            {authMode === 'login' ? t.toSignup : t.toLogin}
           </button>
         </form>
       {/if}

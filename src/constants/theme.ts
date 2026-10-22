@@ -151,6 +151,10 @@ export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
+    /** Bricolage Grotesque equivalent for headings on native */
+    heading: 'ui-rounded',
+    /** Atkinson Hyperlegible equivalent for display/body on native */
+    display: 'system-ui',
     /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
     /** iOS `UIFontDescriptorSystemDesignRounded` */
@@ -160,12 +164,16 @@ export const Fonts = Platform.select({
   },
   default: {
     sans: 'normal',
+    heading: 'normal',
+    display: 'normal',
     serif: 'serif',
     rounded: 'normal',
     mono: 'monospace',
   },
   web: {
     sans: 'var(--font-display)',
+    heading: 'var(--font-heading)',
+    display: 'var(--font-display)',
     serif: 'var(--font-serif)',
     rounded: 'var(--font-rounded)',
     mono: 'var(--font-mono)',

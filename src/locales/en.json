@@ -27,8 +27,8 @@
     "profile": "Settings"
   },
   "home": {
-    "brandTitle": "ScamKill — AI Shield for Seniors & Families",
-    "brandSubtitle": "Notice early — Slow down — Verify — Decide together",
+    "brandTitle": "ScamKill: AI Shield for Seniors & Families",
+    "brandSubtitle": "Notice early, slow down, verify, decide together",
     "loopTitle": "Family Protection Loop",
     "loopStep1": "1. Notice",
     "loopStep2": "2. Slow down",
@@ -38,7 +38,7 @@
     "reasonsTitle": "Why this looks suspicious",
     "concreteAction": "Don't tap the link. Ask a family member first",
     "slowDownButton": "⏸ Slow down & ask Family Code",
-    "reportButton": "🚨 I'm suspicious — Alert family (SMS / Zalo / Telegram)",
+    "reportButton": "🚨 I'm suspicious: Alert family (SMS / Zalo / Telegram)",
     "shareConsent": "Agree to share message content with family",
     "alertSent": "Alert sent to your family",
     "callResultTitle": "Call check result"
@@ -46,14 +46,14 @@
   "trusted": {
     "safeWordTitle": "Family code",
     "safeWordHint": "A secret code to verify real relatives. Never read it to strangers.",
-    "dispatchTitle": "I'm suspicious — Alert family",
+    "dispatchTitle": "I'm suspicious: Alert family",
     "dispatchHint": "Choose channels and consent to share if family should see the content.",
     "channels": "Channels",
     "consent": "Agree to share message/call content (If off, only alert type, time, and phone number are sent)",
     "telegramChatId": "Telegram Chat ID (test with a real bot, optional)",
     "relatedPhone": "Related unknown phone number",
     "content": "Message/call content (optional)",
-    "send": "🚨 I'm suspicious — Send now",
+    "send": "🚨 I'm suspicious: Send now",
     "inboxTitle": "Family Bot Inbox (live)",
     "emptyInbox": "No alerts yet. Send one to see what your family receives.",
     "hiddenContent": "Content hidden (consent not given)",
@@ -122,7 +122,7 @@
     "quizCorrect": "Correct! You have understood this lesson.",
     "quizIncorrect": "Not quite. The correct answer is:",
     "certModalTitle": "Digital Safety Certificate",
-    "certModalDesc": "Awarded by ScamKill — QuadDrake",
+    "certModalDesc": "Awarded by ScamKill · QuadDrake",
     "congrats": "Congratulations on finishing every safety lesson!"
   },
   "circle": {

@@ -8,8 +8,8 @@ interface Props {
 }
 
 const {
-  title = 'ScamKill — Lá chắn AI chống lừa đảo qua điện thoại cho người cao tuổi',
-  description = 'ScamKill giúp người cao tuổi và gia đình cùng chống lừa đảo: cảnh báo trước khi bắt máy, phân tích tin nhắn đáng ngờ, Mã gia đình và báo người thân 1-chạm qua SMS, Zalo, Telegram.',
+  title = 'ScamKill: an AI shield against phone scams for older adults',
+  description = 'ScamKill helps older adults and their families stop phone scams together: warn before pickup, analyze suspicious messages, and alert a trusted person in one tap over SMS, Zalo, and Telegram.',
   path = '/',
 } = Astro.props;
 
@@ -18,7 +18,7 @@ const ogImage = canonical ? new URL('/favicon.svg', canonical).toString() : unde
 ---
 
 <!doctype html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,7 +31,7 @@ const ogImage = canonical ? new URL('/favicon.svg', canonical).toString() : unde
     <meta name="format-detection" content="telephone=no" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
@@ -45,15 +45,23 @@ const ogImage = canonical ? new URL('/favicon.svg', canonical).toString() : unde
     <link rel="preconnect" href="https://scamkill-pwa.9ez.workers.dev" />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@600;700;800&family=Lexend:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;700;800&display=swap"
     />
+    <script is:inline>
+      try {
+        document.documentElement.lang = localStorage.getItem('scamkill.lang') === 'vi' ? 'vi' : 'en';
+      } catch (error) {
+        document.documentElement.lang = 'en';
+      }
+    </script>
   </head>
   <body>
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-cream-50"
     >
-      Bỏ qua điều hướng
+      <span class="lang-en">Skip to main content</span>
+      <span class="lang-vi">Bỏ qua điều hướng</span>
     </a>
     <slot />
   </body>

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -40,10 +41,10 @@ import type {
   ScamKillScenario,
 } from '@/api/scamkill/types';
 import { redact } from '@/lib/redact';
-import { t } from '@/i18n';
+import { alertReceiptSummary, localizeCallOutput, t } from '@/i18n';
 import { getDialect, useLanguageDialect } from '@/i18n/regional';
 import { Accessibility } from '@/theme/tokens';
-import { Spacing } from '@/constants/theme';
+import { Spacing, Fonts } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 const client = createAnalyzeClient();
@@ -55,6 +56,36 @@ export default function CompanionScreen() {
   const { isWide } = useResponsive();
   const [dialect] = useLanguageDialect();
   const isEn = dialect === 'en';
+  const heroRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    let ctx: { revert: () => void } | undefined;
+    let cancelled = false;
+
+    void import('gsap').then(({ default: gsap }) => {
+      if (cancelled) return;
+      const scope = heroRef.current as unknown as Element | null;
+      const children = scope ? Array.from(scope.children) : [];
+      if (!scope || children.length === 0) return;
+
+      ctx = gsap.context(() => {
+        gsap.from(children, {
+          y: 18,
+          opacity: 0,
+          duration: 0.55,
+          stagger: 0.07,
+          ease: 'power2.out',
+          clearProps: 'transform,opacity',
+        });
+      }, scope);
+    });
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
+  }, []);
 
   const [mode, setMode] = useState<Mode>('text');
   const [value, setValue] = useState('');
@@ -92,7 +123,7 @@ export default function CompanionScreen() {
     try {
       setResult(await client.analyze(input));
     } catch {
-      setError(t('common.error'));
+      setError('common.error');
     } finally {
       setLoading(false);
     }
@@ -147,6 +178,7 @@ export default function CompanionScreen() {
     setCallAlertBusy(true);
     setCallAlertError(null);
     try {
+      const localized = localizeCallOutput(callOutput, isEn);
       const receipt = await dispatchFamilyAlert({
         alertType:
           scenario.id === 'ba-lan-30m' || scenario.id === 'zalo-voice-clone'
@@ -156,13 +188,13 @@ export default function CompanionScreen() {
         channels: ['sms', 'zalo', 'telegram'],
         consentToShareContent: shareTranscriptConsent,
         messageOrCallContent: shareTranscriptConsent
-          ? `${callOutput.shortReason}. ${callOutput.reasons.join(' ')}`
+          ? `${localized.shortReason}. ${localized.reasons.join(' ')}`
           : undefined,
       });
       setCallReceipt(receipt);
       setCallModalVisible(false);
     } catch {
-      setCallAlertError(t('common.error'));
+      setCallAlertError('common.error');
     } finally {
       setCallAlertBusy(false);
     }
@@ -269,7 +301,7 @@ export default function CompanionScreen() {
 
       {loading && <ActivityIndicator style={styles.loader} size="large" color={theme.primaryAction} />}
       {error && (
-        <ThemedText style={[styles.body, { color: theme.riskHigh }]}>{error}</ThemedText>
+        <ThemedText style={[styles.body, { color: theme.riskHigh }]}>{t(error)}</ThemedText>
       )}
 
       <SimplifiedGlossary />
@@ -282,18 +314,20 @@ export default function CompanionScreen() {
     <PageContainer>
       <PwaInstallBanner />
 
-      <ThemedText style={[styles.brandTitle, { color: theme.text }]}>{t('home.brandTitle')}</ThemedText>
-      <ThemedText style={[styles.brandSubtitle, { color: theme.textSecondary }]}>
-        {t('home.brandSubtitle')}
-      </ThemedText>
+      <View ref={heroRef}>
+        <ThemedText style={[styles.brandTitle, { color: theme.text }]}>{t('home.brandTitle')}</ThemedText>
+        <ThemedText style={[styles.brandSubtitle, { color: theme.textSecondary }]}>
+          {t('home.brandSubtitle')}
+        </ThemedText>
 
-      <ProtectionLoopBar />
+        <ProtectionLoopBar />
 
-      <ScenarioDrawer onSelectScenario={handleScenarioSelect} />
+        <ScenarioDrawer onSelectScenario={handleScenarioSelect} />
+      </View>
 
       {callReceipt && <ReceiptSummary receipt={callReceipt} />}
       {callAlertError && (
-        <ThemedText style={[styles.body, { color: theme.riskHigh }]}>{callAlertError}</ThemedText>
+        <ThemedText style={[styles.body, { color: theme.riskHigh }]}>{t(callAlertError)}</ThemedText>
       )}
 
       {isWide ? (
@@ -324,18 +358,18 @@ function ProtectionLoopBar() {
   return (
     <View style={[styles.loopCard, { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder }]}>
       <ThemedText style={[styles.loopTitle, { color: theme.primaryAction }]}>{t('home.loopTitle')}</ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.loopRow}>
+      <View style={styles.loopRow}>
         {steps.map((key, index) => (
           <View key={key} style={styles.loopItemWrap}>
             <View style={[styles.loopStep, { backgroundColor: theme.backgroundElement, borderColor: theme.primaryAction }]}>
               <ThemedText style={[styles.loopStepText, { color: theme.text }]}>{t(key)}</ThemedText>
             </View>
             {index < steps.length - 1 && (
-              <Ionicons name="arrow-forward" size={18} color={theme.primaryAction} style={styles.loopArrow} />
+              <Ionicons name="arrow-forward" size={16} color={theme.primaryAction} style={styles.loopArrow} />
             )}
           </View>
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -400,7 +434,7 @@ function ResultCard({ result, scenario, familySafeWord }: { result: AnalyzeOutpu
       });
       setReceipt(nextReceipt);
     } catch {
-      setDispatchError(t('common.error'));
+      setDispatchError('common.error');
     } finally {
       setDispatching(false);
     }
@@ -427,7 +461,7 @@ function ResultCard({ result, scenario, familySafeWord }: { result: AnalyzeOutpu
         <ThemedText type="subtitle" style={styles.blockTitle}>
           {t('home.reasonsTitle')}
         </ThemedText>
-        {(reasons.length ? reasons : [isEn ? 'No clear red flags found yet — verify with family before acting.' : 'Chưa thấy dấu hiệu rõ ràng — hãy hỏi người thân trước khi làm gì.']).map((reason, index) => (
+        {(reasons.length ? reasons : [isEn ? 'No clear red flags found yet. Verify with family before acting.' : 'Chưa thấy dấu hiệu rõ ràng. Hãy hỏi người thân trước khi làm gì.']).map((reason, index) => (
           <View key={index} style={styles.item}>
             <ThemedText style={[styles.bullet, { color: theme.primaryAction }]}>•</ThemedText>
             <ThemedText style={styles.body}>{reason}</ThemedText>
@@ -472,12 +506,12 @@ function ResultCard({ result, scenario, familySafeWord }: { result: AnalyzeOutpu
             {dispatching
               ? t('common.loading')
               : isEn
-                ? "🚨 I'm suspicious — Alert family (SMS / Zalo / Telegram)"
-                : '🚨 Tôi nghi ngờ — Báo người thân (SMS / Zalo / Telegram)'}
+                ? "🚨 I'm suspicious: Alert family (SMS / Zalo / Telegram)"
+                : '🚨 Tôi nghi ngờ: Báo người thân (SMS / Zalo / Telegram)'}
           </ThemedText>
         </Pressable>
 
-        {dispatchError && <ThemedText style={{ color: theme.riskHigh }}>{dispatchError}</ThemedText>}
+        {dispatchError && <ThemedText style={{ color: theme.riskHigh }}>{t(dispatchError)}</ThemedText>}
         {receipt && <ReceiptSummary receipt={receipt} />}
       </View>
 
@@ -494,7 +528,7 @@ function ResultCard({ result, scenario, familySafeWord }: { result: AnalyzeOutpu
       <CoolingOffModal
         visible={coolingOffVisible}
         title={isEn ? 'Slow down before acting' : 'Làm chậm trước khi quyết định'}
-        amountOrRiskText={`${t(`risk.${result.riskLevel}`)} — ${concreteAction}`}
+        amountOrRiskText={`${t(`risk.${result.riskLevel}`)}: ${concreteAction}`}
         familySafeWord={familySafeWord}
         callerNumber={relatedPhone}
         onClose={() => setCoolingOffVisible(false)}
@@ -520,11 +554,13 @@ function ReceiptSummary({ receipt }: { receipt: FamilyAlertReceipt }) {
           {isEn ? 'Alert received by family bot' : 'Người thân đã nhận cảnh báo'}
         </ThemedText>
       </View>
-      <ThemedText style={[styles.receiptSummary, { color: theme.text }]}>{receipt.summaryText}</ThemedText>
+      <ThemedText style={[styles.receiptSummary, { color: theme.text }]}>
+        {alertReceiptSummary(receipt, isEn)}
+      </ThemedText>
       <ThemedText style={[styles.receiptMeta, { color: theme.textSecondary }]}>
         {receipt.sharedContentIncluded
           ? isEn ? 'Content shared with consent' : 'Nội dung được chia sẻ theo đồng ý'
-          : isEn ? 'Metadata only — content hidden' : 'Chỉ gửi thông tin — nội dung đã ẩn'}
+          : isEn ? 'Metadata only, content hidden' : 'Chỉ gửi thông tin, nội dung đã ẩn'}
       </ThemedText>
       <View style={styles.badgeRow}>
         {receipt.deliveries.map((delivery) => (
@@ -558,7 +594,7 @@ function Section({ titleKey, items }: { titleKey: string; items: string[] }) {
 const styles = StyleSheet.create({
   paneContent: { flex: 1, gap: Spacing.three },
   mobileWrap: { flex: 1, gap: Spacing.four },
-  brandTitle: { fontSize: Accessibility.fontSize.large, fontWeight: '800', lineHeight: 32 },
+  brandTitle: { fontSize: Accessibility.fontSize.large, fontWeight: '800', lineHeight: 32, fontFamily: Fonts.heading },
   brandSubtitle: { fontSize: Accessibility.fontSize.normal, lineHeight: 26, marginTop: Spacing.one },
   loopCard: {
     borderWidth: 1,
@@ -568,8 +604,8 @@ const styles = StyleSheet.create({
     marginTop: Spacing.three,
   },
   loopTitle: { fontSize: Accessibility.fontSize.normal, fontWeight: '800' },
-  loopRow: { alignItems: 'center', gap: Spacing.one, paddingVertical: Spacing.one },
-  loopItemWrap: { flexDirection: 'row', alignItems: 'center' },
+  loopRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, paddingVertical: Spacing.one },
+  loopItemWrap: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
   loopStep: {
     borderWidth: 1.5,
     borderRadius: Spacing.two,

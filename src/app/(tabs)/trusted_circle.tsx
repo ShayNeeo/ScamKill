@@ -7,10 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { PageContainer } from '@/components/page-container';
 import { SafeWordCard } from '@/components/scamkill/SafeWordCard';
-import { t } from '@/i18n';
+import { alertReceiptSummary, alertTypeLabel, familyReplyNote, t } from '@/i18n';
 import { useLanguageDialect } from '@/i18n/regional';
 import { Accessibility } from '@/theme/tokens';
-import { Spacing } from '@/constants/theme';
+import { Spacing, Fonts } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import {
   dispatchFamilyAlert,
@@ -66,7 +66,7 @@ export default function TrustedCircleScreen() {
     try {
       setInbox(await getBotInbox());
     } catch {
-      setError(t('common.error'));
+      setError('common.error');
     } finally {
       setInboxLoading(false);
     }
@@ -87,7 +87,7 @@ export default function TrustedCircleScreen() {
   async function onDispatch() {
     if (busy) return;
     if (channels.length === 0) {
-      setError(t('trusted.requiredChannel'));
+      setError('trusted.requiredChannel');
       return;
     }
 
@@ -108,7 +108,7 @@ export default function TrustedCircleScreen() {
       setContent('');
       await refreshInbox();
     } catch {
-      setError(t('common.error'));
+      setError('common.error');
     } finally {
       setBusy(false);
     }
@@ -131,7 +131,7 @@ export default function TrustedCircleScreen() {
         await refreshInbox();
       }
     } catch {
-      setError(t('common.error'));
+      setError('common.error');
     } finally {
       setReplyBusyId(null);
     }
@@ -228,7 +228,7 @@ export default function TrustedCircleScreen() {
           multiline
         />
 
-        {error && <ThemedText style={[styles.error, { color: theme.riskHigh }]}>{error}</ThemedText>}
+        {error && <ThemedText style={[styles.error, { color: theme.riskHigh }]}>{t(error)}</ThemedText>}
 
         <Pressable
           style={[styles.sendButton, { backgroundColor: theme.riskHigh }, busy && styles.pressed]}
@@ -249,7 +249,9 @@ export default function TrustedCircleScreen() {
                 {t('home.alertSent')}
               </ThemedText>
             </View>
-            <ThemedText style={[styles.receiptBody, { color: theme.text }]}>{receipt.summaryText}</ThemedText>
+            <ThemedText style={[styles.receiptBody, { color: theme.text }]}>
+              {alertReceiptSummary(receipt, isEn)}
+            </ThemedText>
             <View style={styles.badgeRow}>
               {receipt.deliveries.map((delivery) => (
                 <ChannelBadge key={delivery.id} channel={delivery.channel} />
@@ -282,9 +284,14 @@ export default function TrustedCircleScreen() {
               </ThemedText>
             </View>
 
-            <ThemedText style={[styles.messageType, { color: theme.text }]}>{message.alertTypeLabel}</ThemedText>
+            <ThemedText style={[styles.messageType, { color: theme.text }]}>
+              {alertTypeLabel(message.alertType, isEn)}
+            </ThemedText>
             <ThemedText style={[styles.messageMeta, { color: theme.textSecondary }]}>
-              {isEn ? 'Phone' : 'Số điện thoại'}: {message.relatedPhoneNumber} • {isEn ? 'To' : 'Gửi'} {message.recipient}
+              {isEn ? 'Phone' : 'Số điện thoại'}: {message.relatedPhoneNumber} • {isEn ? 'To' : 'Gửi'}{' '}
+              {isEn && message.recipient.includes('Hương')
+                ? 'Hương (Daughter)'
+                : message.recipient}
             </ThemedText>
 
             <View style={[styles.contentBox, { backgroundColor: theme.surfaceCard, borderColor: message.consentGranted ? theme.riskSafe : theme.cardBorder }]}>
@@ -305,9 +312,13 @@ export default function TrustedCircleScreen() {
             {message.familyReply ? (
               <View style={[styles.replyBox, { backgroundColor: theme.riskSafeBg, borderColor: theme.riskSafe }]}>
                 <ThemedText style={[styles.replyFrom, { color: theme.riskSafe }]}>
-                  {message.familyReply.from}
+                  {isEn ? 'Hương (Daughter)' : message.familyReply.from}
                 </ThemedText>
-                <ThemedText style={[styles.replyNote, { color: theme.text }]}>{message.familyReply.note}</ThemedText>
+                <ThemedText style={[styles.replyNote, { color: theme.text }]}>
+                  {isEn
+                    ? familyReplyNote(message.familyReply.action, true)
+                    : message.familyReply.note}
+                </ThemedText>
                 <ThemedText style={[styles.messageMeta, { color: theme.textSecondary }]}>
                   {new Date(message.familyReply.repliedAt).toLocaleTimeString(isEn ? 'en-US' : 'vi-VN')}
                 </ThemedText>
@@ -393,7 +404,7 @@ function ChannelBadge({ channel }: { channel: BotChannel }) {
 }
 
 const styles = StyleSheet.create({
-  screenTitle: { fontSize: Accessibility.fontSize.large, fontWeight: '800', lineHeight: 32 },
+  screenTitle: { fontSize: Accessibility.fontSize.large, fontWeight: '800', lineHeight: 32, fontFamily: Fonts.heading },
   subtitle: { fontSize: Accessibility.fontSize.normal, lineHeight: 26, marginVertical: Spacing.two },
   panel: { borderWidth: 1, borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.three, marginTop: Spacing.three },
   panelHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },

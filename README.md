@@ -1,9 +1,9 @@
-# 🛡️ ScamKill — AI Digital Safety Shield for Older Adults & Families
+# 🛡️ ScamKill - AI Digital Safety Shield for Older Adults & Families
 
 > **"Không ai phải đối mặt với lừa đảo một mình."**  
 > *No one has to face a phone scam alone.*
 
-**ScamKill** (by **QuadDraKe** — HITC InnoStar 2026) is a full-stack mobile/PWA & multi-bot protection system designed to help older adults recognize phone and message scams at the exact moment they are pressured to act, while bringing trusted family members into the loop with a single tap.
+**ScamKill** (by **QuadDraKe** - HITC InnoStar 2026) is a full-stack mobile/PWA & multi-bot protection system designed to help older adults recognize phone and message scams at the exact moment they are pressured to act, while bringing trusted family members into the loop with a single tap.
 
 ---
 
@@ -18,7 +18,7 @@
 
 ## 🧠 Product Architecture: Chronological Protection & 4-Step Family Loop
 
-Existing tools (Whoscall, Hiya, nTrust, Vcall ID) only label **who** is calling, while banking alerts trigger too late—when the victim is already psychologically manipulated. **ScamKill** turns warnings into coordinated family action across **3 chronological protection layers** and a **4-Step Family Protection Loop**:
+Existing tools (Whoscall, Hiya, nTrust, Vcall ID) only label **who** is calling, while banking alerts trigger too late - when the victim is already psychologically manipulated. **ScamKill** turns warnings into coordinated family action across **3 chronological protection layers** and a **4-Step Family Protection Loop**:
 
 $$\text{1. Phát hiện (Detect)} \implies \text{2. Làm chậm (Slow Down)} \implies \text{3. Xác minh (Verify)} \implies \text{4. Cùng quyết định (Co-Decide)}$$
 
@@ -49,16 +49,16 @@ flowchart TB
 
 ### Core Features (Section 2.1 Specification)
 
-1. **Feature 1 — Pre-Call Risk Warning (`Tính năng 1: Cảnh báo cuộc gọi từ số có nguy cơ — trước khi bắt máy`):**
+1. **Feature 1 - Pre-Call Risk Warning (`Tính năng 1: Cảnh báo cuộc gọi từ số có nguy cơ - trước khi bắt máy`):**
    - Cross-references incoming callers against **ScamKill Community Reports**, authorized public advisories (**nTrust / Bộ Công an**), and behavioral heuristics (foreign prefixes `+855`/`+856`/`+234`, burst calling, not in contacts).
-   - **Epistemic Honesty Contract:** Displays a calibrated risk state (`Nguy cơ cao`, `Cần cảnh giác`, `Trong danh bạ`, or **`Chưa xác minh`** when data is insufficient)—never claiming 100% certainty without evidence.
-2. **Feature 2 — Suspicious Message Analysis (`Tính năng 2: Phân tích tin nhắn đáng ngờ — khi đọc`):**
+   - **Epistemic Honesty Contract:** Displays a calibrated risk state (`Nguy cơ cao`, `Cần cảnh giác`, `Trong danh bạ`, or **`Chưa xác minh`** when data is insufficient) - never claiming 100% certainty without evidence.
+2. **Feature 2 - Suspicious Message Analysis (`Tính năng 2: Phân tích tin nhắn đáng ngờ - khi đọc`):**
    - Analyzes messages, screenshots, QR codes, and voice transcripts for authority impersonation, artificial urgency (*"trong 24 giờ"*), OTP/money demands, malicious links, and `.apk` install lures.
    - Outputs risk level (`Thấp`, `Trung bình`, `Cao`), **1–3 plain-language Vietnamese reasons**, `0.85x` TTS voice readback for seniors, and a concrete next action (*"Đừng bấm liên kết. Hỏi người thân trước"*).
-3. **Feature 3 — Relative Verification & Family Notification (`Tính năng 3: Xác minh người thân & Báo cho gia đình`):**
-   - **Mechanism 3A — Consent-Gated Multi-Bot Family Alert (`Báo người thân`):** One-tap `"Tôi nghi ngờ"` / `"Kiểm tra"` dispatches alerts via **SMS, Zalo, and Telegram**.
+3. **Feature 3 - Relative Verification & Family Notification (`Tính năng 3: Xác minh người thân & Báo cho gia đình`):**
+   - **Mechanism 3A - Consent-Gated Multi-Bot Family Alert (`Báo người thân`):** One-tap `"Tôi nghi ngờ"` / `"Kiểm tra"` dispatches alerts via **SMS, Zalo, and Telegram**.
      - **PDPD 2025 Privacy Gate:** By default (`consentToShareContent = false`), notifications include **ONLY Alert Type, Timestamp, and Related Phone Number**. Message or call content is shared **only when the senior explicitly grants consent** (and is scrubbed via `redactPii`).
-   - **Mechanism 3B — Voice-Clone Relative Verification (`Xác minh giả giọng người thân`):** Enforces a deterministic 2-step protocol that works today without relying on OS-restricted raw call audio:
+   - **Mechanism 3B - Voice-Clone Relative Verification (`Xác minh giả giọng người thân`):** Enforces a deterministic 2-step protocol that works today without relying on OS-restricted raw call audio:
      1. **Ask the Family Safe-Word (`Hỏi "Mã gia đình"`):** e.g., `"Cây khế ngọt"`.
      2. **Hang up and call back (`Cúp máy và gọi lại số đã lưu`):** Call the relative's saved contact number or video-call on a familiar app.
 4. **Canonical "Kịch bản Bà Lan (30 triệu)" Demo Drawer:**

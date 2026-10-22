@@ -269,7 +269,7 @@ export default function LearningScreen() {
                 {isEn ? 'Digital Certificates & Badges' : 'Bằng khen & Huy hiệu Số'}
               </ThemedText>
               <ThemedText style={[styles.certSub, { color: theme.textSecondary }]}>
-                {isEn ? 'ScamKill — Family Defense Handbook' : 'ScamKill — Cẩm nang Phòng vệ Gia đình'}
+                {isEn ? 'ScamKill · Family Defense Handbook' : 'ScamKill · Cẩm nang Phòng vệ Gia đình'}
               </ThemedText>
             </View>
 

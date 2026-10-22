@@ -12,40 +12,39 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { IncomingCallModal } from '@/components/scamkill/IncomingCallModal';
 import { CoolingOffModal } from '@/components/scamkill/CoolingOffModal';
 import { SafeWordCard } from '@/components/scamkill/SafeWordCard';
-import { ScenarioDrawer } from '@/components/scamkill/ScenarioDrawer';
+import { ScenarioDrawer, getScenarioCopy } from '@/components/scamkill/ScenarioDrawer';
 import {
   checkIncomingCallSync,
   dispatchFamilyAlert,
   getDefaultFamilySafeWord,
 } from '@/api/scamkill/client';
+import {
+  alertReceiptSummary,
+  callSignalLabel,
+  callStatusLabel,
+  localizeCallOutput,
+} from '@/i18n';
+import { useLanguageDialect } from '@/i18n/regional';
+import { Fonts } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import type {
   BotChannel,
   CallCheckInput,
   CallCheckOutput,
   CallRiskStatus,
-  CallSourceSignal,
   FamilyAlertReceipt,
   FamilyAlertType,
   ScamKillScenario,
 } from '@/api/scamkill/types';
 
-const STATUS_META: Record<
+const STATUS_COLORS: Record<
   CallRiskStatus,
-  { label: string; color: string; background: string }
+  { color: string; background: string }
 > = {
-  high_risk: { label: 'Nguy cơ cao', color: '#B91C1C', background: '#FEF2F2' },
-  caution: { label: 'Cần cảnh giác', color: '#D97706', background: '#FFFBEB' },
-  unverified: { label: 'Chưa xác minh', color: '#475569', background: '#F1F5F9' },
-  safe: { label: 'Trong danh bạ', color: '#0F766E', background: '#ECFDF5' },
-};
-
-const SIGNAL_LABELS: Record<CallSourceSignal, string> = {
-  scamkill_community: 'Báo cáo cộng đồng',
-  official_ntrust_boca: 'Nguồn công khai / Bộ Công an',
-  foreign_prefix_rule: 'Đầu số quốc tế lạ',
-  burst_calling_rule: 'Gọi dồn dập',
-  not_in_contacts_rule: 'Không có trong danh bạ',
-  saved_family_contact: 'Số người thân đã lưu',
+  high_risk: { color: '#B91C1C', background: '#FEF2F2' },
+  caution: { color: '#D97706', background: '#FFFBEB' },
+  unverified: { color: '#475569', background: '#F1F5F9' },
+  safe: { color: '#0F766E', background: '#ECFDF5' },
 };
 
 const CHANNEL_LABELS: Record<BotChannel, string> = {
@@ -54,20 +53,23 @@ const CHANNEL_LABELS: Record<BotChannel, string> = {
   telegram: 'Telegram',
 };
 
-const DELIVERY_LABELS: Record<string, string> = {
+const DELIVERY_LABELS_EN: Record<string, string> = {
+  delivered: 'Delivered',
+  replied_safe: 'Family confirmed safe',
+  replied_scam_blocked: 'Family confirmed scam',
+};
+
+const DELIVERY_LABELS_VI: Record<string, string> = {
   delivered: 'Đã gửi',
   replied_safe: 'Người thân xác nhận an toàn',
   replied_scam_blocked: 'Người thân xác nhận lừa đảo',
 };
 
-const EPISTEMIC_NOTE =
-  'Giới hạn: hệ thống đưa ra mức rủi ro chứ không khẳng định chắc chắn 100%; khi dữ liệu chưa đủ sẽ hiển thị Chưa xác minh';
-
 const PRESETS = [
-  { label: '👵 Bà Lan · 0918 765 432', phone: '0918765432', inContacts: false },
-  { label: '🚨 +855 12 345 678', phone: '+85512345678', inContacts: false },
-  { label: '🏦 1900 5555 55', phone: '19005555555', inContacts: false },
-  { label: '👩 Con gái · 0901 234 567', phone: '0901234567', inContacts: true },
+  { label: '👵 Bà Lan · 0918 765 432', labelEn: '👵 Grandma Lan · 0918 765 432', phone: '0918765432', inContacts: false },
+  { label: '🚨 +855 12 345 678', labelEn: '🚨 +855 12 345 678', phone: '+85512345678', inContacts: false },
+  { label: '🏦 1900 5555 55', labelEn: '🏦 1900 5555 55', phone: '19005555555', inContacts: false },
+  { label: '👩 Con gái · 0901 234 567', labelEn: '👩 Daughter · 0901 234 567', phone: '0901234567', inContacts: true },
 ];
 
 function pickAlertType(
@@ -83,6 +85,10 @@ function pickAlertType(
 }
 
 export default function CallShieldScreen() {
+  const theme = useTheme();
+  const [dialect] = useLanguageDialect();
+  const isEn = dialect === 'en';
+
   const [phoneNumber, setPhoneNumber] = React.useState('0918765432');
   const [inContacts, setInContacts] = React.useState(false);
   const [burstCallCount, setBurstCallCount] = React.useState(2);
@@ -94,8 +100,8 @@ export default function CallShieldScreen() {
   const [shareContent, setShareContent] = React.useState(false);
   const [sending, setSending] = React.useState(false);
   const [receipt, setReceipt] = React.useState<FamilyAlertReceipt | null>(null);
-  const [sendError, setSendError] = React.useState<string | null>(null);
-  const [demoNotice, setDemoNotice] = React.useState<string | null>(null);
+  const [sendError, setSendError] = React.useState(false);
+  const [demoScenario, setDemoScenario] = React.useState<ScamKillScenario | null>(null);
 
   const liveInput = React.useMemo<CallCheckInput | null>(() => {
     const trimmed = phoneNumber.trim();
@@ -117,27 +123,26 @@ export default function CallShieldScreen() {
 
   const sendAlert = async (output: CallCheckOutput, consent: boolean) => {
     setSending(true);
-    setSendError(null);
+    setSendError(false);
     try {
-      const transcript = scenario?.callInput?.spokenTranscriptPreview;
-      const contentParts = [output.shortReason, transcript].filter(
+      const outputCopy = localizeCallOutput(output, isEn);
+      const transcript = scenario ? getScenarioCopy(scenario, isEn).transcript : undefined;
+      const contentParts = [outputCopy.shortReason, transcript].filter(
         (part): part is string => Boolean(part)
       );
       const alertReceipt = await dispatchFamilyAlert({
-        seniorName: 'Bà Lan',
+        seniorName: isEn ? 'Mrs. Lan' : 'Bà Lan',
         alertType: pickAlertType(output, scenario?.id),
         relatedPhoneNumber: output.normalizedNumber,
         timestamp: new Date().toISOString(),
         channels: ['sms', 'zalo', 'telegram'],
         consentToShareContent: consent,
         messageOrCallContent: consent ? contentParts.join(' · ') : undefined,
-        recipientNames: ['Chị Hương (Con gái)'],
+        recipientNames: [isEn ? 'Hương (Daughter)' : 'Chị Hương (Con gái)'],
       });
       setReceipt(alertReceipt);
     } catch {
-      setSendError(
-        'Không gửi được cảnh báo lúc này. Hãy thử lại hoặc gọi trực tiếp cho con cháu.'
-      );
+      setSendError(true);
     } finally {
       setSending(false);
     }
@@ -146,15 +151,13 @@ export default function CallShieldScreen() {
   const handleScenarioSelect = (next: ScamKillScenario) => {
     setScenario(next);
     setReceipt(null);
-    setSendError(null);
+    setSendError(false);
     setShareContent(false);
     if (!next.callInput) {
-      setDemoNotice(
-        `“${next.title}” thuộc Tính năng 2 (phân tích tin nhắn) — hãy chạy kịch bản này ở màn hình Tin nhắn.`
-      );
+      setDemoScenario(next);
       return;
     }
-    setDemoNotice(null);
+    setDemoScenario(null);
     setPhoneNumber(next.callInput.phoneNumber);
     setInContacts(next.callInput.inContacts ?? false);
     setBurstCallCount(next.callInput.burstCallCount ?? 1);
@@ -166,7 +169,7 @@ export default function CallShieldScreen() {
     setPhoneNumber(next);
     setScenario(null);
     setReceipt(null);
-    setDemoNotice(null);
+    setDemoScenario(null);
     setShareContent(false);
   };
 
@@ -175,7 +178,7 @@ export default function CallShieldScreen() {
     setInContacts(preset.inContacts);
     setScenario(null);
     setReceipt(null);
-    setDemoNotice(null);
+    setDemoScenario(null);
     setShareContent(false);
   };
 
@@ -187,53 +190,60 @@ export default function CallShieldScreen() {
     void sendAlert(output, consent);
   };
 
-  const statusMeta = result ? STATUS_META[result.status] : null;
+  const statusMeta = result ? STATUS_COLORS[result.status] : null;
+  const localizedResult = result ? localizeCallOutput(result, isEn) : null;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>TÍNH NĂNG 1 · TRƯỚC KHI BẮT MÁY</Text>
-          <Text style={styles.title}>🛡 Cảnh báo cuộc gọi từ số có nguy cơ</Text>
-          <Text style={styles.subtitle}>
-            Nhập hoặc chọn số để xem mức rủi ro trước khi nghe máy. ScamKill chỉ đưa ra mức rủi
-            ro, không khẳng định chắc chắn 100%.
+          <Text style={[styles.title, { color: theme.text }]}>
+            {isEn ? '🛡 Call warning for risky numbers' : '🛡 Cảnh báo cuộc gọi từ số có nguy cơ'}
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+            {isEn
+              ? 'Enter or pick a number to see the risk level before you answer. ScamKill gives a risk level, not a 100% certainty.'
+              : 'Nhập hoặc chọn số để xem mức rủi ro trước khi nghe máy. ScamKill chỉ đưa ra mức rủi ro, không khẳng định chắc chắn 100%.'}
           </Text>
         </View>
 
         <ScenarioDrawer onSelectScenario={handleScenarioSelect} />
 
-        <View style={styles.inputCard}>
-          <Text style={styles.fieldLabel}>Số đang gọi đến</Text>
+        <View style={[styles.inputCard, { backgroundColor: theme.surfaceCard, borderColor: theme.cardBorder }]}>
+          <Text style={[styles.fieldLabel, { color: theme.text }]}>
+            {isEn ? 'Calling number' : 'Số đang gọi đến'}
+          </Text>
           <TextInput
             value={phoneNumber}
             onChangeText={handlePhoneChange}
-            placeholder="Ví dụ: 0918 765 432"
+            placeholder={isEn ? 'For example: 0918 765 432' : 'Ví dụ: 0918 765 432'}
             placeholderTextColor="#64748B"
             keyboardType="phone-pad"
             autoCorrect={false}
             maxLength={20}
-            style={styles.input}
-            accessibilityLabel="Nhập số điện thoại đang gọi đến"
+            style={[styles.input, { color: theme.text, backgroundColor: theme.surfaceElevated, borderColor: theme.cardBorder }]}
+            accessibilityLabel={isEn ? 'Enter the incoming phone number' : 'Nhập số điện thoại đang gọi đến'}
           />
 
-          <Text style={styles.presetLabel}>Chọn nhanh:</Text>
+          <Text style={[styles.presetLabel, { color: theme.textSecondary }]}>{isEn ? 'Quick pick:' : 'Chọn nhanh:'}</Text>
           <View style={styles.presetWrap}>
             {PRESETS.map((preset) => (
               <Pressable
                 key={preset.phone}
                 onPress={() => handlePreset(preset)}
                 accessibilityRole="button"
-                accessibilityLabel={`Dùng số ${preset.phone}`}
+                accessibilityLabel={isEn ? `Use number ${preset.phone}` : `Dùng số ${preset.phone}`}
                 style={({ pressed }) => [
                   styles.presetChip,
                   phoneNumber.replace(/\s/g, '') === preset.phone && styles.presetChipActive,
                   pressed && styles.pressed,
                 ]}>
-                <Text style={styles.presetChipText}>{preset.label}</Text>
+                <Text style={styles.presetChipText}>
+                  {isEn ? preset.labelEn : preset.label}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -243,77 +253,91 @@ export default function CallShieldScreen() {
               onPress={() => setInContacts((v) => !v)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: inContacts }}
-              accessibilityLabel="Số có trong danh bạ"
+              accessibilityLabel={isEn ? 'Number is in contacts' : 'Số có trong danh bạ'}
               style={({ pressed }) => [styles.toggleRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, inContacts && styles.checkboxChecked]}>
                 {inContacts ? <Text style={styles.checkTick}>✓</Text> : null}
               </View>
-              <Text style={styles.toggleText}>Số có trong danh bạ</Text>
+              <Text style={[styles.toggleText, { color: theme.text }]}>
+                {isEn ? 'Number is in my contacts' : 'Số có trong danh bạ'}
+              </Text>
             </Pressable>
 
             <Pressable
               onPress={() => setBurstCallCount((v) => (v > 1 ? 1 : 3))}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: burstCallCount > 1 }}
-              accessibilityLabel="Gọi dồn dập nhiều lần"
+              accessibilityLabel={isEn ? 'Calling repeatedly in a burst' : 'Gọi dồn dập nhiều lần'}
               style={({ pressed }) => [styles.toggleRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, burstCallCount > 1 && styles.checkboxChecked]}>
                 {burstCallCount > 1 ? <Text style={styles.checkTick}>✓</Text> : null}
               </View>
-              <Text style={styles.toggleText}>Gọi dồn dập nhiều lần</Text>
+              <Text style={[styles.toggleText, { color: theme.text }]}>
+                {isEn ? 'Calling repeatedly in a burst' : 'Gọi dồn dập nhiều lần'}
+              </Text>
             </Pressable>
 
             <Pressable
               onPress={() => setUrgentMoney((v) => !v)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: urgentMoney }}
-              accessibilityLabel="Xin chuyển tiền khẩn cấp"
+              accessibilityLabel={isEn ? 'Asks for urgent money' : 'Xin chuyển tiền khẩn cấp'}
               style={({ pressed }) => [styles.toggleRow, pressed && styles.pressed]}>
               <View style={[styles.checkbox, urgentMoney && styles.checkboxChecked]}>
                 {urgentMoney ? <Text style={styles.checkTick}>✓</Text> : null}
               </View>
-              <Text style={styles.toggleText}>Xin chuyển tiền khẩn cấp</Text>
+              <Text style={[styles.toggleText, { color: theme.text }]}>
+                {isEn ? 'Asks for urgent money' : 'Xin chuyển tiền khẩn cấp'}
+              </Text>
             </Pressable>
           </View>
         </View>
 
-        {demoNotice ? (
+        {demoScenario ? (
           <View style={styles.noticeCard} accessibilityRole="alert">
-            <Text style={styles.noticeText}>{demoNotice}</Text>
+            <Text style={styles.noticeText}>
+              {isEn
+                ? `"${getScenarioCopy(demoScenario, true).title}" belongs to Feature 2 (message analysis). Run this scenario on the Messages screen.`
+                : `“${getScenarioCopy(demoScenario, false).title}” thuộc Tính năng 2 (phân tích tin nhắn). Hãy chạy kịch bản này ở màn hình Tin nhắn.`}
+            </Text>
           </View>
         ) : null}
 
-        {result && statusMeta ? (
+        {result && statusMeta && localizedResult ? (
           <View style={[styles.resultCard, { backgroundColor: statusMeta.background }]}>
             <View style={styles.resultTopRow}>
               <Text style={[styles.riskBadge, { color: statusMeta.color }]}>
-                {statusMeta.label}
+                {callStatusLabel(result.status, isEn)}
               </Text>
               <Text style={styles.normalizedNumber}>{result.normalizedNumber}</Text>
             </View>
-            <Text style={styles.badgeLabel}>{result.badgeLabel}</Text>
-            <Text style={styles.shortReason}>{result.shortReason}</Text>
+            <Text style={styles.badgeLabel}>{localizedResult.badgeLabel}</Text>
+            <Text style={styles.shortReason}>{localizedResult.shortReason}</Text>
 
             <Text style={styles.metaLine}>
-              {result.communityReportCount} báo cáo cộng đồng · {result.signals.length} tín hiệu
-              trùng khớp
+              {isEn
+                ? `${result.communityReportCount} community reports · ${result.signals.length} matching signals`
+                : `${result.communityReportCount} báo cáo cộng đồng · ${result.signals.length} tín hiệu trùng khớp`}
             </Text>
             <View style={styles.signalWrap}>
               {result.signals.map((signal) => (
                 <View key={signal} style={styles.signalChip}>
-                  <Text style={styles.signalChipText}>{SIGNAL_LABELS[signal]}</Text>
+                  <Text style={styles.signalChipText}>
+                    {callSignalLabel(signal, isEn)}
+                  </Text>
                 </View>
               ))}
             </View>
 
             <View style={styles.noteBox}>
-              <Text style={styles.noteText}>{EPISTEMIC_NOTE}</Text>
+              <Text style={styles.noteText}>{localizedResult.epistemicNote}</Text>
             </View>
 
             {result.coolingOff ? (
               <Text style={styles.coolingHint}>
-                Đề xuất: bật Khoảng dừng an toàn {result.coolingOffHours} giờ trước khi chuyển
-                tiền.
+                {isEn
+                  ? `Suggested: keep the ${result.coolingOffHours} hour safety pause on before transferring money.`
+                  : `Đề xuất: bật Khoảng dừng an toàn ${result.coolingOffHours} giờ trước khi chuyển tiền.`}
               </Text>
             ) : null}
 
@@ -321,18 +345,22 @@ export default function CallShieldScreen() {
               <Pressable
                 onPress={() => setIncomingVisible(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Mô phỏng cuộc gọi đến"
+                accessibilityLabel={isEn ? 'Simulate an incoming call' : 'Mô phỏng cuộc gọi đến'}
                 style={({ pressed }) => [styles.callButton, pressed && styles.pressed]}>
-                <Text style={styles.callButtonText}>📞 Mô phỏng cuộc gọi đến</Text>
+                <Text style={styles.callButtonText}>
+                  {isEn ? '📞 Simulate incoming call' : '📞 Mô phỏng cuộc gọi đến'}
+                </Text>
               </Pressable>
 
               <Pressable
                 onPress={() => setCoolingVisible(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Mở khoảng dừng an toàn 60 giây"
+                accessibilityLabel={isEn ? 'Open the 60 second safety pause' : 'Mở khoảng dừng an toàn 60 giây'}
                 style={({ pressed }) => [styles.coolingButton, pressed && styles.pressed]}>
                 <Text style={styles.coolingButtonText}>
-                  ⏸ Khoảng dừng an toàn 60 giây (Khoá 48h)
+                  {isEn
+                    ? '⏸ 60 second safety pause (48h lock)'
+                    : '⏸ Khoảng dừng an toàn 60 giây (Khoá 48h)'}
                 </Text>
               </Pressable>
 
@@ -340,13 +368,19 @@ export default function CallShieldScreen() {
                 onPress={() => setShareContent((v) => !v)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: shareContent }}
-                accessibilityLabel="Đồng ý gửi kèm nội dung cuộc gọi cho người thân"
+                accessibilityLabel={
+                  isEn
+                    ? 'Agree to share the call content with family'
+                    : 'Đồng ý gửi kèm nội dung cuộc gọi cho người thân'
+                }
                 style={({ pressed }) => [styles.consentRow, pressed && styles.pressed]}>
                 <View style={[styles.checkbox, shareContent && styles.checkboxChecked]}>
                   {shareContent ? <Text style={styles.checkTick}>✓</Text> : null}
                 </View>
                 <Text style={styles.consentText}>
-                  Đồng ý gửi kèm nội dung cuộc gọi cho người thân (mặc định TẮT)
+                  {isEn
+                    ? 'Agree to share call content with family (OFF by default)'
+                    : 'Đồng ý gửi kèm nội dung cuộc gọi cho người thân (mặc định TẮT)'}
                 </Text>
               </Pressable>
 
@@ -355,7 +389,11 @@ export default function CallShieldScreen() {
                 disabled={sending}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: sending, busy: sending }}
-                accessibilityLabel="Gửi cảnh báo ngay qua SMS, Zalo, Telegram"
+                accessibilityLabel={
+                  isEn
+                    ? 'Send an alert now via SMS, Zalo, Telegram'
+                    : 'Gửi cảnh báo ngay qua SMS, Zalo, Telegram'
+                }
                 style={({ pressed }) => [
                   styles.alertButton,
                   sending && styles.disabledButton,
@@ -363,8 +401,12 @@ export default function CallShieldScreen() {
                 ]}>
                 <Text style={styles.alertButtonText}>
                   {sending
-                    ? 'Đang gửi cảnh báo…'
-                    : '📨 Gửi cảnh báo ngay (SMS · Zalo · Telegram)'}
+                    ? isEn
+                      ? 'Sending alert...'
+                      : 'Đang gửi cảnh báo…'
+                    : isEn
+                      ? '📨 Send alert now (SMS · Zalo · Telegram)'
+                      : '📨 Gửi cảnh báo ngay (SMS · Zalo · Telegram)'}
                 </Text>
               </Pressable>
             </View>
@@ -372,22 +414,31 @@ export default function CallShieldScreen() {
         ) : (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>
-              Nhập số điện thoại để xem mức rủi ro. Khi chưa đủ dữ liệu, kết quả sẽ hiển thị
-              “Chưa xác minh”.
+              {isEn
+                ? 'Enter a phone number to see the risk level. When data is missing, the result shows "Unverified".'
+                : 'Nhập số điện thoại để xem mức rủi ro. Khi chưa đủ dữ liệu, kết quả sẽ hiển thị “Chưa xác minh”.'}
             </Text>
           </View>
         )}
 
         {sendError ? (
           <View style={styles.errorCard} accessibilityRole="alert">
-            <Text style={styles.errorText}>{sendError}</Text>
+            <Text style={styles.errorText}>
+              {isEn
+                ? 'Could not send the alert right now. Try again or call your family directly.'
+                : 'Không gửi được cảnh báo lúc này. Hãy thử lại hoặc gọi trực tiếp cho con cháu.'}
+            </Text>
           </View>
         ) : null}
 
         {receipt ? (
           <View style={styles.receiptCard}>
-            <Text style={styles.receiptTitle}>✅ Đã gửi cảnh báo cho người thân</Text>
-            <Text style={styles.receiptSummary}>{receipt.summaryText}</Text>
+            <Text style={styles.receiptTitle}>
+              {isEn ? '✅ Alert sent to your family' : '✅ Đã gửi cảnh báo cho người thân'}
+            </Text>
+            <Text style={styles.receiptSummary}>
+              {alertReceiptSummary(receipt, isEn)}
+            </Text>
             {receipt.deliveries.map((delivery) => (
               <View key={delivery.id} style={styles.deliveryRow}>
                 <Text style={styles.deliveryChannel}>
@@ -395,14 +446,18 @@ export default function CallShieldScreen() {
                 </Text>
                 <Text style={styles.deliveryRecipient}>{delivery.recipient}</Text>
                 <Text style={styles.deliveryStatus}>
-                  {DELIVERY_LABELS[delivery.status] || delivery.status}
+                  {(isEn ? DELIVERY_LABELS_EN : DELIVERY_LABELS_VI)[delivery.status] || delivery.status}
                 </Text>
               </View>
             ))}
             <Text style={styles.receiptConsent}>
               {receipt.consentToShareContent
-                ? 'Đã gửi kèm nội dung cuộc gọi (bạn đã đồng ý).'
-                : 'Chỉ gửi loại cảnh báo, thời điểm và số điện thoại (không gửi nội dung).'}
+                ? isEn
+                  ? 'Call content was attached with your consent.'
+                  : 'Đã gửi kèm nội dung cuộc gọi (bạn đã đồng ý).'
+                : isEn
+                  ? 'Only the alert type, time and phone number were sent (no content).'
+                  : 'Chỉ gửi loại cảnh báo, thời điểm và số điện thoại (không gửi nội dung).'}
             </Text>
           </View>
         ) : null}
@@ -414,7 +469,9 @@ export default function CallShieldScreen() {
         />
 
         <Text style={styles.footerNote}>
-          ScamKill · Nguyên tắc 4 bước: Phát hiện → Làm chậm → Xác minh → Cùng quyết định.
+          {isEn
+            ? 'ScamKill · 4-step rule: Notice, slow down, verify, decide together.'
+            : 'ScamKill · Nguyên tắc 4 bước: Phát hiện, làm chậm, xác minh, cùng quyết định.'}
         </Text>
       </ScrollView>
 
@@ -429,7 +486,7 @@ export default function CallShieldScreen() {
 
       <CoolingOffModal
         visible={coolingVisible}
-        amountOrRiskText={result ? result.shortReason : undefined}
+        amountOrRiskText={localizedResult ? localizedResult.shortReason : undefined}
         familySafeWord={safeWord}
         callerNumber={result?.normalizedNumber || phoneNumber.trim()}
         onClose={() => setCoolingVisible(false)}
@@ -466,6 +523,7 @@ const styles = StyleSheet.create({
     lineHeight: 40,
     fontWeight: '900',
     color: '#0F172A',
+    fontFamily: Fonts.heading,
   },
   subtitle: {
     fontSize: 18,

@@ -3,6 +3,7 @@ import {
   Animated,
   Easing,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,12 +18,14 @@ import {
   getDefaultFamilySafeWord,
 } from '@/api/scamkill/client';
 import { Fonts } from '@/constants/theme';
+import { callSignalLabel, callStatusLabel, localizeCallOutput } from '@/i18n';
+import { useLanguageDialect } from '@/i18n/regional';
 import { hapticWarning } from '@/lib/haptics';
+import { getScenarioCopy } from './ScenarioDrawer';
 import type {
   CallCheckInput,
   CallCheckOutput,
   CallRiskStatus,
-  CallSourceSignal,
   ScamKillScenario,
 } from '@/api/scamkill/types';
 
@@ -35,7 +38,8 @@ export interface IncomingCallModalProps {
   onTriggerVerifyAndAlert?: (callOutput: CallCheckOutput, shareTranscriptConsent: boolean) => void;
 }
 
-const DEFAULT_CLAIM = 'Mẹ ơi con bị tai nạn, chuyển giúp con 30 triệu gấp!';
+const DEFAULT_CLAIM_VI = 'Mẹ ơi con bị tai nạn, chuyển giúp con 30 triệu gấp!';
+const DEFAULT_CLAIM_EN = 'Mom, I had an accident, please send 30 million right away!';
 
 const FALLBACK_INPUT: CallCheckInput = {
   phoneNumber: '0918 765 432',
@@ -43,59 +47,39 @@ const FALLBACK_INPUT: CallCheckInput = {
   inContacts: false,
   burstCallCount: 2,
   asksForUrgentMoney: true,
-  spokenTranscriptPreview: DEFAULT_CLAIM,
+  spokenTranscriptPreview: DEFAULT_CLAIM_VI,
 };
 
-const RISK_META: Record<
-  CallRiskStatus,
-  { label: string; color: string; textColor: string }
-> = {
+const RISK_META: Record<CallRiskStatus, { color: string; textColor: string }> = {
   high_risk: {
-    label: 'Nguy cơ cao',
     color: '#B91C1C',
     textColor: '#FFFFFF',
   },
   caution: {
-    label: 'Cần cảnh giác',
     color: '#D97706',
     textColor: '#1C1917',
   },
   unverified: {
-    label: 'Chưa xác minh',
     color: '#475569',
     textColor: '#FFFFFF',
   },
   safe: {
-    label: 'Trong danh bạ',
     color: '#0F766E',
     textColor: '#FFFFFF',
   },
 };
 
-const SIGNAL_LABELS: Record<CallSourceSignal, string> = {
-  scamkill_community: 'Báo cáo cộng đồng ScamKill',
-  official_ntrust_boca: 'Nguồn công khai / Bộ Công an',
-  foreign_prefix_rule: 'Đầu số quốc tế lạ',
-  burst_calling_rule: 'Gọi dồn dập nhiều lần',
-  not_in_contacts_rule: 'Không có trong danh bạ',
-  saved_family_contact: 'Số người thân đã lưu',
-};
-
-function bannerHeadline(output: CallCheckOutput): string {
-  if (output.status === 'high_risk') {
-    return output.badgeLabel.toLowerCase().includes('nguy cơ cao')
-      ? output.badgeLabel
-      : `Nguy cơ cao: ${output.badgeLabel}`;
-  }
+function bannerHeadline(output: CallCheckOutput, isEn: boolean): string {
+  if (output.status === 'high_risk') return localizeCallOutput(output, isEn).badgeLabel;
   if (output.status === 'caution') {
-    return output.signals.includes('saved_family_contact')
-      ? output.badgeLabel
-      : 'Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, mình khoan đã và kiểm tra lại nhé.';
+    return localizeCallOutput(output, isEn).badgeLabel;
   }
   if (output.status === 'unverified') {
-    return 'Mình chưa kiểm tra được người này. Mình tuyệt đối không chuyển tiền và không đọc mã OTP nhé.';
+    return localizeCallOutput(output, isEn).badgeLabel;
   }
-  return 'Người này có trong danh bạ của mình. Nhưng nếu họ xin chuyển tiền gấp, mình vẫn kiểm tra lại nhé.';
+  return isEn
+    ? 'This number is in your contacts. If they ask for urgent money, verify anyway.'
+    : 'Người này có trong danh bạ của mình. Nhưng nếu họ xin chuyển tiền gấp, mình vẫn kiểm tra lại nhé.';
 }
 
 function formatPhoneDisplay(raw: string): string {
@@ -130,6 +114,14 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
   const [speaking, setSpeaking] = React.useState(false);
   const [ringSeconds, setRingSeconds] = React.useState(0);
 
+  const [dialect] = useLanguageDialect();
+  const isEn = dialect === 'en';
+
+  const rootRef = React.useRef<View>(null);
+  const headerRef = React.useRef<View>(null);
+  const bannerRef = React.useRef<View>(null);
+  const footerRef = React.useRef<View>(null);
+
   const rippleA = React.useRef(new Animated.Value(0)).current;
   const rippleB = React.useRef(new Animated.Value(0)).current;
 
@@ -158,17 +150,57 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
     };
   }, [visible, rippleA, rippleB]);
 
+  React.useEffect(() => {
+    if (Platform.OS !== 'web' || !visible) return;
+    let ctx: { revert: () => void } | undefined;
+    let cancelled = false;
+
+    void import('gsap').then(({ default: gsap }) => {
+      if (cancelled) return;
+      const scope = rootRef.current as unknown as Element | null;
+      const targets = [headerRef.current, bannerRef.current, footerRef.current]
+        .filter((node): node is View => Boolean(node))
+        .map((node) => node as unknown as Element);
+      if (!scope || targets.length === 0) return;
+
+      ctx = gsap.context(() => {
+        gsap.from(targets, {
+          y: 24,
+          opacity: 0,
+          duration: 0.5,
+          stagger: 0.09,
+          ease: 'power2.out',
+          clearProps: 'transform,opacity',
+        });
+      }, scope);
+    });
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
+  }, [visible]);
+
   const callOutput = React.useMemo(
     () => resolveCallOutput(callInput, scenario),
     [callInput, scenario]
   );
   const meta = RISK_META[callOutput.status];
-  const headline = bannerHeadline(callOutput);
+  const statusLabel = callStatusLabel(callOutput.status, isEn);
+  const localized = localizeCallOutput(callOutput, isEn);
+  const headline = bannerHeadline(callOutput, isEn);
+  const scenarioCopy = scenario ? getScenarioCopy(scenario, isEn) : null;
   const safeWord = familySafeWord || getDefaultFamilySafeWord();
-  const callerClaim =
-    callInput?.spokenTranscriptPreview ||
-    scenario?.callInput?.spokenTranscriptPreview ||
-    DEFAULT_CLAIM;
+  const callerClaim = isEn
+    ? scenarioCopy?.transcript ?? DEFAULT_CLAIM_EN
+    : callInput?.spokenTranscriptPreview ||
+      scenarioCopy?.transcript ||
+      DEFAULT_CLAIM_VI;
+  const callerHint = isEn
+    ? scenarioCopy?.callerClaim ?? 'Unknown caller'
+    : callInput?.callerClaimedName ||
+      scenarioCopy?.callerClaim ||
+      'Mình chưa rõ người gọi là ai';
 
   React.useEffect(() => {
     if (!visible) {
@@ -199,7 +231,7 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
     setSpeaking(true);
     try {
       Speech.speak(callerClaim, {
-        language: 'vi-VN',
+        language: isEn ? 'en-US' : 'vi-VN',
         rate: 0.85,
         pitch: 1,
         onDone: () => setSpeaking(false),
@@ -218,16 +250,24 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
       presentationStyle="fullScreen"
       statusBarTranslucent
       onRequestClose={onClose}>
-      <View style={styles.root}>
+      <View style={styles.root} ref={rootRef}>
         <ScrollView
           contentContainerStyle={styles.scrollBody}
           showsVerticalScrollIndicator={false}>
-          <View style={styles.callHeader}>
-            <Text style={styles.callLabel}>📞 Có cuộc gọi đến · ScamKill đang canh chừng</Text>
+          <View style={styles.callHeader} ref={headerRef}>
+            <Text style={styles.callLabel}>
+              {isEn
+                ? '📞 Incoming call · ScamKill is watching'
+                : '📞 Có cuộc gọi đến · ScamKill đang canh chừng'}
+            </Text>
             <Text style={styles.callSource}>
               {scenario?.id === 'zalo-voice-clone'
-                ? 'Cuộc gọi Zalo (bản mô phỏng để tập luyện)'
-                : 'Cuộc gọi điện thoại (bản mô phỏng để tập luyện)'}
+                ? isEn
+                  ? 'Zalo call (practice simulation)'
+                  : 'Cuộc gọi Zalo (bản mô phỏng để tập luyện)'
+                : isEn
+                  ? 'Phone call (practice simulation)'
+                  : 'Cuộc gọi điện thoại (bản mô phỏng để tập luyện)'}
             </Text>
 
             <View style={styles.callerBadge}>
@@ -262,36 +302,35 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
               </View>
             </View>
 
-            <Text style={styles.ringing}>Máy đang đổ chuông… 00:{String(ringSeconds).padStart(2, '0')}</Text>
+            <Text style={styles.ringing}>
+              {isEn ? 'Ringing... 00:' : 'Máy đang đổ chuông… 00:'}
+              {String(ringSeconds).padStart(2, '0')}
+            </Text>
             <Text style={styles.callerNumber} numberOfLines={1} adjustsFontSizeToFit>
               {formatPhoneDisplay(callOutput.phoneNumber)}
             </Text>
-            <Text style={styles.callerHint}>
-              {callInput?.callerClaimedName ||
-                scenario?.callInput?.callerClaimedName ||
-                scenario?.title ||
-                'Mình chưa rõ người gọi là ai'}
-            </Text>
+            <Text style={styles.callerHint}>{callerHint}</Text>
           </View>
 
           <View
+            ref={bannerRef}
             style={[styles.riskBanner, { backgroundColor: meta.color }]}
             accessibilityRole="alert"
-            accessibilityLabel={`Cảnh báo: ${meta.label}. ${headline}`}>
+            accessibilityLabel={`${isEn ? 'Warning' : 'Cảnh báo'}: ${statusLabel}. ${headline}`}>
             <View style={styles.riskBadgeRow}>
               <Text style={[styles.riskBadgeText, { color: meta.textColor }]}>
-                {meta.label.toUpperCase()}
+                {statusLabel.toUpperCase()}
               </Text>
               {callOutput.coolingOff ? (
                 <Text style={[styles.riskPill, { color: meta.textColor }]}>
-                  Khoảng dừng {callOutput.coolingOffHours}h
+                  {isEn ? 'Pause' : 'Khoảng dừng'} {callOutput.coolingOffHours}h
                 </Text>
               ) : null}
             </View>
             <Text style={[styles.riskHeadline, { color: meta.textColor }]}>
               {headline}
             </Text>
-            {callOutput.reasons.slice(0, 3).map((reason) => (
+            {localized.reasons.slice(0, 3).map((reason) => (
               <Text
                 key={reason}
                 style={[styles.riskReason, { color: meta.textColor }]}>
@@ -301,46 +340,72 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
           </View>
 
           <View style={styles.claimCard}>
-            <Text style={styles.sectionLabel}>🗣 Người gọi đang nói (mô phỏng):</Text>
+            <Text style={styles.sectionLabel}>
+              {isEn ? '🗣 The caller is saying (simulated):' : '🗣 Người gọi đang nói (mô phỏng):'}
+            </Text>
             <Text style={styles.claimText}>“{callerClaim}”</Text>
             <Pressable
               onPress={handleSpeakPreview}
               accessibilityRole="button"
-              accessibilityLabel={speaking ? 'Dừng phát thử giọng nói' : 'Nghe thử giọng người gọi'}
+              accessibilityLabel={
+                speaking
+                  ? isEn
+                    ? 'Stop the voice preview'
+                    : 'Dừng phát thử giọng nói'
+                  : isEn
+                    ? 'Listen to the caller voice preview'
+                    : 'Nghe thử giọng người gọi'
+              }
               style={({ pressed }) => [styles.audioButton, pressed && styles.pressed]}>
               <Text style={styles.audioButtonText}>
-                {speaking ? '⏹ Dừng phát thử' : '▶ Nghe thử giọng nói (mô phỏng)'}
+                {speaking
+                  ? isEn
+                    ? '⏹ Stop preview'
+                    : '⏹ Dừng phát thử'
+                  : isEn
+                    ? '▶ Listen to the voice preview (simulated)'
+                    : '▶ Nghe thử giọng nói (mô phỏng)'}
               </Text>
             </Pressable>
             <View style={styles.rndTag}>
               <Text style={styles.rndTagText}>
-                🧪 Lưu ý: Cảnh báo giọng AI chỉ để tham khảo. Mình vẫn hỏi “Mã gia đình” và gọi
-                lại số đã lưu nhé.
+                {isEn
+                  ? '🧪 R&D note: AI voice detection is a hint only. Still ask for the family code and call back the saved number.'
+                  : '🧪 Lưu ý R&D: Cảnh báo giọng AI chỉ để tham khảo. Mình vẫn hỏi “Mã gia đình” và gọi lại số đã lưu nhé.'}
               </Text>
             </View>
           </View>
 
           <View style={styles.signalCard}>
-            <Text style={styles.sectionLabel}>ScamKill đã ghi nhận</Text>
+            <Text style={styles.sectionLabel}>
+              {isEn ? 'What ScamKill found' : 'ScamKill đã ghi nhận'}
+            </Text>
             <Text style={styles.signalCount}>
-              {callOutput.communityReportCount} báo cáo từ cộng đồng · {callOutput.signals.length} dấu hiệu
+              {isEn
+                ? `${callOutput.communityReportCount} community reports · ${callOutput.signals.length} signals`
+                : `${callOutput.communityReportCount} báo cáo từ cộng đồng · ${callOutput.signals.length} dấu hiệu`}
             </Text>
             <View style={styles.signalWrap}>
               {callOutput.signals.map((signal) => (
                 <View key={signal} style={styles.signalChip}>
-                  <Text style={styles.signalChipText}>{SIGNAL_LABELS[signal]}</Text>
+                  <Text style={styles.signalChipText}>
+                    {callSignalLabel(signal, isEn)}
+                  </Text>
                 </View>
               ))}
             </View>
-            <Text style={styles.epistemicNote}>{callOutput.epistemicNote}</Text>
+            <Text style={styles.epistemicNote}>{localized.epistemicNote}</Text>
           </View>
 
           <View style={styles.safeWordCard}>
-            <Text style={styles.safeWordLabel}>Mã gia đình của mình</Text>
+            <Text style={styles.safeWordLabel}>
+              {isEn ? 'Our family code' : 'Mã gia đình của mình'}
+            </Text>
             <Text style={styles.safeWordValue}>“{safeWord}”</Text>
             <Text style={styles.safeWordHint}>
-              Mình hỏi người gọi: “Mã gia đình là gì?”. Người thật sẽ trả lời đúng; kẻ giả giọng
-              AI thì không biết đâu.
+              {isEn
+                ? 'Ask the caller: "What is our family code?" A real relative will answer correctly. An AI voice clone will not know it.'
+                : 'Mình hỏi người gọi: “Mã gia đình là gì?”. Người thật sẽ trả lời đúng; kẻ giả giọng AI thì không biết đâu.'}
             </Text>
           </View>
 
@@ -348,36 +413,50 @@ export function IncomingCallModal(props: IncomingCallModalProps): React.JSX.Elem
             onPress={() => setShareConsent((v) => !v)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: shareConsent }}
-            accessibilityLabel="Đồng ý gửi kèm nội dung cuộc gọi cho người thân"
+            accessibilityLabel={
+              isEn
+                ? 'Agree to share the call content with family'
+                : 'Đồng ý gửi kèm nội dung cuộc gọi cho người thân'
+            }
             style={({ pressed }) => [styles.consentRow, pressed && styles.pressed]}>
             <View style={[styles.checkbox, shareConsent && styles.checkboxChecked]}>
               {shareConsent ? <Text style={styles.checkboxTick}>✓</Text> : null}
             </View>
             <View style={styles.consentBody}>
               <Text style={styles.consentText}>
-                Cho phép gửi kèm nội dung cuộc gọi cho con cháu
+                {isEn
+                  ? 'Allow sharing the call content with my family'
+                  : 'Cho phép gửi kèm nội dung cuộc gọi cho con cháu'}
               </Text>
               <Text style={styles.consentSub}>
-                Mặc định TẮT: chỉ gửi loại cảnh báo, thời gian và số điện thoại.
+                {isEn
+                  ? 'OFF by default: only the alert type, time and phone number are sent.'
+                  : 'Mặc định TẮT: chỉ gửi loại cảnh báo, thời gian và số điện thoại.'}
               </Text>
             </View>
           </Pressable>
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={styles.footer} ref={footerRef}>
           <Pressable
             onPress={() => onTriggerVerifyAndAlert?.(callOutput, shareConsent)}
             accessibilityRole="button"
-            accessibilityLabel="Kiểm tra và báo người thân ngay"
+            accessibilityLabel={
+              isEn ? 'Check and alert family now' : 'Kiểm tra và báo người thân ngay'
+            }
             style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}>
-            <Text style={styles.primaryButtonText}>🛡 KIỂM TRA &amp; BÁO CON CHÁU NGAY</Text>
+            <Text style={styles.primaryButtonText}>
+              {isEn ? '🛡 CHECK & ALERT FAMILY NOW' : '🛡 KIỂM TRA & BÁO CON CHÁU NGAY'}
+            </Text>
           </Pressable>
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel="Cúp máy an toàn"
+            accessibilityLabel={isEn ? 'Hang up safely' : 'Cúp máy an toàn'}
             style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]}>
-            <Text style={styles.secondaryButtonText}>📵 Cúp máy cho an toàn</Text>
+            <Text style={styles.secondaryButtonText}>
+              {isEn ? '📵 Hang up and stay safe' : '📵 Cúp máy cho an toàn'}
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -474,6 +553,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     lineHeight: 34,
     fontWeight: '800',
+    fontFamily: Fonts.heading,
   },
   riskReason: {
     fontSize: 18,

@@ -97,7 +97,7 @@ app.post('/call-check', async (c) => {
       normalizedNumber: normalized,
       status: asksForUrgentMoney ? 'caution' : 'safe',
       badgeLabel: asksForUrgentMoney
-        ? 'Số trong danh bạ nhưng xin tiền gấp — Cần hỏi Mã gia đình phòng mất SIM/Zalo'
+        ? 'Số trong danh bạ nhưng xin tiền gấp - Cần hỏi Mã gia đình phòng mất SIM/Zalo'
         : 'Số đã lưu trong danh bạ gia đình',
       communityReportCount: 0,
       reason: asksForUrgentMoney

@@ -9,8 +9,8 @@ const initialPath = ['/calls', '/bots'].includes(slug) ? slug : '/';
 ---
 
 <Layout
-  title="ScamKill — Trung tâm Điều phối Gia đình (Astro 6 + TanStack Router + Hono)"
-  description="Bảng điều khiển dành cho con cháu kiểm tra số gọi lạ qua Hono Edge API, cài đặt Mã gia đình và theo dõi cảnh báo SMS, Zalo, Telegram."
+  title="ScamKill family command center (Astro 6 + TanStack Router + Hono)"
+  description="A dashboard for adult children: check unknown numbers through the Hono edge API, set a family code, and follow alerts over SMS, Zalo, and Telegram."
 >
   <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -18,16 +18,52 @@ const initialPath = ['/calls', '/bots'].includes(slug) ? slug : '/';
         href="/"
         class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[#DFD6C3] bg-[#FFFDF9] px-4 py-2 text-sm font-bold text-[#0B5D56] hover:bg-[#F1EBDD]"
       >
-        ← Quay về Trang chủ ScamKill
+        ←
+        <span class="lang-en">Back to the ScamKill home page</span>
+        <span class="lang-vi">Quay về Trang chủ ScamKill</span>
       </a>
-      <a
-        href="https://scamkill-pwa.9ez.workers.dev/?autoinstall=1"
-        class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#0B5D56] px-5 py-2.5 text-sm font-extrabold text-[#FAF6EE]"
-      >
-        📲 Mở & Cài đặt Ứng dụng PWA cho Bố/Mẹ
-      </a>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="lang-switch" role="group" aria-label="Language / Ngôn ngữ">
+          <span class="lang-switch__globe" aria-hidden="true">🌐</span>
+          <button type="button" data-lang-btn="en" aria-pressed="true">EN</button>
+          <button type="button" data-lang-btn="vi" aria-pressed="false">VI</button>
+        </div>
+        <a
+          href="/guidebook"
+          class="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[#DFD6C3] bg-[#FFFDF9] px-4 py-2 text-sm font-bold text-[#0B5D56] hover:bg-[#F1EBDD]"
+        >
+          <span class="lang-en">Guidebook</span>
+          <span class="lang-vi">Cẩm nang</span>
+        </a>
+        <a
+          href="https://scamkill-pwa.9ez.workers.dev/?autoinstall=1"
+          class="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[#0B5D56] px-5 py-2.5 text-sm font-extrabold text-[#FAF6EE]"
+        >
+          <span class="lang-en">Open and install the PWA for Mom or Dad</span>
+          <span class="lang-vi">Mở và cài ứng dụng PWA cho Bố hoặc Mẹ</span>
+        </a>
+      </div>
     </div>
 
     <FamilyCommandSpa client:only="react" initialPath={initialPath} />
   </main>
+
+  <script>
+    import { initLang, setLang, subscribeLang } from '../../lib/i18n';
+
+    initLang();
+
+    const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-lang-btn]'));
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        setLang(button.dataset.langBtn === 'vi' ? 'vi' : 'en');
+      });
+    });
+    subscribeLang((lang) => {
+      buttons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.langBtn === lang));
+      });
+    });
+  </script>
 </Layout>

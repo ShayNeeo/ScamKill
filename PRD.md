@@ -1,7 +1,7 @@
-# ScamKill — Product Requirements Document (PRD)
+# ScamKill - Product Requirements Document (PRD)
 
 **Product Name:** ScamKill (*Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại*)  
-**Organization / Team:** QuadDraKe (Lê Quỳnh Thư — Team Lead, Phạm Quốc Thanh, Minh, cộng sự)  
+**Organization / Team:** QuadDraKe (Lê Quỳnh Thư - Team Lead, Phạm Quốc Thanh, Minh, cộng sự)  
 **Target Competition & Track:** HITC InnoStar 2026 / Social Impact & Applied AI Digital Safety  
 **Version:** 1.0.0-MVP ("Fake It Until You Make It" Full-Stack Edition)  
 **Date:** 2026-10-22  
@@ -14,7 +14,7 @@
 
 Most existing anti-scam tools (Whoscall, Hiya, nTrust, Vcall ID) stop at **caller ID labeling** (*who* is calling), while banking alerts (SBV SIMO) trigger at the transaction screen when the victim is already psychologically manipulated (3.3M of 4.9M warned transactions still proceeded).
 
-**ScamKill** goes one step further: **it turns warnings into coordinated family action**. Structured chronologically along the timeline of a real scam—**before picking up a call**, **while reading a suspicious message**, and **at the moment of identity/financial decision**—ScamKill introduces a **4-Step Family Protection Loop (*Vòng bảo vệ gia đình*)**:
+**ScamKill** goes one step further: **it turns warnings into coordinated family action**. Structured chronologically along the timeline of a real scam - **before picking up a call**, **while reading a suspicious message**, and **at the moment of identity/financial decision** - ScamKill introduces a **4-Step Family Protection Loop (*Vòng bảo vệ gia đình*)**:
 
 $$\text{Phát hiện (Detect)} \implies \text{Làm chậm (Slow Down)} \implies \text{Xác minh (Verify)} \implies \text{Cùng quyết định (Co-Decide)}$$
 
@@ -29,7 +29,7 @@ $$\text{Phát hiện (Detect)} \implies \text{Làm chậm (Slow Down)} \implies 
 2. **Why Older Adults Are Prioritized:**
    - Older adults frequently rely on fixed pensions/life savings and face heightened vulnerability under fear, authority intimidation, and synthetic voice/video impersonation (e.g., Dec 2025 Hanoi case: a 78-year-old woman nearly transferred VND 80M via a fake police Zalo video call).
 3. **Three Core Gaps ScamKill Solves:**
-   - **Timing Gap (*Khoảng trống về thời điểm*):** Warnings must appear *before* picking up or *immediately* upon reading a message—before panic sets in.
+   - **Timing Gap (*Khoảng trống về thời điểm*):** Warnings must appear *before* picking up or *immediately* upon reading a message - before panic sets in.
    - **Verification Gap (*Khoảng trống về xác minh*):** When voices and videos can be cloned by AI, users need a deterministic verification protocol (**Family Safe-Word / `Mã gia đình`** + independent callback) that does not depend on human ear judgment or perfect audio deepfake classifiers.
    - **Support Gap (*Khoảng trống về hỗ trợ*):** Seniors are usually alone when pressured. A warning only works if paired with a 1-tap bridge to trusted relatives.
 
@@ -56,7 +56,7 @@ sequenceDiagram
     Family->>Senior: 4. Gọi lại xác minh trong vài phút -> Chặn chuyển tiền thành công
 ```
 
-### Feature 1: Pre-Call Risk Warning (`Tính năng 1: Cảnh báo cuộc gọi từ số có nguy cơ — trước khi bắt máy`)
+### Feature 1: Pre-Call Risk Warning (`Tính năng 1: Cảnh báo cuộc gọi từ số có nguy cơ - trước khi bắt máy`)
 - **Trigger:** Incoming phone call or manual number lookup before/during a call.
 - **Data Sources & Signals:**
   1. **Community Reports:** Crowdsourced reports inside ScamKill (`scamkill_community`).
@@ -67,10 +67,10 @@ sequenceDiagram
   - Four distinct states:
     - `high_risk` (**Nguy cơ cao**): e.g., *"Nguy cơ cao: số bị nhiều người báo cáo giả danh cơ quan chức năng"*.
     - `caution` (**Cần cảnh giác**): e.g., *"Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, hãy xác minh"*.
-    - `unverified` (**Chưa xác minh**): When database coverage is insufficient, explicitly displays *"Chưa xác minh — Chưa có dữ liệu báo cáo. Tuyệt đối không chuyển tiền hoặc đọc mã OTP"*.
+    - `unverified` (**Chưa xác minh**): When database coverage is insufficient, explicitly displays *"Chưa xác minh - Chưa có dữ liệu báo cáo. Tuyệt đối không chuyển tiền hoặc đọc mã OTP"*.
     - `safe` (**Trong danh bạ / Đã xác thực**): Known saved contact, still accompanied by a reminder if emergency money is requested.
 
-### Feature 2: Suspicious Message Analysis (`Tính năng 2: Phân tích tin nhắn đáng ngờ — khi đọc`)
+### Feature 2: Suspicious Message Analysis (`Tính năng 2: Phân tích tin nhắn đáng ngờ - khi đọc`)
 - **Ingestion Modes (Store-Policy Compliant):**
   - User-initiated paste/share, screenshot upload, QR scan, or optional Android SMS listener simulation (respecting Google Play / iOS privacy boundaries).
 - **Signal Taxonomy (Multi-Agent Detection):**
@@ -86,19 +86,19 @@ sequenceDiagram
   - **Concrete Next Action:** e.g., *"Đừng bấm liên kết. Hỏi người thân trước."*
   - **Audio Readback (TTS):** 0.85x speech rate in Vietnamese for low-vision seniors.
 
-### Feature 3: Relative Verification & Family Notification (`Tính năng 3: Xác minh người thân và báo cho gia đình — khi cần quyết định`)
-- **Mechanism 3A — Multi-Bot Family Alert (`Báo người thân`):**
+### Feature 3: Relative Verification & Family Notification (`Tính năng 3: Xác minh người thân và báo cho gia đình - khi cần quyết định`)
+- **Mechanism 3A - Multi-Bot Family Alert (`Báo người thân`):**
   - **Trigger:** Automatic suggestion on `high_risk` OR anytime the senior taps the prominent **"Tôi nghi ngờ" / "Kiểm tra cùng con cháu"** button.
   - **Channels:** **SMS, Zalo, and Telegram** (via ScamKill Multi-Bot Hub).
   - **Privacy & Consent Gate (PDPD 2025 / Nghị định 356/2025 Compliant):**
     - **Default Payload (Consent = Metadata Only):** Sends **ONLY** (1) Alert Type (`Loại cảnh báo`), (2) Timestamp (`Thời điểm`), and (3) Related Phone Number (`Số điện thoại liên quan`).
     - **Opt-In Content Sharing (`shareMessageContent: true`):** The actual message text or call summary is attached **ONLY** when the senior explicitly toggles/checks *"Đồng ý chia sẻ nội dung tin nhắn/cuộc gọi cho người thân"*.
   - **Family Co-Decision Actions:** Relatives receive immediate CTA buttons in Telegram/Zalo/Web Inbox: *"Gọi lại cho Mẹ/Bố ngay"*, *"Xác nhận an toàn"*, or *"Báo chặn số lừa đảo"*.
-- **Mechanism 3B — Voice-Clone & Relative Impersonation Verification (`Xác minh giả giọng người thân`):**
+- **Mechanism 3B - Voice-Clone & Relative Impersonation Verification (`Xác minh giả giọng người thân`):**
   - **Trigger:** Receiving a call claiming to be a child/grandchild begging for emergency money (e.g., accident, hospital deposit, debt).
   - **2-Step Deterministic Protocol (Works Immediately in MVP without relying on raw call-audio OS hooks):**
-    - **Step (i) — Ask the Family Safe-Word (`Hỏi "Mã gia đình"`):** Prompt the senior to ask the caller for the pre-configured secret family phrase (e.g., *"Cây khế ngọt"*, *"Mướp đắng"*). Includes a Safe-Word Challenge widget in the app.
-    - **Step (ii) — Hang Up & Call Back (`Cúp máy và gọi lại số đã lưu`):** Instruct the senior to hang up immediately and dial the relative's saved phone number in their address book or initiate a video call on a familiar app.
+    - **Step (i) - Ask the Family Safe-Word (`Hỏi "Mã gia đình"`):** Prompt the senior to ask the caller for the pre-configured secret family phrase (e.g., *"Cây khế ngọt"*, *"Mướp đắng"*). Includes a Safe-Word Challenge widget in the app.
+    - **Step (ii) - Hang Up & Call Back (`Cúp máy và gọi lại số đã lưu`):** Instruct the senior to hang up immediately and dial the relative's saved phone number in their address book or initiate a video call on a familiar app.
   - **Intentional Cooling-Off Pause (`Khoảng dừng Làm chậm`):** Full-screen intervention modal with a 60-second breathing/pause lock + 48-hour high-risk transaction cooling-off timer ported from Grab Round 2.
   - **R&D AI Voice Deepfake Indicator:** Assists via uploaded recording/live mic transcript + acoustic artifact simulation (labeled transparently as an assistive R&D signal, never replacing the 2-step verification protocol).
 
@@ -108,7 +108,7 @@ sequenceDiagram
 
 | Step | Actor | Action / System Behavior |
 |---|---|---|
-| **1. Incoming Call** | Scammer (`0918 765 432` — Unknown Number) | Calls Bà Lan with a synthesized/panicked voice resembling her daughter: *"Mẹ ơi con bị tai nạn, chuyển giúp con 30 triệu gấp!"* |
+| **1. Incoming Call** | Scammer (`0918 765 432` - Unknown Number) | Calls Bà Lan with a synthesized/panicked voice resembling her daughter: *"Mẹ ơi con bị tai nạn, chuyển giúp con 30 triệu gấp!"* |
 | **2. Pre-Call / In-Call Banner** | ScamKill (Layer 1) | Displays prominent warning: **"Số lạ, không có trong danh bạ. Nếu người này xin tiền gấp, hãy xác minh."** |
 | **3. Panic Button ("Kiểm tra")** | Bà Lan (Layer 3) | Taps **"Kiểm tra / Tôi nghi ngờ"**. ScamKill activates the **Làm chậm (Slow Down)** full-screen shield: *"Khoan chuyển 30 triệu! Hãy dừng 1 phút để kiểm tra."* |
 | **4. Dual Action (Verify + Notify)** | ScamKill (Layer 3A + 3B) | (a) Prompts Bà Lan on screen & via TTS: **1. Hỏi "Mã gia đình" đã đặt trước; 2. Cúp máy và gọi lại số con gái trong danh bạ.**<br>(b) Simultaneously dispatches a Family Alert via **SMS, Zalo, and Telegram** to her daughter (Chị Hương) with Alert Type, Timestamp, and Caller Number (`0918 765 432`). |
@@ -152,11 +152,11 @@ flowchart TB
 
 ### 5.1 Multi-Agent Roles (In-App Pipeline & Development Fleet)
 1. **Runtime Multi-Agent Pipeline (`src/api/scamkill/`):**
-   - **Agent 1 — Intake & Privacy Guard Agent:** Sanitizes input, extracts phone numbers/URLs/amounts, enforces PII redaction (`redactPii`), and checks deterministic pitch scenario fingerprints for zero-latency demo reliability.
-   - **Agent 2 — Caller Reputation & Heuristic Agent (`call-shield.ts`):** Evaluates phone numbers against ScamKill Community Reports, official public blacklists, international prefix rules, burst-call counters, and contact-book presence; enforces the `"chưa xác minh"` epistemic boundary when data is absent.
-   - **Agent 3 — Red Flag & Psychological Pressure Agent (`rules.ts` + Grab `prompts.py` port):** Detects the 5 core ScamKill message signals + psychological manipulation tactics (`urgency`, `fear`, `authority`, `isolation`, `reciprocity`).
-   - **Agent 4 — RAG Official Advisory Agent (`rag.ts`):** Matches detected signals against 61 curated advisories from Bộ Công an, Cục ATTT, NHNN, and global consumer protection bodies.
-   - **Agent 5 — Elder Action & Family Loop Assembler (`assembler.ts`):** Produces max 3 plain-Vietnamese reasons, next action, Cooling-Off timer trigger, Family Safe-Word prompt, and redacted family dispatch payload.
+   - **Agent 1 - Intake & Privacy Guard Agent:** Sanitizes input, extracts phone numbers/URLs/amounts, enforces PII redaction (`redactPii`), and checks deterministic pitch scenario fingerprints for zero-latency demo reliability.
+   - **Agent 2 - Caller Reputation & Heuristic Agent (`call-shield.ts`):** Evaluates phone numbers against ScamKill Community Reports, official public blacklists, international prefix rules, burst-call counters, and contact-book presence; enforces the `"chưa xác minh"` epistemic boundary when data is absent.
+   - **Agent 3 - Red Flag & Psychological Pressure Agent (`rules.ts` + Grab `prompts.py` port):** Detects the 5 core ScamKill message signals + psychological manipulation tactics (`urgency`, `fear`, `authority`, `isolation`, `reciprocity`).
+   - **Agent 4 - RAG Official Advisory Agent (`rag.ts`):** Matches detected signals against 61 curated advisories from Bộ Công an, Cục ATTT, NHNN, and global consumer protection bodies.
+   - **Agent 5 - Elder Action & Family Loop Assembler (`assembler.ts`):** Produces max 3 plain-Vietnamese reasons, next action, Cooling-Off timer trigger, Family Safe-Word prompt, and redacted family dispatch payload.
 2. **Development Multi-Agent Fleet (`oh-my-pi` Roles):**
    - `scout`: Codebase discovery and threat-signal inventory.
    - `task` (Parallel Makers): Slice-isolated implementation of Backend/Multi-Bot Hub, Call Shield & Bà Lan Simulator, and Family Safe-Word/Cooling-Off UI.
@@ -179,7 +179,7 @@ flowchart TB
 ### 5.4 Isolated Astro + Cloudflare Landing Page (`./landing/`)
 - Located in a dedicated subfolder (`./landing/`) with its own `package.json`, `astro.config.mjs`, and `wrangler.jsonc` so marketing/edge deployment is completely decoupled from the Expo app.
 - **Exact Edge Full-Stack Architecture (`./landing/`):**
-  - **Meta-Framework:** Astro 5 in Hybrid/SSR mode (`@astrojs/cloudflare` adapter, personal account `9df9d709f5cfa6826655e5416b9d6e1e`) — static prerendered HTML (`prerender = true`) for instant landing page load, plus dynamic SSR edge routes (`prerender = false`) for `/dashboard`, `/api/leads`, and `/api/auth/session`.
+  - **Meta-Framework:** Astro 5 in Hybrid/SSR mode (`@astrojs/cloudflare` adapter, personal account `9df9d709f5cfa6826655e5416b9d6e1e`) - static prerendered HTML (`prerender = true`) for instant landing page load, plus dynamic SSR edge routes (`prerender = false`) for `/dashboard`, `/api/leads`, and `/api/auth/session`.
   - **UI Island Library:** **Svelte 5 + TypeScript** (`@astrojs/svelte`) for zero-bloat interactive islands (`BaLanSimulator.svelte`, `PricingCalculator.svelte`, `LeadAndAuthModal.svelte`).
   - **Database & ORM:** **Cloudflare D1** (Serverless Edge SQLite) + **Drizzle ORM** (`src/db/schema.ts`, `drizzle.config.ts`, `migrations/0001_init.sql`) for type-safe tables (`users`, `sessions`, `family_leads`, `scam_reports`).
   - **Authentication:** Edge cookie session authentication (`src/lib/auth.ts` + Astro `src/middleware.ts`) backed by D1.

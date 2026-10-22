@@ -125,7 +125,7 @@ export function getGlossary(lang?: string): Record<string, GlossaryTerm> {
   return activeLang === 'en' ? SIMPLIFIED_GLOSSARY_EN : SIMPLIFIED_GLOSSARY;
 }
 
-let currentDialect: DialectCode = 'vi-north';
+let currentDialect: DialectCode = 'en';
 const dialectListeners = new Set<(dialect: DialectCode) => void>();
 
 export function getDialect(): DialectCode {
