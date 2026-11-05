@@ -2,7 +2,7 @@
 
 ## Product Truth
 - **Name:** ScamKill (*Lá chắn AI giúp người cao tuổi và gia đình cùng chống lừa đảo qua điện thoại*)
-- **Team / Organization:** QuadDraKe (Lê Quỳnh Thư, Phạm Quốc Thanh, Nguyễn Khoa Quang Minh, cộng sự | HITC InnoStar 2026)
+- **Team / Organization:** QuadDraKe (Lê Quỳnh Thư, Phạm Quốc Thanh, Nguyễn Quang Minh, Bùi Xuân Ngọc Diệp | HITC InnoStar 2026)
 - **Vision:** *No one has to face a phone scam alone. (Không ai phải đối mặt với lừa đảo một mình.)*
 - **Default Language & Bilingual Parity:** Loads in **English (`en`)** by default for international and competition judges, with a 1-tap instantaneous switch to **Vietnamese (`vi`)** across every screen, modal, scenario, guidebook, and island.
 - **Core Mechanism:** A 4-Step Family Protection Loop (**1. Detect => 2. Slow Down => 3. Verify => 4. Co-Decide**) spanning the 3 chronological stages of a phone scam:
